@@ -1,0 +1,25 @@
+{
+  "name": "@suni/api",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./*": "./src/*.ts"
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "check-types": "tsc -b"
+  },
+  "dependencies": {
+    "@orpc/client": "catalog:",
+    "@orpc/openapi": "catalog:",
+    "@orpc/server": "catalog:",
+    "@orpc/zod": "catalog:",
+    "@suni/auth": "workspace:*",
+    "@suni/db": "workspace:*",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@suni/config": "workspace:*",
+    "typescript": "catalog:"
+  }
+}

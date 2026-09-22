@@ -1,0 +1,54 @@
+{
+  "name": "suni",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "type": "module",
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "check-types": "turbo run check-types",
+    "dev:web": "turbo run dev -F web --",
+    "dev:server": "turbo run dev -F server --",
+    "db:push": "turbo run db:push -F @suni/db --",
+    "db:studio": "turbo run db:studio -F @suni/db --",
+    "db:generate": "turbo run db:generate -F @suni/db --",
+    "db:migrate": "turbo run db:migrate -F @suni/db --",
+    "db:start": "docker compose up -d postgres",
+    "db:watch": "docker compose up postgres",
+    "db:stop": "docker compose stop postgres",
+    "db:down": "docker compose down postgres",
+    "docker:build": "docker compose build",
+    "docker:up": "docker compose up -d --build",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f",
+    "env:generate": "varlock codegen --path ./apps/web/ && varlock codegen --path ./apps/server/ && varlock codegen --path ./packages/db/",
+    "postinstall": "varlock codegen --path ./apps/web/ && varlock codegen --path ./apps/server/ && varlock codegen --path ./packages/db/",
+    "auth:generate": "cd apps/server && pnpm run auth:generate",
+    "check": "ultracite check",
+    "fix": "ultracite fix",
+    "prepare": "lefthook install"
+  },
+  "dependencies": {
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@shadcn/lint": "^0.1.5",
+    "@suni/config": "workspace:*",
+    "@types/bun": "catalog:",
+    "eslint-plugin-github": "6.1.2",
+    "eslint-plugin-sonarjs": "^4.2.1",
+    "lefthook": "^2.1.14",
+    "lint-staged": "^17.5.1",
+    "oxfmt": "^0.70.0",
+    "oxlint": "^1.85.0",
+    "oxlint-plugin-react-doctor": "^0.9.14",
+    "turbo": "^2.11.2",
+    "typescript": "catalog:",
+    "ultracite": "7.12.0",
+    "varlock": "catalog:"
+  },
+  "packageManager": "pnpm@12.4.1"
+}

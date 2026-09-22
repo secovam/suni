@@ -1,0 +1,31 @@
+# Suni agent guide
+
+Suni is a TypeScript monorepo with a React/Vite web app, a Hono/oRPC server, and shared UI, API, auth, and database packages.
+
+- Package manager: `pnpm`. The `packageManager` and `scripts` fields in [package.json](package.json) own versions and root commands.
+- Build all workspaces: `pnpm run build`.
+- Check types across workspaces: `pnpm run check-types`.
+
+Read the guide relevant to the files you change:
+
+- [Code quality and tooling](docs/agents/code-quality.md)
+- [TypeScript and JavaScript](docs/agents/typescript.md)
+- [React and accessibility](docs/agents/react-accessibility.md)
+- [Security and performance](docs/agents/security-performance.md)
+- [Verification by change](docs/agents/testing.md)
+
+Choose context by task:
+
+- Routes and queries: [web app](apps/web/AGENTS.md) and [API package](packages/api/AGENTS.md).
+- Auth, sessions, or environment values: [server](apps/server/AGENTS.md), [auth](packages/auth/AGENTS.md), and [database](packages/db/AGENTS.md).
+- Shared components or styles: [UI package](packages/ui/AGENTS.md) and [React guidance](docs/agents/react-accessibility.md).
+
+## Context files
+
+- [apps/web/AGENTS.md](apps/web/AGENTS.md) (web routes, client setup, and local commands)
+- [apps/server/AGENTS.md](apps/server/AGENTS.md) (HTTP server, auth wiring, and local commands)
+- [packages/api/AGENTS.md](packages/api/AGENTS.md) (oRPC procedures and request context)
+- [packages/auth/AGENTS.md](packages/auth/AGENTS.md) (Better Auth setup)
+- [packages/db/AGENTS.md](packages/db/AGENTS.md) (Drizzle schema and database commands)
+- [packages/ui/AGENTS.md](packages/ui/AGENTS.md) (shared components and styles)
+- [packages/config/AGENTS.md](packages/config/AGENTS.md) (shared TypeScript settings)

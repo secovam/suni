@@ -1,0 +1,6 @@
+{
+  "extends": "@suni/config/tsconfig.base.json",
+  "compilerOptions": {
+    "strictNullChecks": true
+  }
+}
