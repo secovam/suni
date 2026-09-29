@@ -12,6 +12,12 @@ This is a TypeScript monorepo with a React/Vite web app, a Hono/oRPC server, and
 - Build all workspaces: `pnpm run build`.
 - Check types across workspaces: `pnpm run check-types`.
 
+When the user asks for tests (see [Verification by change](docs/agents/testing.md)):
+
+- Use E2E tests as the testing mechanism, and use them to verify that complex features work. Each E2E run ends by producing a verifiable, repeatable artifact.
+- Do not write unit tests after the code they cover.
+- If a system must be tested in isolation, first write down every way it could fail, then write the code.
+
 Read the guide relevant to the files you change:
 
 - [Code quality and tooling](docs/agents/code-quality.md)
