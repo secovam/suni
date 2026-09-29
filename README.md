@@ -61,7 +61,7 @@ Después, inicia el servidor de desarrollo:
 pnpm run dev
 ```
 
-Abre [http://localhost:3001](http://localhost:3001) en el navegador para ver la aplicación web. La API corre en [http://localhost:3000](http://localhost:3000).
+Portless asigna URLs estables: la aplicación web corre en https://suni.localhost y la API en https://api.suni.localhost. En desarrollo, esas URLs son los valores por defecto de `.env.schema` (`VITE_SERVER_URL`, `BETTER_AUTH_URL`, `CORS_ORIGIN`); en producción debes definirlos. Si los defines en `.env`, ese valor tiene prioridad, así que elimina cualquier `localhost:3000` o `localhost:3001` anterior. La primera vez, portless pide sudo para el puerto 443 y para confiar en su CA local. Para saltarte portless, usa `PORTLESS=0 pnpm run dev` (web en `:3001`, API en `:3000`).
 
 ## Personalización de la UI
 
