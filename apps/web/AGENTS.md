@@ -19,7 +19,7 @@ See [package.json](package.json) for available scripts. From the repo root, run 
 
 ## Conventions
 
-- You can import shared UI from `@suni/ui/components/*` and keep app specific components in `src/components/`.
+- Import shared UI from `@suni/ui/components/*`; keep app-specific components in `src/components/`.
 
 ## Generated files
 

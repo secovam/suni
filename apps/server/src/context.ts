@@ -13,6 +13,7 @@ export async function createContext({
   const session = await auth.api.getSession({
     headers: context.req.raw.headers,
   });
+
   return {
     db,
     session,

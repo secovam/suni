@@ -19,7 +19,7 @@ See [package.json](package.json) for available scripts. From the repo root, run 
 
 ## Conventions
 
-- You can add business procedures in `@suni/api`; this app owns HTTP middleware and service setup.
+- Business procedures belong in `@suni/api`; this app owns HTTP middleware and service setup.
 - The server loads Varlock through `src/env.server.ts`.
 
 ## Generated files

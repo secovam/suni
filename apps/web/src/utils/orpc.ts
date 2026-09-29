@@ -33,6 +33,7 @@ function getServerUrl(url: string) {
       process?: { env?: Record<string, string | undefined> };
     }
   ).process?.env;
+
   if (typeof window === "undefined" && processEnv?.SERVER_URL) {
     return processEnv.SERVER_URL.endsWith("/")
       ? processEnv.SERVER_URL.slice(0, -1)

@@ -38,8 +38,10 @@ app.use(
     drain: process.env.NODE_ENV === "production" ? undefined : createFsDrain(),
   })
 );
+
 app.use("*", async (c, next) => {
   await identifyUser(c.get("log"), c.req.raw.headers, c.req.path);
+
   return next();
 });
 

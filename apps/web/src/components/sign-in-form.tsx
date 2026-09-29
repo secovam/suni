@@ -18,6 +18,7 @@ export default function SignInForm({
   const navigate = useNavigate({
     from: "/",
   });
+
   const { isPending } = authClient.useSession();
 
   const form = useForm({
