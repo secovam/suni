@@ -12,4 +12,4 @@ This workspace holds shared TypeScript settings. The server and shared packages 
 
 ## Conventions
 
-- You can change `tsconfig.base.json` when a TypeScript rule should apply across workspaces. The root [package.json](../../package.json) owns the `check-types` command used to check the result.
+- Put TypeScript rules that apply across workspaces in `tsconfig.base.json`. The root [package.json](../../package.json) owns the `check-types` command used to check the result.

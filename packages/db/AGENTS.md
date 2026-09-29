@@ -19,7 +19,7 @@ See [package.json](package.json) for package scripts and the root [package.json]
 
 ## Conventions
 
-- You can define tables in `src/schema/` and relations in `src/relations.ts`.
+- Define tables in `src/schema/` and relations in `src/relations.ts`.
 - The package `.env.schema` imports database values from `apps/server/.env.schema`.
 
 ## Generated files

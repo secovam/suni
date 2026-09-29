@@ -3,7 +3,7 @@
 Suni manufactures cleaning and sanitation products for homes and businesses. This repo is Suni's internal operations system: inventory, orders, production, and related operations. The public company landing page will be added here later.
 
 - Users are staff from four areas: administration, production (plant), warehouse, and sales.
-- Access is role-based: each area sees only its own part of the system. Scope new routes and procedures to the roles that need them.
+- Access will be role-based, so each area sees only its own part of the system. The role system is not built yet: `protectedProcedure` only checks for a session. Until it exists, ask how a new route or procedure should be scoped instead of adding ad hoc role checks.
 - The domain modules are not built yet; today the code is the scaffold plus auth.
 
 This is a TypeScript monorepo with a React/Vite web app, a Hono/oRPC server, and shared UI, API, auth, and database packages.

@@ -18,5 +18,5 @@ See [package.json](package.json) for available scripts. From the repo root, run 
 
 ## Conventions
 
-- You can start with `publicProcedure` for an open endpoint or `protectedProcedure` when a session is required.
+- Use `publicProcedure` for an open endpoint and `protectedProcedure` when a session is required.
 - The server creates request context. This package consumes its typed session and database values.

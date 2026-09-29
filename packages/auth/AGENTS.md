@@ -17,8 +17,8 @@ See [package.json](package.json) for package scripts. From the repo root, run on
 
 ## Conventions
 
-- You can keep environment access in the server and pass the needed values to `createAuth`.
-- You can update database schema through `@suni/db` after reviewing generated auth changes.
+- Keep environment access in the server and pass the needed values to `createAuth`.
+- Apply database schema changes through `@suni/db` after reviewing generated auth changes.
 
 ## Generated schema
 

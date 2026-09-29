@@ -18,5 +18,5 @@ See [package.json](package.json) for available scripts. From the repo root, run 
 
 ## Conventions
 
-* You can place reusable primitives in `src/components/` and import them as `@suni/ui/components/<name>`.
-* You can adjust shared design tokens in `src/styles/globals.css`.
+* Place reusable primitives in `src/components/` and import them as `@suni/ui/components/<name>`.
+* Adjust shared design tokens in `src/styles/globals.css`.
