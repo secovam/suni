@@ -37,6 +37,14 @@ This project uses PostgreSQL with Drizzle ORM.
 pnpm run db:push
 ```
 
+Start the local dev containers (Postgres and Mailpit, defined in `docker-compose.dev.yml`, separate from the deploy stack) with:
+
+```bash
+pnpm run services:up
+```
+
+Outgoing emails can be inspected at http://localhost:8025. Point SMTP at `localhost:1025` (no auth, no TLS). Stop with `pnpm run services:down`.
+
 Then, run the development server:
 
 ```bash
@@ -121,6 +129,9 @@ suni/
 - `pnpm run db:generate`: Generate database client/types
 - `pnpm run db:migrate`: Run database migrations
 - `pnpm run db:studio`: Open database studio UI
+- `pnpm run services:up`: Start local dev Postgres and Mailpit (`docker-compose.dev.yml`)
+- `pnpm run services:down`: Stop them
+- `pnpm run services:logs`: Tail their logs
 - `pnpm run docker:build`: Build the Docker Compose images
 - `pnpm run docker:up`: Build and start the Docker Compose stack
 - `pnpm run docker:logs`: Tail logs from the Docker Compose stack
