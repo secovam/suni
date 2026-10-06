@@ -1,6 +1,9 @@
 {
   "extends": "@suni/config/tsconfig.base.json",
-  "references": [{ "path": "../../packages/api" }],
+  "references": [
+    { "path": "../../packages/api" },
+    { "path": "../../packages/auth" }
+  ],
   "compilerOptions": {
     "noEmit": true,
     "paths": {
