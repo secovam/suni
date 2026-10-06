@@ -2,142 +2,158 @@ import { Button } from "@suni/ui/components/button";
 import { Input } from "@suni/ui/components/input";
 import { Label } from "@suni/ui/components/label";
 import { useForm } from "@tanstack/react-form";
-import { useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
+import type { FormEvent, ReactElement, ReactNode } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
 import { authClient } from "@/lib/auth-client";
 
-import Loader from "./loader";
+const magicLinkSchema = z.object({
+  email: z.email("Correo inválido"),
+});
+
+type MagicLinkValues = z.infer<typeof magicLinkSchema>;
+
+interface SignInFormProps {
+  authError?: string;
+}
 
 export default function SignInForm({
-  onSwitchToSignUp,
-}: {
-  onSwitchToSignUp: () => void;
-}) {
-  const navigate = useNavigate({
-    from: "/",
-  });
-
-  const { isPending } = authClient.useSession();
+  authError,
+}: SignInFormProps): ReactElement {
+  const [magicLinkSent, setMagicLinkSent] = useState<boolean>(false);
+  const [sentTo, setSentTo] = useState<string>("");
 
   const form = useForm({
-    defaultValues: {
-      email: "",
-      password: "",
-    },
-    onSubmit: async ({ value }) => {
-      await authClient.signIn.email(
-        {
+    defaultValues: { email: "" } satisfies MagicLinkValues,
+    onSubmit: async ({ value }: { value: MagicLinkValues }): Promise<void> => {
+      try {
+        const result = await authClient.signIn.magicLink({
+          callbackURL: window.location.origin,
           email: value.email,
-          password: value.password,
-        },
-        {
-          onSuccess: () => {
-            navigate({
-              to: "/dashboard",
-            });
-            toast.success("Sign in successful");
-          },
-          onError: (error) => {
-            toast.error(error.error.message || error.error.statusText);
-          },
+        });
+
+        if (result.error) {
+          toast.error("Error al enviar el enlace mágico");
+
+          return;
         }
-      );
+
+        setSentTo(value.email);
+        setMagicLinkSent(true);
+        toast.success("¡Enlace mágico enviado! Revisa tu correo electrónico.");
+      } catch {
+        toast.error("No pudimos enviar el enlace. Intenta de nuevo.");
+      }
     },
-    validators: {
-      onSubmit: z.object({
-        email: z.email("Invalid email address"),
-        password: z.string().min(8, "Password must be at least 8 characters"),
-      }),
-    },
+    validators: { onSubmit: magicLinkSchema },
   });
 
-  if (isPending) {
-    return <Loader />;
-  }
+  const errorMessage: ReactNode = authError ? (
+    <div
+      aria-live="polite"
+      className="border-destructive/20 bg-destructive/10 text-destructive mb-6 rounded-md border p-3 text-sm"
+      role="alert"
+    >
+      El enlace de acceso es incorrecto o ya expiró. Solicita uno nuevo para
+      iniciar sesión.
+    </div>
+  ) : null;
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>): void => {
+    event.preventDefault();
+    void form.handleSubmit();
+  };
+
+  const handleResend = (): void => {
+    setMagicLinkSent(false);
+    setSentTo("");
+    form.reset();
+  };
+
+  const authContent: ReactNode = magicLinkSent ? (
+    <div className="space-y-4">
+      <output
+        aria-live="polite"
+        className="border-primary/20 bg-primary/5 block w-full rounded-lg border px-4 py-3 text-sm"
+      >
+        <div className="space-y-1">
+          <p className="text-foreground leading-5 font-medium">
+            Revisa tu correo. Enviamos un enlace mágico a:
+          </p>
+          <p className="text-muted-foreground leading-5 wrap-break-word">
+            <strong className="text-primary font-semibold break-all">
+              {sentTo}
+            </strong>
+            .
+          </p>
+          <p className="text-muted-foreground text-xs">
+            El enlace expira en 15 minutos.
+          </p>
+        </div>
+      </output>
+      <Button className="h-11 w-full" onClick={handleResend} variant="outline">
+        Enviar otro enlace
+      </Button>
+    </div>
+  ) : (
+    <form className="space-y-6" onSubmit={handleSubmit}>
+      <form.Field name="email">
+        {(field) => {
+          const hasError = field.state.meta.errors.length > 0;
+
+          return (
+            <div className="space-y-2">
+              <Label htmlFor={field.name}>Inicia sesión con tu correo</Label>
+              <Input
+                aria-describedby={hasError ? `${field.name}-error` : undefined}
+                aria-invalid={hasError}
+                autoComplete="email"
+                className="h-11"
+                id={field.name}
+                name={field.name}
+                onBlur={field.handleBlur}
+                onChange={(event) => field.handleChange(event.target.value)}
+                placeholder="tu.correo@dominio.com"
+                spellCheck={false}
+                type="email"
+                value={field.state.value}
+              />
+              {hasError ? (
+                <p
+                  className="text-destructive text-sm"
+                  id={`${field.name}-error`}
+                  role="alert"
+                >
+                  {field.state.meta.errors[0]?.message}
+                </p>
+              ) : null}
+            </div>
+          );
+        }}
+      </form.Field>
+
+      <form.Subscribe
+        selector={(state) => ({ isSubmitting: state.isSubmitting })}
+      >
+        {({ isSubmitting }) => (
+          <Button className="h-11 w-full" disabled={isSubmitting} type="submit">
+            {isSubmitting ? "Enviando enlace…" : "Enviar enlace mágico"}
+          </Button>
+        )}
+      </form.Subscribe>
+    </form>
+  );
 
   return (
-    <div className="mx-auto mt-10 w-full max-w-md p-6">
-      <h1 className="mb-6 text-center text-3xl font-bold">Welcome Back</h1>
+    <main className="bg-background flex min-h-svh w-full items-center justify-center px-8">
+      <div className="w-full max-w-md">
+        <h1 className="sr-only">Iniciar sesión en Gaia</h1>
 
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          form.handleSubmit();
-        }}
-        className="space-y-4"
-      >
-        <div>
-          <form.Field name="email">
-            {(field) => (
-              <div className="space-y-2">
-                <Label htmlFor={field.name}>Email</Label>
-                <Input
-                  id={field.name}
-                  name={field.name}
-                  type="email"
-                  value={field.state.value}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                />
-                {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-destructive">
-                    {error?.message}
-                  </p>
-                ))}
-              </div>
-            )}
-          </form.Field>
-        </div>
-
-        <div>
-          <form.Field name="password">
-            {(field) => (
-              <div className="space-y-2">
-                <Label htmlFor={field.name}>Password</Label>
-                <Input
-                  id={field.name}
-                  name={field.name}
-                  type="password"
-                  value={field.state.value}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                />
-                {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-destructive">
-                    {error?.message}
-                  </p>
-                ))}
-              </div>
-            )}
-          </form.Field>
-        </div>
-
-        <form.Subscribe
-          selector={(state) => ({
-            canSubmit: state.canSubmit,
-            isSubmitting: state.isSubmitting,
-          })}
-        >
-          {({ canSubmit, isSubmitting }) => (
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={!canSubmit || isSubmitting}
-            >
-              {isSubmitting ? "Submitting..." : "Sign In"}
-            </Button>
-          )}
-        </form.Subscribe>
-      </form>
-
-      <div className="mt-4 text-center">
-        <Button variant="link" onClick={onSwitchToSignUp}>
-          Need an account? Sign Up
-        </Button>
+        {errorMessage}
+        {authContent}
       </div>
-    </div>
+    </main>
   );
 }
