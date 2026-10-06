@@ -1,6 +1,7 @@
 interface MagicLinkEmailOptions {
   url: string;
   expiresIn?: string;
+  logoUrl?: string;
 }
 
 export interface MagicLinkEmailResult {
@@ -19,14 +20,20 @@ function escapeHtml(value: string): string {
 export function magicLinkEmail({
   url,
   expiresIn = "15 minutos",
+  logoUrl,
 }: MagicLinkEmailOptions) {
   const safeUrl = escapeHtml(url);
   const safeExpiresIn = escapeHtml(expiresIn);
+
+  const logo = logoUrl
+    ? `<img src="${escapeHtml(logoUrl)}" alt="Suni" height="40" style="display:block;margin:0 0 24px;height:40px;" />`
+    : "";
 
   const html = `<!DOCTYPE html>
 <html lang="es">
   <body style="margin:0;padding:40px 0;background:#F3F4F6;font-family:-apple-system,'Segoe UI',sans-serif;">
     <div style="max-width:480px;margin:0 auto;background:#FFFFFF;border-radius:16px;padding:40px 32px;">
+      ${logo}
       <h1 style="margin:0 0 16px;font-size:18px;color:#1F2937;">¡Hola!</h1>
       <p style="font-size:15px;line-height:24px;color:#6B7280;">
         Solicitaste acceder a tu cuenta en Suni. Este enlace expira en <strong>${safeExpiresIn}</strong>.
