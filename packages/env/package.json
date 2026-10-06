@@ -1,0 +1,16 @@
+{
+  "name": "@suni/env",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./auth": "./src/auth.ts"
+  },
+  "dependencies": {
+    "dotenv": "^18.0.5",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.4",
+    "typescript": "^7.0.2"
+  }
+}
