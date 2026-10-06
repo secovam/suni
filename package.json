@@ -38,6 +38,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@coderabbitai/config": "1.1.1",
     "@oxlint/plugins": "1.85.0",
     "@shadcn/lint": "^0.1.5",
     "@suni/config": "workspace:*",
