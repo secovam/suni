@@ -7,6 +7,10 @@ export const user = pgTable("user", {
   email: text("email").notNull().unique(),
   emailVerified: boolean("email_verified").default(false).notNull(),
   image: text("image"),
+  role: text("role"),
+  banned: boolean("banned").default(false),
+  banReason: text("ban_reason"),
+  banExpires: timestamp("ban_expires"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()
@@ -25,6 +29,7 @@ export const session = pgTable(
       .$onUpdate(() => new Date())
       .notNull(),
     ipAddress: text("ip_address"),
+    impersonatedBy: text("impersonated_by"),
     userAgent: text("user_agent"),
     userId: text("user_id")
       .notNull()
