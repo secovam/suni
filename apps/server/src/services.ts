@@ -1,10 +1,12 @@
 import { createAuth } from "@suni/auth";
-import { emailService } from "@suni/auth/services/email-service";
+import { createEmailService } from "@suni/auth/services/email-service";
 import { createDb } from "@suni/db";
 
 import { ENV } from "./env.server";
 
 export const db = createDb(ENV);
+
+const emailService = createEmailService(ENV);
 
 export const auth = createAuth(
   {
