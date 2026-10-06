@@ -24,7 +24,7 @@ build/** out/** env/** ENV/**
 
 # === Generated protobuf / codegen files ===
 
-**/_\_pb.d.ts \**/__pb.js **/_.pb.go \**/__pb2.py **/_\_pb2_grpc.py \**/__pb2.pyi **/_.grpc.swift \**/_.pb.swift **/_.sql.go \**/_.designer.cs **/_.g.dart \**/_.pb.dart **/_\_pb.rb \**/_.d.ts **/_.gen.ts \**/_.gen.tsx **/_.gen.js \**/_.gen.jsx
+**/_\_pb.d.ts \**/_\_pb.js \*_/*.pb.go \**/\_*pb2.py \**/_\_pb2_grpc.py \*_/\_*pb2.pyi \**/\*.grpc.swift \*_/_.pb.swift \*_/_.sql.go \**/*.designer.cs \*_/_.g.dart \*_/_.pb.dart \*_/_\_pb.rb \**/*.d.ts \*_/_.gen.ts \*_/_.gen.tsx \*_/*.gen.js \*_/_.gen.jsx
 
 # === Package manager files ===
 
@@ -76,4 +76,4 @@ build/** out/** env/** ENV/**
 
 # === Tests ===
 
-**/_\_test.go \**/_.test.ts **/_.test.tsx \**/_.test.js **/_.test.jsx \**/_.test.mjs **/_.test.cjs \**/_.test.mts **/_.test.cts \**/_.spec.ts **/_.spec.tsx \**/_.spec.js **/_.spec.jsx \**/_.spec.mjs **/_.spec.cjs \**/_.spec.mts **/_.spec.cts \**/_.e2e.ts **/_.e2e.tsx \**/_.e2e.js **/_.e2e.jsx \**/_.e2e.mjs **/_.e2e.cjs \**/_.integration.ts **/_.integration.tsx \**/_.integration.js **/_.integration.jsx \**/_.integration.mjs **/_.integration.cjs **/**tests**/** \**/test__.py **/*_test.py **/*Test.java **/*Tests.java **/*Spec.java **/*IT.java **/*ITCase.java **/*Test.kt **/*Tests.kt **/*Spec.kt **/_IT.kt \**/*ITCase.kt **/src/test/java/** **/src/test/kotlin/** **/src/androidTest/** **/src/integrationTest/** \**/*Tests.swift \**/*UITests.swift **/*Tests/** **/*UITests/** \**/tests/*.rs \**/**test.rs \**/test**.rs \**/*_test.rb \**/**spec.rb \**/test*_.rb **/test/** **/tests/** **/spec/** **/specs/** **/e2e/**
+**/_\_test.go \**/_.test.ts **/_.test.tsx \**/_.test.js **/_.test.jsx \**/_.test.mjs **/_.test.cjs \**/_.test.mts **/_.test.cts \**/_.spec.ts **/_.spec.tsx \**/_.spec.js **/_.spec.jsx \**/_.spec.mjs **/_.spec.cjs \**/_.spec.mts **/_.spec.cts \**/_.e2e.ts **/_.e2e.tsx \**/_.e2e.js **/_.e2e.jsx \**/_.e2e.mjs **/_.e2e.cjs \**/_.integration.ts **/_.integration.tsx \**/_.integration.js **/_.integration.jsx \**/_.integration.mjs **/_.integration.cjs **/**tests**/** \*_/test\__.py \*_/\__test.py \*_/_Test.java \*_/_Tests.java \*_/_Spec.java \*_/_IT.java \*_/_ITCase.java \*_/_Test.kt \**/*Tests.kt \**/*Spec.kt \**/\_IT.kt \*_/_ITCase.kt **/src/test/java/** **/src/test/kotlin/** **/src/androidTest/** **/src/integrationTest/** \*_/_Tests.swift \*_/_UITests.swift **/*Tests/** **/*UITests/** \**/tests/*.rs \*_/\*_test.rs \*_/test**.rs \*_/\__test.rb \**/\**spec.rb \**/test*_.rb **/test/** **/tests/** **/spec/** **/specs/** **/e2e/**
