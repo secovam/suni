@@ -15,6 +15,7 @@
     "db:push": "turbo run db:push -F @suni/db --",
     "db:studio": "turbo run db:studio -F @suni/db --",
     "db:generate": "turbo run db:generate -F @suni/db --",
+    "db:seed": "turbo run db:seed -F @suni/db --",
     "db:migrate": "turbo run db:migrate -F @suni/db --",
     "services:up": "docker compose -f docker-compose.dev.yml up -d --wait",
     "services:down": "docker compose -f docker-compose.dev.yml down",
