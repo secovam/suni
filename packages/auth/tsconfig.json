@@ -6,7 +6,10 @@
     "declarationMap": true,
     "emitDeclarationOnly": true,
     "outDir": "dist",
-    "strictNullChecks": true
+    "strictNullChecks": true,
+    "paths": {
+      "@/*": ["../../*"]
+    }
   },
   "include": ["src/**/*.ts"],
   "references": [{ "path": "../db" }]

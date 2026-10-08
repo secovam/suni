@@ -50,6 +50,13 @@ export default defineConfig({
       },
     },
     {
+      // CodeRabbit requires this exact filename.
+      files: [".coderabbit.config.ts"],
+      rules: {
+        "github/filenames-match-regex": "off",
+      },
+    },
+    {
       files: ["apps/web/src/components/**/*.{ts,tsx}"],
       rules: {
         "func-style": "off",

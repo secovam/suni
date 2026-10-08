@@ -2,142 +2,123 @@ import { Button } from "@suni/ui/components/button";
 import { Input } from "@suni/ui/components/input";
 import { Label } from "@suni/ui/components/label";
 import { useForm } from "@tanstack/react-form";
-import { useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
 import { authClient } from "@/lib/auth-client";
 
-import Loader from "./loader";
+function SentConfirmation({ onResend }: { onResend: () => void }) {
+  return (
+    <div className="space-y-4">
+      <output
+        aria-live="polite"
+        className="border-primary/20 bg-primary/5 block w-full rounded-lg border px-4 py-3 text-sm"
+      >
+        <p className="text-foreground leading-5 font-medium">
+          Si existe una cuenta con este correo, te enviamos un correo.
+        </p>
+      </output>
+      <Button className="h-11 w-full" onClick={onResend} variant="outline">
+        Enviar otro enlace
+      </Button>
+    </div>
+  );
+}
 
-export default function SignInForm({
-  onSwitchToSignUp,
-}: {
-  onSwitchToSignUp: () => void;
-}) {
-  const navigate = useNavigate({
-    from: "/",
-  });
-
-  const { isPending } = authClient.useSession();
-
+function EmailSignInForm({ onSent }: { onSent: () => void }) {
   const form = useForm({
-    defaultValues: {
-      email: "",
-      password: "",
-    },
-    onSubmit: async ({ value }) => {
-      await authClient.signIn.email(
-        {
+    defaultValues: { email: "" },
+    onSubmit: async ({ value }): Promise<void> => {
+      try {
+        const result = await authClient.signIn.magicLink({
+          callbackURL: window.location.origin,
           email: value.email,
-          password: value.password,
-        },
-        {
-          onSuccess: () => {
-            navigate({
-              to: "/dashboard",
-            });
-            toast.success("Sign in successful");
-          },
-          onError: (error) => {
-            toast.error(error.error.message || error.error.statusText);
-          },
-        }
-      );
-    },
-    validators: {
-      onSubmit: z.object({
-        email: z.email("Invalid email address"),
-        password: z.string().min(8, "Password must be at least 8 characters"),
-      }),
-    },
-  });
+          errorCallbackURL: `${window.location.origin}/auth-error`,
+        });
 
-  if (isPending) {
-    return <Loader />;
-  }
+        if (result.error) {
+          toast.error("No pudimos enviar el enlace. Intenta de nuevo.");
+
+          return;
+        }
+
+        onSent();
+        toast.success(
+          "Si existe una cuenta, recibirás un enlace en tu correo."
+        );
+      } catch {
+        toast.error("No pudimos enviar el enlace. Intenta de nuevo.");
+      }
+    },
+    validators: { onSubmit: z.object({ email: z.email("Correo inválido") }) },
+  });
 
   return (
-    <div className="mx-auto mt-10 w-full max-w-md p-6">
-      <h1 className="mb-6 text-center text-3xl font-bold">Welcome Back</h1>
+    <form className="space-y-6" onSubmit={form.handleSubmit}>
+      <form.Field name="email">
+        {(field) => {
+          const [error] = field.state.meta.errors;
+          const errorId = `${field.name}-error`;
 
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          form.handleSubmit();
+          return (
+            <div className="space-y-2">
+              <Label htmlFor={field.name}>Inicia sesión con tu correo</Label>
+              <Input
+                aria-describedby={error && errorId}
+                aria-invalid={Boolean(error)}
+                autoComplete="email"
+                className="h-11"
+                id={field.name}
+                name={field.name}
+                onBlur={field.handleBlur}
+                onChange={(event) => field.handleChange(event.target.value)}
+                placeholder="tu.correo@dominio.com"
+                spellCheck={false}
+                type="email"
+                value={field.state.value}
+              />
+              {error && (
+                <p
+                  className="text-destructive text-sm"
+                  id={errorId}
+                  role="alert"
+                >
+                  {error.message}
+                </p>
+              )}
+            </div>
+          );
         }}
-        className="space-y-4"
+      </form.Field>
+
+      <form.Subscribe
+        selector={(state) => ({ isSubmitting: state.isSubmitting })}
       >
-        <div>
-          <form.Field name="email">
-            {(field) => (
-              <div className="space-y-2">
-                <Label htmlFor={field.name}>Email</Label>
-                <Input
-                  id={field.name}
-                  name={field.name}
-                  type="email"
-                  value={field.state.value}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                />
-                {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-destructive">
-                    {error?.message}
-                  </p>
-                ))}
-              </div>
-            )}
-          </form.Field>
-        </div>
+        {({ isSubmitting }) => (
+          <Button className="h-11 w-full" disabled={isSubmitting} type="submit">
+            {isSubmitting ? "Enviando enlace..." : "Enviar enlace mágico"}
+          </Button>
+        )}
+      </form.Subscribe>
+    </form>
+  );
+}
 
-        <div>
-          <form.Field name="password">
-            {(field) => (
-              <div className="space-y-2">
-                <Label htmlFor={field.name}>Password</Label>
-                <Input
-                  id={field.name}
-                  name={field.name}
-                  type="password"
-                  value={field.state.value}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                />
-                {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-destructive">
-                    {error?.message}
-                  </p>
-                ))}
-              </div>
-            )}
-          </form.Field>
-        </div>
+export default function SignInForm() {
+  const [magicLinkSent, setMagicLinkSent] = useState(false);
 
-        <form.Subscribe
-          selector={(state) => ({
-            canSubmit: state.canSubmit,
-            isSubmitting: state.isSubmitting,
-          })}
-        >
-          {({ canSubmit, isSubmitting }) => (
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={!canSubmit || isSubmitting}
-            >
-              {isSubmitting ? "Submitting..." : "Sign In"}
-            </Button>
-          )}
-        </form.Subscribe>
-      </form>
-
-      <div className="mt-4 text-center">
-        <Button variant="link" onClick={onSwitchToSignUp}>
-          Need an account? Sign Up
-        </Button>
+  return (
+    <main className="bg-background flex min-h-svh w-full items-center justify-center px-8">
+      <div className="w-full max-w-md">
+        <h1 className="sr-only">Iniciar sesión en Suni</h1>
+        {magicLinkSent && (
+          <SentConfirmation onResend={() => setMagicLinkSent(false)} />
+        )}
+        {!magicLinkSent && (
+          <EmailSignInForm onSent={() => setMagicLinkSent(true)} />
+        )}
       </div>
-    </div>
+    </main>
   );
 }

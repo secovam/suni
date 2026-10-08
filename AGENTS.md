@@ -11,6 +11,7 @@ This is a TypeScript monorepo with a React/Vite web app, a Hono/oRPC server, and
 - Package manager: `pnpm`. The `packageManager` and `scripts` fields in [package.json](package.json) own versions and root commands.
 - Build all workspaces: `pnpm run build`.
 - Check types across workspaces: `pnpm run check-types`.
+- Pull requests: write the body with the sections of [.github/pull_request_template.md](.github/pull_request_template.md), in Spanish. `gh pr create --body` does not apply the template on its own.
 
 When the user asks for tests (see [Verification by change](docs/agents/testing.md)):
 
