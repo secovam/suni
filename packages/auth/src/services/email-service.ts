@@ -30,11 +30,11 @@ export function createEmailService(env: EmailConfig) {
       });
 
       log.info({
-        accepted: info.accepted,
+        acceptedCount: info.accepted?.length ?? 0,
         action: "magic-link",
         message: "Magic link email accepted by SMTP transport",
         messageId: info.messageId,
-        rejected: info.rejected,
+        rejectedCount: info.rejected?.length ?? 0,
         response: info.response,
       });
     } catch (error) {
@@ -42,7 +42,6 @@ export function createEmailService(env: EmailConfig) {
         action: "magic-link",
         error: error instanceof Error ? error : String(error),
         message: "Failed to send magic link email",
-        to: options.email,
       });
       throw error;
     }
