@@ -101,18 +101,7 @@ Ejecuta las herramientas independientes de Node o Bun que usan Varlock desde el 
 
 ## Despliegue
 
-### Docker Compose
-
-- Destino: web + server
-- Configuración: `docker-compose.yml` (los Dockerfiles de cada aplicación están en `apps/*/Dockerfile`)
-- Construir imágenes: `pnpm run docker:build`
-- Iniciar: `pnpm run docker:up`
-- Logs: `pnpm run docker:logs`
-- Detener: `pnpm run docker:down`
-
-Las variables de entorno se leen del archivo `.env` de cada aplicación (las variables públicas quedan incluidas en el build de web) y se sobrescriben en `docker-compose.yml` para la red de contenedores.
-
-Para más detalles, consulta la guía [Deploying with Docker Compose](https://www.better-t-stack.dev/docs/guides/docker).
+Despliega web, server y PostgreSQL con Dokploy y el Compose de `docker-compose.yml`. Sigue la [guía de despliegue con Dokploy e Infisical](docs/deployment/dokploy.md) para configurar el repositorio, los dominios, las variables y los respaldos.
 
 ## Estructura del proyecto
 

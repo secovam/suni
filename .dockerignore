@@ -18,8 +18,8 @@ Dockerfile
 **/Dockerfile
 docker-compose.yml
 
-# Env value files stay out of COPY layers; runtime env comes from compose env_file,
-# build-time configuration uses BuildKit secrets; public values use build args
+/.env
+/.env.*
 **/.env
 **/.env.*
 !**/.env.example
