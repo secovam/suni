@@ -3,6 +3,7 @@ import type { Database } from "@suni/db";
 import { account, session, user, verification } from "@suni/db/schema/auth";
 import { betterAuth } from "better-auth";
 import { admin, magicLink } from "better-auth/plugins";
+import { eq } from "drizzle-orm";
 
 const schema = { account, session, user, verification };
 
@@ -37,6 +38,16 @@ export function createAuth(
 ) {
   const isProduction = env.NODE_ENV === "production";
 
+  const userExists = async (email: string): Promise<boolean> => {
+    const [existingUser] = await database
+      .select({ id: user.id })
+      .from(user)
+      .where(eq(user.email, email))
+      .limit(1);
+
+    return existingUser !== undefined;
+  };
+
   return betterAuth({
     advanced: {
       defaultCookieAttributes: {
@@ -56,8 +67,14 @@ export function createAuth(
         disableSignUp: true,
         expiresIn: MAGIC_LINK_EXPIRES_IN_SECONDS,
         sendMagicLink: async ({ email, url }) => {
+          const normalizedEmail = email.trim().toLowerCase();
+
+          if (!(await userExists(normalizedEmail))) {
+            return;
+          }
+
           await env.sendMagicLink({
-            email,
+            email: normalizedEmail,
             expiresIn: "15 minutos",
             url,
           });
