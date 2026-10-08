@@ -38,7 +38,7 @@ export function createAuth(
 ) {
   const isProduction = env.NODE_ENV === "production";
 
-  const userExists = async (email: string): Promise<boolean> => {
+  async function userExists(email: string): Promise<boolean> {
     const [existingUser] = await database
       .select({ id: user.id })
       .from(user)
@@ -46,7 +46,7 @@ export function createAuth(
       .limit(1);
 
     return existingUser !== undefined;
-  };
+  }
 
   return betterAuth({
     advanced: {

@@ -18,7 +18,7 @@ const DEFAULT_ERROR: ErrorContent = {
   title: "No pudimos iniciar tu sesión",
 };
 
-const ERROR_CONTENT: Record<string, ErrorContent> = {
+const ERROR_CONTENT = {
   ATTEMPTS_EXCEEDED: {
     description:
       "Este enlace ya se usó demasiadas veces. Solicita uno nuevo para continuar.",
@@ -39,14 +39,20 @@ const ERROR_CONTENT: Record<string, ErrorContent> = {
       "No encontramos una cuenta asociada a este enlace. Si crees que es un error, contacta al administrador.",
     title: "Cuenta no disponible",
   },
-};
+} satisfies Record<string, ErrorContent>;
+
+type KnownErrorCode = keyof typeof ERROR_CONTENT;
+
+function isKnownErrorCode(error: string): error is KnownErrorCode {
+  return Object.hasOwn(ERROR_CONTENT, error);
+}
 
 function getErrorContent(error: string | undefined): ErrorContent {
-  if (!error) {
+  if (!error || !isKnownErrorCode(error)) {
     return DEFAULT_ERROR;
   }
 
-  return ERROR_CONTENT[error] ?? DEFAULT_ERROR;
+  return ERROR_CONTENT[error];
 }
 
 export const Route = createFileRoute("/auth-error")({
@@ -67,17 +73,15 @@ function AuthErrorPage(): ReactElement {
     <main className="bg-background flex min-h-svh w-full items-center justify-center px-8">
       <div className="w-full max-w-md space-y-6 text-center">
         <div className="space-y-2" role="alert">
-            <img
-                alt="Error"
-                className="mx-auto min-h-80 w-80"
-                src="/error-suni.png"            
-            />
+          <img
+            alt="Error"
+            className="mx-auto h-auto w-full max-w-80"
+            src="/error-suni.png"
+          />
           <h1 className="text-foreground text-xl font-semibold">
             {content.title}
           </h1>
-          <p className="text-muted-foreground text-sm">
-            {content.description}
-          </p>
+          <p className="text-muted-foreground text-sm">{content.description}</p>
         </div>
 
         <Button className="h-11 w-full" onClick={handleBack}>

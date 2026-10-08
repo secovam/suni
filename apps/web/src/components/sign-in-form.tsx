@@ -35,7 +35,9 @@ export default function SignInForm(): ReactElement {
         }
 
         setMagicLinkSent(true);
-        toast.success("Si existe una cuenta, recibirás un enlace en tu correo.");
+        toast.success(
+          "Si existe una cuenta, recibirás un enlace en tu correo."
+        );
       } catch {
         toast.error("No pudimos enviar el enlace. Intenta de nuevo.");
       }
