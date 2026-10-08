@@ -97,7 +97,7 @@ function EmailSignInForm({ onSent }: { onSent: () => void }) {
       >
         {({ isSubmitting }) => (
           <Button className="h-11 w-full" disabled={isSubmitting} type="submit">
-            {isSubmitting ? "Enviando enlace..." : "Enviar enlance mágico"}
+            {isSubmitting ? "Enviando enlace..." : "Enviar enlace mágico"}
           </Button>
         )}
       </form.Subscribe>
