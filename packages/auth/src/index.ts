@@ -1,11 +1,10 @@
 import { drizzleAdapter } from "@better-auth/drizzle-adapter/relations-v2";
 import type { Database } from "@suni/db";
-import { account, session, user, verification } from "@suni/db/schema/auth";
+// oxlint-disable-next-line sonarjs/no-wildcard-import
+import * as schema from "@suni/db/schema/auth";
 import { betterAuth } from "better-auth";
 import { admin, magicLink } from "better-auth/plugins";
 import { eq } from "drizzle-orm";
-
-const schema = { account, session, user, verification };
 
 const SECONDS_PER_MINUTE = 60;
 
@@ -17,18 +16,26 @@ const COOKIE_CACHE_MINUTES = 5;
 
 const MAGIC_LINK_EXPIRES_IN_SECONDS = 900;
 
-export interface SendMagicLinkParams {
-  email: string;
-  url: string;
-  expiresIn: string;
-}
-
 export interface AuthConfig {
   BETTER_AUTH_URL: string;
   BETTER_AUTH_SECRET: string;
   CORS_ORIGIN: string;
   NODE_ENV?: "development" | "production" | "test";
-  sendMagicLink: (params: SendMagicLinkParams) => Promise<void>;
+  sendMagicLink: (params: {
+    email: string;
+    url: string;
+    expiresIn: string;
+  }) => Promise<void>;
+}
+
+async function userExists(database: Database, email: string): Promise<boolean> {
+  const [existingUser] = await database
+    .select({ id: schema.user.id })
+    .from(schema.user)
+    .where(eq(schema.user.email, email))
+    .limit(1);
+
+  return existingUser !== undefined;
 }
 
 export function createAuth(
@@ -37,16 +44,6 @@ export function createAuth(
   desktopOrigins: readonly string[] = []
 ) {
   const isProduction = env.NODE_ENV === "production";
-
-  async function userExists(email: string): Promise<boolean> {
-    const [existingUser] = await database
-      .select({ id: user.id })
-      .from(user)
-      .where(eq(user.email, email))
-      .limit(1);
-
-    return existingUser !== undefined;
-  }
 
   return betterAuth({
     advanced: {
@@ -69,15 +66,13 @@ export function createAuth(
         sendMagicLink: async ({ email, url }) => {
           const normalizedEmail = email.trim().toLowerCase();
 
-          if (!(await userExists(normalizedEmail))) {
-            return;
+          if (await userExists(database, normalizedEmail)) {
+            await env.sendMagicLink({
+              email: normalizedEmail,
+              expiresIn: "15 minutos",
+              url,
+            });
           }
-
-          await env.sendMagicLink({
-            email: normalizedEmail,
-            expiresIn: "15 minutos",
-            url,
-          });
         },
       }),
     ],
@@ -103,6 +98,4 @@ export function createAuth(
   });
 }
 
-export type Auth = ReturnType<typeof createAuth>;
-
-export type Session = Auth["$Infer"]["Session"];
+export type Session = ReturnType<typeof createAuth>["$Infer"]["Session"];

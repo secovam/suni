@@ -3,24 +3,33 @@ import { Input } from "@suni/ui/components/input";
 import { Label } from "@suni/ui/components/label";
 import { useForm } from "@tanstack/react-form";
 import { useState } from "react";
-import type { FormEvent, ReactElement, ReactNode } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
 import { authClient } from "@/lib/auth-client";
 
-const magicLinkSchema = z.object({
-  email: z.email("Correo inválido"),
-});
+function SentConfirmation({ onResend }: { onResend: () => void }) {
+  return (
+    <div className="space-y-4">
+      <output
+        aria-live="polite"
+        className="border-primary/20 bg-primary/5 block w-full rounded-lg border px-4 py-3 text-sm"
+      >
+        <p className="text-foreground leading-5 font-medium">
+          Si existe una cuenta con este correo, te enviamos un correo.
+        </p>
+      </output>
+      <Button className="h-11 w-full" onClick={onResend} variant="outline">
+        Enviar otro enlace
+      </Button>
+    </div>
+  );
+}
 
-type MagicLinkValues = z.infer<typeof magicLinkSchema>;
-
-export default function SignInForm(): ReactElement {
-  const [magicLinkSent, setMagicLinkSent] = useState<boolean>(false);
-
+function EmailSignInForm({ onSent }: { onSent: () => void }) {
   const form = useForm({
-    defaultValues: { email: "" } satisfies MagicLinkValues,
-    onSubmit: async ({ value }: { value: MagicLinkValues }): Promise<void> => {
+    defaultValues: { email: "" },
+    onSubmit: async ({ value }): Promise<void> => {
       try {
         const result = await authClient.signIn.magicLink({
           callbackURL: window.location.origin,
@@ -34,7 +43,7 @@ export default function SignInForm(): ReactElement {
           return;
         }
 
-        setMagicLinkSent(true);
+        onSent();
         toast.success(
           "Si existe una cuenta, recibirás un enlace en tu correo."
         );
@@ -42,62 +51,22 @@ export default function SignInForm(): ReactElement {
         toast.error("No pudimos enviar el enlace. Intenta de nuevo.");
       }
     },
-    validators: { onSubmit: magicLinkSchema },
+    validators: { onSubmit: z.object({ email: z.email("Correo inválido") }) },
   });
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>): void => {
-    event.preventDefault();
-    void form.handleSubmit();
-  };
-
-  const handleResend = (): void => {
-    setMagicLinkSent(false);
-    form.reset();
-  };
-
-  const renderSentState = (): ReactNode => (
-    <div className="space-y-4">
-      <output
-        aria-live="polite"
-        className="border-primary/20 bg-primary/5 block w-full rounded-lg border px-4 py-3 text-sm"
-      >
-        <div className="space-y-1">
-          <p className="text-foreground leading-5 font-medium">
-            Si existe una cuenta con este correo, te enviamos un correo.
-          </p>
-        </div>
-      </output>
-      <Button className="h-11 w-full" onClick={handleResend} variant="outline">
-        Enviar otro enlace
-      </Button>
-    </div>
-  );
-
-  const renderForm = (): ReactNode => (
-    <form className="space-y-6" onSubmit={handleSubmit}>
+  return (
+    <form className="space-y-6" onSubmit={form.handleSubmit}>
       <form.Field name="email">
         {(field) => {
-          const hasError = field.state.meta.errors.length > 0;
+          const [error] = field.state.meta.errors;
           const errorId = `${field.name}-error`;
-
-          let describedBy: string | undefined;
-          let errorText: ReactNode = null;
-
-          if (hasError) {
-            describedBy = errorId;
-            errorText = (
-              <p className="text-destructive text-sm" id={errorId} role="alert">
-                {field.state.meta.errors[0]?.message}
-              </p>
-            );
-          }
 
           return (
             <div className="space-y-2">
               <Label htmlFor={field.name}>Inicia sesión con tu correo</Label>
               <Input
-                aria-describedby={describedBy}
-                aria-invalid={hasError}
+                aria-describedby={error && errorId}
+                aria-invalid={Boolean(error)}
                 autoComplete="email"
                 className="h-11"
                 id={field.name}
@@ -109,7 +78,15 @@ export default function SignInForm(): ReactElement {
                 type="email"
                 value={field.state.value}
               />
-              {errorText}
+              {error && (
+                <p
+                  className="text-destructive text-sm"
+                  id={errorId}
+                  role="alert"
+                >
+                  {error.message}
+                </p>
+              )}
             </div>
           );
         }}
@@ -118,41 +95,29 @@ export default function SignInForm(): ReactElement {
       <form.Subscribe
         selector={(state) => ({ isSubmitting: state.isSubmitting })}
       >
-        {({ isSubmitting }) => {
-          let label = "Enviar enlace mágico";
-
-          if (isSubmitting) {
-            label = "Enviando enlace…";
-          }
-
-          return (
-            <Button
-              className="h-11 w-full"
-              disabled={isSubmitting}
-              type="submit"
-            >
-              {label}
-            </Button>
-          );
-        }}
+        {({ isSubmitting }) => (
+          <Button className="h-11 w-full" disabled={isSubmitting} type="submit">
+            {isSubmitting ? "Enviando enlace..." : "Enviar enlance mágico"}
+          </Button>
+        )}
       </form.Subscribe>
     </form>
   );
+}
 
-  const renderAuthContent = (): ReactNode => {
-    if (magicLinkSent) {
-      return renderSentState();
-    }
-
-    return renderForm();
-  };
+export default function SignInForm() {
+  const [magicLinkSent, setMagicLinkSent] = useState(false);
 
   return (
     <main className="bg-background flex min-h-svh w-full items-center justify-center px-8">
       <div className="w-full max-w-md">
         <h1 className="sr-only">Iniciar sesión en Suni</h1>
-
-        {renderAuthContent()}
+        {magicLinkSent && (
+          <SentConfirmation onResend={() => setMagicLinkSent(false)} />
+        )}
+        {!magicLinkSent && (
+          <EmailSignInForm onSent={() => setMagicLinkSent(true)} />
+        )}
       </div>
     </main>
   );
