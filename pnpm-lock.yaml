@@ -366,9 +366,6 @@ importers:
       lucide-react:
         specifier: 'catalog:'
         version: 1.47.0(react@19.3.0)
-      next-themes:
-        specifier: 'catalog:'
-        version: 0.4.6(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       react:
         specifier: 'catalog:'
         version: 19.3.0
@@ -6998,33 +6995,12 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/parser@8.70.1(eslint@9.39.5(jiti@2.7.0)(supports-color@7.2.0))(supports-color@7.2.0)(typescript@7.0.2)':
-    dependencies:
-      '@typescript-eslint/scope-manager': 8.70.1
-      '@typescript-eslint/types': 8.70.1
-      '@typescript-eslint/typescript-estree': 8.70.1(supports-color@7.2.0)(typescript@7.0.2)
-      '@typescript-eslint/visitor-keys': 8.70.1
-      debug: 4.4.3(supports-color@7.2.0)
-      eslint: 9.39.5(jiti@2.7.0)(supports-color@7.2.0)
-      typescript: 7.0.2
-    transitivePeerDependencies:
-      - supports-color
-
   '@typescript-eslint/project-service@8.70.1(supports-color@7.2.0)(typescript@6.0.3)':
     dependencies:
       '@typescript-eslint/tsconfig-utils': 8.70.1(typescript@6.0.3)
       '@typescript-eslint/types': 8.70.1
       debug: 4.4.3(supports-color@7.2.0)
       typescript: 6.0.3
-    transitivePeerDependencies:
-      - supports-color
-
-  '@typescript-eslint/project-service@8.70.1(supports-color@7.2.0)(typescript@7.0.2)':
-    dependencies:
-      '@typescript-eslint/tsconfig-utils': 8.70.1(typescript@7.0.2)
-      '@typescript-eslint/types': 8.70.1
-      debug: 4.4.3(supports-color@7.2.0)
-      typescript: 7.0.2
     transitivePeerDependencies:
       - supports-color
 
@@ -7036,10 +7012,6 @@ snapshots:
   '@typescript-eslint/tsconfig-utils@8.70.1(typescript@6.0.3)':
     dependencies:
       typescript: 6.0.3
-
-  '@typescript-eslint/tsconfig-utils@8.70.1(typescript@7.0.2)':
-    dependencies:
-      typescript: 7.0.2
 
   '@typescript-eslint/type-utils@8.70.1(eslint@9.39.5(jiti@2.7.0)(supports-color@7.2.0))(supports-color@7.2.0)(typescript@6.0.3)':
     dependencies:
@@ -7067,21 +7039,6 @@ snapshots:
       tinyglobby: 0.2.17
       ts-api-utils: 2.5.0(typescript@6.0.3)
       typescript: 6.0.3
-    transitivePeerDependencies:
-      - supports-color
-
-  '@typescript-eslint/typescript-estree@8.70.1(supports-color@7.2.0)(typescript@7.0.2)':
-    dependencies:
-      '@typescript-eslint/project-service': 8.70.1(supports-color@7.2.0)(typescript@7.0.2)
-      '@typescript-eslint/tsconfig-utils': 8.70.1(typescript@7.0.2)
-      '@typescript-eslint/types': 8.70.1
-      '@typescript-eslint/visitor-keys': 8.70.1
-      debug: 4.4.3(supports-color@7.2.0)
-      minimatch: 10.2.6
-      semver: 7.8.5
-      tinyglobby: 0.2.17
-      ts-api-utils: 2.5.0(typescript@7.0.2)
-      typescript: 7.0.2
     transitivePeerDependencies:
       - supports-color
 
@@ -9887,10 +9844,6 @@ snapshots:
   ts-api-utils@2.5.0(typescript@6.0.3):
     dependencies:
       typescript: 6.0.3
-
-  ts-api-utils@2.5.0(typescript@7.0.2):
-    dependencies:
-      typescript: 7.0.2
 
   ts-morph@26.0.0:
     dependencies:
