@@ -2,6 +2,7 @@ import type { Transporter } from "nodemailer";
 import { createTransport } from "nodemailer";
 
 export interface EmailConfig {
+  NODE_ENV: "development" | "production" | "test";
   SMTP_FROM: string;
   SMTP_HOST: string;
   SMTP_PORT: number;
@@ -19,6 +20,7 @@ export function createEmailTransporter(env: EmailConfig): Transporter {
         : undefined,
     host: env.SMTP_HOST,
     port: env.SMTP_PORT,
+    requireTLS: env.NODE_ENV === "production" && !env.SMTP_SECURE,
     secure: env.SMTP_SECURE,
   });
 }
