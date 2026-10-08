@@ -1,13 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+import SignInForm from "@/components/sign-in-form";
+
 export const Route = createFileRoute("/")({
-  component: HomeComponent,
+  component: RouteComponent,
 });
 
-function HomeComponent() {
-  return (
-    <main className="grid min-h-svh place-items-center">
-      <h1>Suni</h1>
-    </main>
-  );
+function RouteComponent() {
+  return <SignInForm />;
 }
