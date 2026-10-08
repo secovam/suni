@@ -20,6 +20,7 @@ export default defineConfig({
       "!skills-lock.json",
       "!apps/web/src/routeTree.gen.ts",
       "!packages/db/src/migrations/**",
+      "!packages/ui/**",
     ],
     path_instructions: [
       {
