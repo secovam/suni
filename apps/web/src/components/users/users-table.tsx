@@ -3,6 +3,7 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@suni/ui/components/dropdown-menu";
 import { Input } from "@suni/ui/components/input";
@@ -14,6 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from "@suni/ui/components/table";
+import { Link } from "@tanstack/react-router";
 import {
   createColumnHelper,
   flexRender,
@@ -21,7 +23,15 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import type { PaginationState, VisibilityState } from "@tanstack/react-table";
-import { ChevronDown, Shield, User } from "lucide-react";
+import {
+  ChevronDown,
+  MonitorCheck,
+  MonitorX,
+  MoreHorizontal,
+  Pencil,
+  Shield,
+  User,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 
@@ -31,6 +41,10 @@ type UserRow = NonNullable<
   ReturnType<typeof useUsers>["data"]
 >["items"][number];
 
+interface UsersDataTableProps {
+  currentUserId?: string;
+}
+
 const PAGE_SIZE = 20;
 
 const columnHelper = createColumnHelper<UserRow>();
@@ -38,10 +52,10 @@ const columnHelper = createColumnHelper<UserRow>();
 const COLUMN_LABELS = {
   name: "Nombre",
   email: "Correo",
+  status: "Estatus",
   role: "Rol",
-  status: "Estado",
-  createdAt: "Fecha de alta",
-  updatedAt: "Última actualización",
+  createdAt: "Fecha de creación",
+  updatedAt: "Fecha de modificación",
 } satisfies Record<string, string>;
 
 const formatDate = (value: string | Date) =>
@@ -60,7 +74,29 @@ const columns = [
   }),
   columnHelper.accessor("email", {
     header: COLUMN_LABELS.email,
-    cell: (info) => info.getValue(),
+    cell: (info) => (
+      <Link
+        className="underline"
+        params={{ userId: info.row.original.id }}
+        to="/users/$userId/edit"
+      >
+        {info.getValue()}
+      </Link>
+    ),
+  }),
+  columnHelper.accessor("banned", {
+    id: "status",
+    header: COLUMN_LABELS.status,
+    cell: (info) =>
+      info.getValue() ? (
+        <span className="text-destructive flex items-center">
+          <MonitorX className="mr-2" /> Suspendido
+        </span>
+      ) : (
+        <span className="text-success flex items-center">
+          <MonitorCheck className="mr-2" /> Activo
+        </span>
+      ),
   }),
   columnHelper.accessor("role", {
     header: COLUMN_LABELS.role,
@@ -71,15 +107,9 @@ const columns = [
         </span>
       ) : (
         <span className="flex items-center">
-          <User className="mr-2" />
-          Usuario
+          <User className="mr-2" /> Usuario
         </span>
       ),
-  }),
-  columnHelper.accessor("banned", {
-    id: "status",
-    header: COLUMN_LABELS.status,
-    cell: (info) => (info.getValue() ? "Baneado" : "Activo"),
   }),
   columnHelper.accessor("createdAt", {
     header: COLUMN_LABELS.createdAt,
@@ -88,6 +118,31 @@ const columns = [
   columnHelper.accessor("updatedAt", {
     header: COLUMN_LABELS.updatedAt,
     cell: (info) => formatDate(info.getValue()),
+  }),
+  columnHelper.display({
+    id: "actions",
+    enableHiding: false,
+    cell: ({ row }) => (
+      <DropdownMenu>
+        <DropdownMenuTrigger render={<Button size="icon-sm" variant="ghost" />}>
+          <span className="sr-only">Abrir menú</span>
+          <MoreHorizontal />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem
+            render={
+              <Link
+                className="flex items-center"
+                params={{ userId: row.original.id }}
+                to="/users/$userId/edit"
+              />
+            }
+          >
+            <Pencil className="mr-2 h-4 w-4" /> Editar
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    ),
   }),
 ];
 
@@ -105,7 +160,7 @@ function useDebouncedValue<T>(value: T, delayMs: number): T {
   return debounced;
 }
 
-export function UsersDataTable() {
+export function UsersDataTable({ currentUserId }: UsersDataTableProps) {
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: PAGE_SIZE,
@@ -179,7 +234,10 @@ export function UsersDataTable() {
     );
   } else if (table.getRowModel().rows.length > 0) {
     tableBodyContent = table.getRowModel().rows.map((row) => (
-      <TableRow key={row.id}>
+      <TableRow
+        data-state={row.original.id === currentUserId ? "selected" : undefined}
+        key={row.id}
+      >
         {row.getVisibleCells().map((cell) => (
           <TableCell key={cell.id}>
             {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -198,7 +256,13 @@ export function UsersDataTable() {
   }
 
   return (
-    <div className="w-full">
+    <div className="mt-6 mb-8 w-full">
+      <div className="flex items-center">
+        <h2 className="text-lg font-semibold">Usuarios</h2>
+        <span className="bg-muted text-muted-foreground ml-2 rounded-full px-2 py-1 text-sm">
+          {total}
+        </span>
+      </div>
       <div className="flex items-center py-4">
         <Input
           className="max-w-sm"
