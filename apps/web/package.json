@@ -12,6 +12,7 @@
     "env:generate": "varlock codegen"
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.9.1",
     "@orpc/client": "catalog:",
     "@orpc/server": "catalog:",
     "@orpc/tanstack-query": "^1.15.0",
@@ -27,6 +28,7 @@
     "lucide-react": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
+    "react-hook-form": "^7.90.0",
     "sonner": "catalog:",
     "varlock": "catalog:",
     "zod": "catalog:"

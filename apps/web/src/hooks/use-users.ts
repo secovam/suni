@@ -21,6 +21,14 @@ export function useUsers(params: {
   );
 }
 
+export function useUser(id: string) {
+  return useQuery(
+    orpc.users.get.queryOptions({
+      input: { id },
+    })
+  );
+}
+
 export function useCreateUser() {
   const queryClient = useQueryClient();
 
