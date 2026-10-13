@@ -2,6 +2,8 @@ import { Button } from "@suni/ui/components/button";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { Plus, Users } from "lucide-react";
 
+import { UsersDataTable } from "@/components/users/users-table";
+
 export const Route = createFileRoute("/_auth/users/")({
   component: RouteComponent,
 });
@@ -40,6 +42,7 @@ function RouteComponent() {
           </Button>
         </div>
       </div>
+      <UsersDataTable />
     </div>
   );
 }
