@@ -10,6 +10,7 @@ export const Route = createFileRoute("/_auth/users/")({
 
 function RouteComponent() {
   const router = useRouter();
+  const { session } = Route.useRouteContext();
 
   const handleNewUser = () => {
     router.navigate({
@@ -42,7 +43,7 @@ function RouteComponent() {
           </Button>
         </div>
       </div>
-      <UsersDataTable />
+      <UsersDataTable currentUserId={session.data?.user.id} />
     </div>
   );
 }

@@ -1,9 +1,9 @@
+import { Badge } from "@suni/ui/components/badge";
 import { Button } from "@suni/ui/components/button";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@suni/ui/components/dropdown-menu";
 import { Input } from "@suni/ui/components/input";
@@ -27,14 +27,14 @@ import {
   ChevronDown,
   MonitorCheck,
   MonitorX,
-  MoreHorizontal,
   Pencil,
   Shield,
   User,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 
+import { ChangeUserStatusDialog } from "@/components/users/ban-user-dialog";
 import { useUsers } from "@/hooks/use-users";
 
 type UserRow = NonNullable<
@@ -50,101 +50,122 @@ const PAGE_SIZE = 20;
 const columnHelper = createColumnHelper<UserRow>();
 
 const COLUMN_LABELS = {
-  name: "Nombre",
+  name: "Usuario",
   email: "Correo",
-  status: "Estatus",
   role: "Rol",
-  createdAt: "Fecha de creación",
-  updatedAt: "Fecha de modificación",
+  status: "Estado",
 } satisfies Record<string, string>;
 
-const formatDate = (value: string | Date) =>
-  new Date(value).toLocaleDateString("es-MX", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+function isCurrentUser(
+  userId: string | number,
+  currentUserId?: string | number | null
+) {
+  return (
+    currentUserId !== undefined &&
+    currentUserId !== null &&
+    String(userId) === String(currentUserId)
+  );
+}
 
-const columns = [
-  columnHelper.accessor("name", {
-    header: COLUMN_LABELS.name,
-    cell: (info) => info.getValue(),
-  }),
-  columnHelper.accessor("email", {
-    header: COLUMN_LABELS.email,
-    cell: (info) => (
-      <Link
-        className="underline"
-        params={{ userId: info.row.original.id }}
-        to="/users/$userId/edit"
-      >
-        {info.getValue()}
-      </Link>
-    ),
-  }),
-  columnHelper.accessor("banned", {
-    id: "status",
-    header: COLUMN_LABELS.status,
-    cell: (info) =>
-      info.getValue() ? (
-        <span className="text-destructive flex items-center">
-          <MonitorX className="mr-2" /> Suspendido
-        </span>
-      ) : (
-        <span className="text-success flex items-center">
-          <MonitorCheck className="mr-2" /> Activo
+function RoleBadge({ role }: { role: string }) {
+  if (role === "admin") {
+    return (
+      <Badge variant="blue">
+        <Shield className="size-3.5" /> Admin
+      </Badge>
+    );
+  }
+
+  return (
+    <Badge variant="secondary">
+      <User className="size-3.5" /> Usuario
+    </Badge>
+  );
+}
+
+function StatusBadge({ banned }: { banned: boolean }) {
+  if (banned) {
+    return (
+      <Badge variant="destructive">
+        <MonitorX className="size-3.5" /> Suspendido
+      </Badge>
+    );
+  }
+
+  return (
+    <Badge variant="success">
+      <MonitorCheck className="size-3.5" /> Activo
+    </Badge>
+  );
+}
+
+function SelfBadge() {
+  return (
+    <Badge className="ml-2" variant="blue">
+      Tú
+    </Badge>
+  );
+}
+
+function createColumns(currentUserId?: string | number | null) {
+  return [
+    columnHelper.accessor("name", {
+      header: COLUMN_LABELS.name,
+      cell: (info) => (
+        <span className="flex items-center">
+          {info.getValue()}
+          {isCurrentUser(info.row.original.id, currentUserId) && <SelfBadge />}
         </span>
       ),
-  }),
-  columnHelper.accessor("role", {
-    header: COLUMN_LABELS.role,
-    cell: (info) =>
-      info.getValue() === "admin" ? (
-        <span className="flex items-center">
-          <Shield className="mr-2" /> Admin
-        </span>
-      ) : (
-        <span className="flex items-center">
-          <User className="mr-2" /> Usuario
-        </span>
+    }),
+    columnHelper.accessor("email", {
+      header: COLUMN_LABELS.email,
+      cell: (info) => (
+        <span className="text-muted-foreground">{info.getValue()}</span>
       ),
-  }),
-  columnHelper.accessor("createdAt", {
-    header: COLUMN_LABELS.createdAt,
-    cell: (info) => formatDate(info.getValue()),
-  }),
-  columnHelper.accessor("updatedAt", {
-    header: COLUMN_LABELS.updatedAt,
-    cell: (info) => formatDate(info.getValue()),
-  }),
-  columnHelper.display({
-    id: "actions",
-    enableHiding: false,
-    cell: ({ row }) => (
-      <DropdownMenu>
-        <DropdownMenuTrigger render={<Button size="icon-sm" variant="ghost" />}>
-          <span className="sr-only">Abrir menú</span>
-          <MoreHorizontal />
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem
-            render={
-              <Link
-                className="flex items-center"
-                params={{ userId: row.original.id }}
-                to="/users/$userId/edit"
-              />
-            }
-          >
-            <Pencil className="mr-2 h-4 w-4" /> Editar
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    ),
-  }),
-];
+    }),
+    columnHelper.accessor("role", {
+      header: COLUMN_LABELS.role,
+      cell: (info) => {
+        const role = info.getValue();
+
+        return role ? <RoleBadge role={role} /> : <span>-</span>;
+      },
+    }),
+    columnHelper.accessor("banned", {
+      id: "status",
+      header: COLUMN_LABELS.status,
+      cell: (info) => <StatusBadge banned={!!info.getValue()} />,
+    }),
+    columnHelper.display({
+      id: "actions",
+      enableHiding: false,
+      cell: ({ row }) => {
+        const user = row.original;
+        const isSelf = isCurrentUser(user.id, currentUserId);
+
+        return (
+          <div className="flex items-center justify-end gap-1">
+            <Button
+              className="text-muted-foreground hover:text-foreground"
+              nativeButton={false}
+              render={
+                <Link params={{ userId: user.id }} to="/users/$userId/edit" />
+              }
+              size="icon-sm"
+              title="Editar usuario"
+              variant="ghost"
+            >
+              <Pencil className="size-4" />
+              <span className="sr-only">Editar</span>
+            </Button>
+            <ChangeUserStatusDialog disabled={isSelf} user={user} />
+          </div>
+        );
+      },
+    }),
+  ];
+}
 
 const EMPTY: UserRow[] = [];
 
@@ -178,6 +199,8 @@ export function UsersDataTable({ currentUserId }: UsersDataTableProps) {
 
   const total = users.data?.total ?? 0;
   const pageCount = Math.max(1, Math.ceil(total / pagination.pageSize));
+
+  const columns = useMemo(() => createColumns(currentUserId), [currentUserId]);
 
   // TanStack Table devuelve funciones no memoizables; React Compiler ya omite
   // este componente y no pasamos `table` a hijos memoizados.
@@ -233,18 +256,19 @@ export function UsersDataTable({ currentUserId }: UsersDataTableProps) {
       </TableRow>
     );
   } else if (table.getRowModel().rows.length > 0) {
-    tableBodyContent = table.getRowModel().rows.map((row) => (
-      <TableRow
-        data-state={row.original.id === currentUserId ? "selected" : undefined}
-        key={row.id}
-      >
-        {row.getVisibleCells().map((cell) => (
-          <TableCell key={cell.id}>
-            {flexRender(cell.column.columnDef.cell, cell.getContext())}
-          </TableCell>
-        ))}
-      </TableRow>
-    ));
+    tableBodyContent = table.getRowModel().rows.map((row) => {
+      const isSelf = isCurrentUser(row.original.id, currentUserId);
+
+      return (
+        <TableRow data-state={isSelf ? "selected" : undefined} key={row.id}>
+          {row.getVisibleCells().map((cell) => (
+            <TableCell key={cell.id}>
+              {flexRender(cell.column.columnDef.cell, cell.getContext())}
+            </TableCell>
+          ))}
+        </TableRow>
+      );
+    });
   } else {
     tableBodyContent = (
       <TableRow>
