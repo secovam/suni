@@ -1,4 +1,6 @@
 import { ORPCError, os } from "@orpc/server";
+import { user } from "@suni/db/schema/auth";
+import { eq } from "drizzle-orm";
 
 import type { Context } from "./context";
 
@@ -20,10 +22,18 @@ const requireAuth = o.middleware(({ context, next }) => {
 
 export const protectedProcedure = publicProcedure.use(requireAuth);
 
-export const adminProcedure = protectedProcedure.use(({ context, next }) => {
-  if (context.session.user.role !== "admin") {
-    throw new ORPCError("FORBIDDEN");
-  }
+export const adminProcedure = protectedProcedure.use(
+  async ({ context, next }) => {
+    const [currentUser] = await context.db
+      .select({ role: user.role })
+      .from(user)
+      .where(eq(user.id, context.session.user.id))
+      .limit(1);
 
-  return next();
-});
+    if (currentUser?.role !== "admin") {
+      throw new ORPCError("FORBIDDEN");
+    }
+
+    return next();
+  }
+);
