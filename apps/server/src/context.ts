@@ -10,12 +10,13 @@ export interface CreateContextOptions {
 export async function createContext({
   context,
 }: CreateContextOptions): Promise<ApiContext> {
-  const session = await auth.api.getSession({
-    headers: context.req.raw.headers,
-  });
+  const { headers } = context.req.raw;
+  const session = await auth.api.getSession({ headers });
 
   return {
+    auth,
     db,
+    headers,
     session,
   };
 }

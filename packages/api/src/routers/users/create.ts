@@ -1,9 +1,8 @@
-import { ORPCError } from "@orpc/server";
-import { user } from "@suni/db/schema/auth";
-import { eq } from "drizzle-orm";
+import { APIError } from "@suni/auth";
 import { z } from "zod";
 
 import { adminProcedure } from "../../index";
+import { toORPCError } from "./errors";
 import { role } from "./role";
 
 export const create = adminProcedure
@@ -16,28 +15,18 @@ export const create = adminProcedure
     })
   )
   .handler(async ({ input, context }) => {
-    const [existingUser] = await context.db
-      .select({ id: user.id })
-      .from(user)
-      .where(eq(user.email, input.email))
-      .limit(1);
-
-    if (existingUser) {
-      throw new ORPCError("CONFLICT", {
-        message: "Un usuario con ese correo ya existe",
+    try {
+      const { user } = await context.auth.api.createUser({
+        body: { ...input, data: { emailVerified: true } },
+        headers: context.headers,
       });
+
+      return user;
+    } catch (error) {
+      if (error instanceof APIError) {
+        throw toORPCError(error);
+      }
+
+      throw error;
     }
-
-    const [createdUser] = await context.db
-      .insert(user)
-      .values({
-        id: crypto.randomUUID(),
-        name: input.name,
-        email: input.email,
-        emailVerified: true,
-        role: input.role,
-      })
-      .returning();
-
-    return createdUser;
   });

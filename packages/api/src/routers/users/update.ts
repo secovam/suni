@@ -1,9 +1,9 @@
 import { ORPCError } from "@orpc/server";
-import { user } from "@suni/db/schema/auth";
-import { and, eq, ne } from "drizzle-orm";
+import { APIError } from "@suni/auth";
 import { z } from "zod";
 
 import { adminProcedure } from "../../index";
+import { toORPCError } from "./errors";
 import { role } from "./role";
 
 export const update = adminProcedure
@@ -18,35 +18,24 @@ export const update = adminProcedure
     })
   )
   .handler(async ({ input, context }) => {
-    const { id, ...values } = input;
+    const { id, ...data } = input;
 
-    if (Object.values(values).every((v) => v === undefined)) {
+    if (Object.values(data).every((v) => v === undefined)) {
       throw new ORPCError("BAD_REQUEST", {
         message: "No hay campos para actualizar",
       });
     }
 
-    if (values.email) {
-      const [taken] = await context.db
-        .select({ id: user.id })
-        .from(user)
-        .where(and(eq(user.email, values.email), ne(user.id, id)))
-        .limit(1);
-
-      if (taken) {
-        throw new ORPCError("CONFLICT", { message: "El correo ya existe" });
+    try {
+      return await context.auth.api.adminUpdateUser({
+        body: { userId: id, data },
+        headers: context.headers,
+      });
+    } catch (error) {
+      if (error instanceof APIError) {
+        throw toORPCError(error);
       }
+
+      throw error;
     }
-
-    const [updated] = await context.db
-      .update(user)
-      .set(values)
-      .where(eq(user.id, id))
-      .returning();
-
-    if (!updated) {
-      throw new ORPCError("NOT_FOUND");
-    }
-
-    return updated;
   });

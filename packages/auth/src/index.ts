@@ -98,4 +98,8 @@ export function createAuth(
   });
 }
 
-export type Session = ReturnType<typeof createAuth>["$Infer"]["Session"];
+export { APIError } from "better-auth";
+
+export type Auth = ReturnType<typeof createAuth>;
+
+export type Session = Auth["$Infer"]["Session"];
