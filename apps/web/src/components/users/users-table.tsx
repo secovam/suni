@@ -32,7 +32,6 @@ import {
   User,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import type { ReactNode } from "react";
 
 import { ChangeUserStatusDialog } from "@/components/users/ban-user-dialog";
 import { useUsers } from "@/hooks/use-users";
@@ -56,18 +55,7 @@ const COLUMN_LABELS = {
   status: "Estado",
 } satisfies Record<string, string>;
 
-function isCurrentUser(
-  userId: string | number,
-  currentUserId?: string | number | null
-) {
-  return (
-    currentUserId !== undefined &&
-    currentUserId !== null &&
-    String(userId) === String(currentUserId)
-  );
-}
-
-function RoleBadge({ role }: { role: string }) {
+function RoleBadge({ role }: { role: string | null }) {
   if (role === "admin") {
     return (
       <Badge variant="blue">
@@ -99,22 +87,18 @@ function StatusBadge({ banned }: { banned: boolean }) {
   );
 }
 
-function SelfBadge() {
-  return (
-    <Badge className="ml-2" variant="blue">
-      Tú
-    </Badge>
-  );
-}
-
-function createColumns(currentUserId?: string | number | null) {
+function createColumns(currentUserId?: string) {
   return [
     columnHelper.accessor("name", {
       header: COLUMN_LABELS.name,
       cell: (info) => (
         <span className="flex items-center">
           {info.getValue()}
-          {isCurrentUser(info.row.original.id, currentUserId) && <SelfBadge />}
+          {info.row.original.id === currentUserId && (
+            <Badge className="ml-2" variant="blue">
+              Tú
+            </Badge>
+          )}
         </span>
       ),
     }),
@@ -126,11 +110,7 @@ function createColumns(currentUserId?: string | number | null) {
     }),
     columnHelper.accessor("role", {
       header: COLUMN_LABELS.role,
-      cell: (info) => {
-        const role = info.getValue();
-
-        return role ? <RoleBadge role={role} /> : <span>-</span>;
-      },
+      cell: (info) => <RoleBadge role={info.getValue()} />,
     }),
     columnHelper.accessor("banned", {
       id: "status",
@@ -142,7 +122,6 @@ function createColumns(currentUserId?: string | number | null) {
       enableHiding: false,
       cell: ({ row }) => {
         const user = row.original;
-        const isSelf = isCurrentUser(user.id, currentUserId);
 
         return (
           <div className="flex items-center justify-end gap-1">
@@ -159,7 +138,10 @@ function createColumns(currentUserId?: string | number | null) {
               <Pencil className="size-4" />
               <span className="sr-only">Editar</span>
             </Button>
-            <ChangeUserStatusDialog disabled={isSelf} user={user} />
+            <ChangeUserStatusDialog
+              disabled={user.id === currentUserId}
+              user={user}
+            />
           </div>
         );
       },
@@ -219,64 +201,15 @@ export function UsersDataTable({ currentUserId }: UsersDataTableProps) {
     },
   });
 
-  const columnToggles: ReactNode[] = [];
-
-  for (const [id, label] of Object.entries(COLUMN_LABELS)) {
-    const column = table.getColumn(id);
-
-    if (column?.getCanHide()) {
-      columnToggles.push(
-        <DropdownMenuCheckboxItem
-          checked={column.getIsVisible()}
-          key={id}
-          onCheckedChange={(value) => column.toggleVisibility(!!value)}
-        >
-          {label}
-        </DropdownMenuCheckboxItem>
-      );
-    }
-  }
-
-  let tableBodyContent;
+  const { rows } = table.getRowModel();
+  let statusMessage: string | undefined;
 
   if (users.isPending) {
-    tableBodyContent = (
-      <TableRow>
-        <TableCell className="h-24 text-center" colSpan={columns.length}>
-          Cargando...
-        </TableCell>
-      </TableRow>
-    );
+    statusMessage = "Cargando...";
   } else if (users.isError) {
-    tableBodyContent = (
-      <TableRow>
-        <TableCell className="h-24 text-center" colSpan={columns.length}>
-          No se pudieron cargar los usuarios.
-        </TableCell>
-      </TableRow>
-    );
-  } else if (table.getRowModel().rows.length > 0) {
-    tableBodyContent = table.getRowModel().rows.map((row) => {
-      const isSelf = isCurrentUser(row.original.id, currentUserId);
-
-      return (
-        <TableRow data-state={isSelf ? "selected" : undefined} key={row.id}>
-          {row.getVisibleCells().map((cell) => (
-            <TableCell key={cell.id}>
-              {flexRender(cell.column.columnDef.cell, cell.getContext())}
-            </TableCell>
-          ))}
-        </TableRow>
-      );
-    });
-  } else {
-    tableBodyContent = (
-      <TableRow>
-        <TableCell className="h-24 text-center" colSpan={columns.length}>
-          No se encontraron resultados.
-        </TableCell>
-      </TableRow>
-    );
+    statusMessage = "No se pudieron cargar los usuarios.";
+  } else if (rows.length === 0) {
+    statusMessage = "No se encontraron resultados.";
   }
 
   return (
@@ -303,7 +236,23 @@ export function UsersDataTable({ currentUserId }: UsersDataTableProps) {
           >
             Columnas <ChevronDown className="ml-2 h-4 w-4" />
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">{columnToggles}</DropdownMenuContent>
+          <DropdownMenuContent align="end">
+            {Object.entries(COLUMN_LABELS).map(([id, label]) => {
+              const column = table.getColumn(id);
+
+              return (
+                column && (
+                  <DropdownMenuCheckboxItem
+                    checked={column.getIsVisible()}
+                    key={id}
+                    onCheckedChange={(value) => column.toggleVisibility(value)}
+                  >
+                    {label}
+                  </DropdownMenuCheckboxItem>
+                )
+              );
+            })}
+          </DropdownMenuContent>
         </DropdownMenu>
       </div>
       <div
@@ -326,12 +275,41 @@ export function UsersDataTable({ currentUserId }: UsersDataTableProps) {
               </TableRow>
             ))}
           </TableHeader>
-          <TableBody>{tableBodyContent}</TableBody>
+          <TableBody>
+            {statusMessage ? (
+              <TableRow>
+                <TableCell
+                  className="h-24 text-center"
+                  colSpan={columns.length}
+                >
+                  {statusMessage}
+                </TableCell>
+              </TableRow>
+            ) : (
+              rows.map((row) => (
+                <TableRow
+                  data-state={
+                    row.original.id === currentUserId ? "selected" : undefined
+                  }
+                  key={row.id}
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            )}
+          </TableBody>
         </Table>
       </div>
       <div className="flex items-center justify-between py-4">
         <span className="text-muted-foreground text-sm">
-          Página {pagination.pageIndex + 1} de {pageCount} · {total} usuarios
+          Página {pagination.pageIndex + 1} de {pageCount}
         </span>
         <div className="flex items-center space-x-2">
           <Button
