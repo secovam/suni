@@ -18,14 +18,6 @@ export function useListUsers(params: AppRouterInputs["users"]["list"]) {
   );
 }
 
-export function useGetUser(id: string) {
-  return useQuery(
-    orpc.users.get.queryOptions({
-      input: { id },
-    })
-  );
-}
-
 export function useCreateUser() {
   const queryClient = useQueryClient();
 

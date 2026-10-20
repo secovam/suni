@@ -1,36 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Loader2, UserPen } from "lucide-react";
+import { UserPen } from "lucide-react";
 
 import { UserForm } from "@/components/users/user-form";
-import { useGetUser } from "@/hooks/use-users";
 
 export const Route = createFileRoute("/_auth/users/$userId/edit")({
+  loader: ({ context: { orpc, queryClient }, params: { userId } }) =>
+    queryClient.query(orpc.users.get.queryOptions({ input: { id: userId } })),
   component: RouteComponent,
+  errorComponent: () => (
+    <p className="text-destructive p-6 text-sm">
+      No se pudo cargar el usuario.
+    </p>
+  ),
 });
 
 function RouteComponent() {
-  const { userId } = Route.useParams();
-  const { data: user, isPending, isError } = useGetUser(userId);
-
-  const renderContent = () => {
-    if (isPending) {
-      return (
-        <div className="flex justify-center py-12">
-          <Loader2 className="text-muted-foreground h-6 w-6 animate-spin" />
-        </div>
-      );
-    }
-
-    if (isError || !user) {
-      return (
-        <p className="text-destructive text-sm">
-          No se pudo cargar el usuario.
-        </p>
-      );
-    }
-
-    return <UserForm key={user.id} user={user} />;
-  };
+  const user = Route.useLoaderData();
 
   return (
     <div className="flex flex-col gap-6 p-6">
@@ -48,7 +33,7 @@ function RouteComponent() {
         </div>
       </div>
 
-      {renderContent()}
+      <UserForm user={user} />
     </div>
   );
 }
