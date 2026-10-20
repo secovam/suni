@@ -26,6 +26,16 @@ export const update = adminProcedure
       });
     }
 
+    if (
+      id === context.session.user.id &&
+      data.role !== undefined &&
+      data.role !== "admin"
+    ) {
+      throw new ORPCError("FORBIDDEN", {
+        message: "No puedes quitarte el rol de administrador",
+      });
+    }
+
     try {
       return await context.auth.api.adminUpdateUser({
         body: { userId: id, data },
