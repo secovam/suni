@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { User } from "lucide-react";
 
-import { FormUser } from "@/components/users/user-form";
+import { UserForm } from "@/components/users/user-form";
 
 export const Route = createFileRoute("/_auth/users/new")({
   component: RouteComponent,
@@ -23,7 +23,7 @@ function RouteComponent() {
           </p>
         </div>
       </div>
-      <FormUser />
+      <UserForm />
     </div>
   );
 }

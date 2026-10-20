@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Loader2, UserPen } from "lucide-react";
 
-import { FormUser } from "@/components/users/user-form";
+import { UserForm } from "@/components/users/user-form";
 import { useGetUser } from "@/hooks/use-users";
 
 export const Route = createFileRoute("/_auth/users/$userId/edit")({
@@ -29,7 +29,7 @@ function RouteComponent() {
       );
     }
 
-    return <FormUser key={user.id} user={user} />;
+    return <UserForm key={user.id} user={user} />;
   };
 
   return (
