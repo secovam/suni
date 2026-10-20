@@ -16,6 +16,7 @@
     "@orpc/zod": "catalog:",
     "@suni/auth": "workspace:*",
     "@suni/db": "workspace:*",
+    "drizzle-orm": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {

@@ -15,7 +15,7 @@
     "@suni/db": "workspace:*",
     "better-auth": "catalog:",
     "drizzle-orm": "catalog:",
-    "evlog": "^2.30.0",
+    "evlog": "catalog:",
     "nodemailer": "^10.0.14",
     "zod": "catalog:"
   },

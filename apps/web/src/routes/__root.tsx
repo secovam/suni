@@ -1,3 +1,4 @@
+import { Toaster } from "@suni/ui/components/sonner";
 import type { QueryClient } from "@tanstack/react-query";
 import {
   HeadContent,
@@ -30,6 +31,7 @@ function RootComponent() {
     <>
       <HeadContent />
       <Outlet />
+      <Toaster />
     </>
   );
 }
