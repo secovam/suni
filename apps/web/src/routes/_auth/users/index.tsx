@@ -1,5 +1,5 @@
 import { Button } from "@suni/ui/components/button";
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import { Plus, Users } from "lucide-react";
 
 import { UsersDataTable } from "@/components/users/users-table";
@@ -9,14 +9,7 @@ export const Route = createFileRoute("/_auth/users/")({
 });
 
 function RouteComponent() {
-  const router = useRouter();
   const { session } = Route.useRouteContext();
-
-  const handleNewUser = () => {
-    router.navigate({
-      to: "/users/new",
-    });
-  };
 
   return (
     <div className="flex flex-col gap-6 p-6">
@@ -35,7 +28,8 @@ function RouteComponent() {
         <div className="flex items-center gap-2">
           <Button
             className="w-full sm:w-auto"
-            onClick={handleNewUser}
+            nativeButton={false}
+            render={<Link to="/users/new" />}
             variant="green"
           >
             <Plus className="mr-2 h-4 w-4" />
