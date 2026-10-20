@@ -61,17 +61,15 @@ export const usersRouter = {
     .input(
       z.object({
         name: z.string().min(2),
-        email: z.email(),
+        email: z.email().toLowerCase(),
         role: role.default("user"),
       })
     )
     .handler(async ({ input, context }) => {
-      const email = input.email.trim().toLowerCase();
-
       const [existing] = await context.db
         .select({ id: user.id })
         .from(user)
-        .where(eq(user.email, email))
+        .where(eq(user.email, input.email))
         .limit(1);
 
       if (existing) {
@@ -83,7 +81,7 @@ export const usersRouter = {
         .values({
           id: crypto.randomUUID(),
           name: input.name,
-          email,
+          email: input.email,
           emailVerified: true,
           role: input.role,
         })
@@ -98,19 +96,13 @@ export const usersRouter = {
       z.object({
         id: z.string(),
         name: z.string().min(2).optional(),
-        email: z.email().optional(),
+        email: z.email().toLowerCase().optional(),
         image: z.url().nullable().optional(),
         role: role.optional(),
       })
     )
     .handler(async ({ input, context }) => {
-      const { id, email, ...data } = input;
-
-      const values: typeof data & { email?: string } = { ...data };
-
-      if (email) {
-        values.email = email.trim().toLowerCase();
-      }
+      const { id, ...values } = input;
 
       if (Object.values(values).every((v) => v === undefined)) {
         throw new ORPCError("BAD_REQUEST", {
