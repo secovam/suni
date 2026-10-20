@@ -21,7 +21,7 @@ import type { PaginationState } from "@tanstack/react-table";
 import { MonitorCheck, MonitorX, Pencil, Shield, User } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
-import { ChangeUserStatusDialog } from "@/components/users/ban-user-dialog";
+import { ChangeUserStatusDialog } from "@/components/users/change-user-status-dialog";
 import { useListUsers } from "@/hooks/use-users";
 
 type UserRow = AppRouterOutputs["users"]["list"]["items"][number];
