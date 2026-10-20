@@ -1,4 +1,4 @@
-import type { RouterClient } from "@orpc/server";
+import type { InferRouterInputs, RouterClient } from "@orpc/server";
 
 import { protectedProcedure, publicProcedure } from "../index";
 import { usersRouter } from "./users";
@@ -15,3 +15,5 @@ export const appRouter = {
 export type AppRouter = typeof appRouter;
 
 export type AppRouterClient = RouterClient<typeof appRouter>;
+
+export type AppRouterInputs = InferRouterInputs<AppRouter>;

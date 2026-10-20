@@ -1,3 +1,4 @@
+import type { AppRouterInputs } from "@suni/api/routers/index";
 import {
   keepPreviousData,
   useMutation,
@@ -8,11 +9,7 @@ import { toast } from "sonner";
 
 import { orpc } from "@/utils/orpc";
 
-export function useUsers(params: {
-  limit?: number;
-  offset?: number;
-  search?: string;
-}) {
+export function useUsers(params: AppRouterInputs["users"]["list"]) {
   return useQuery(
     orpc.users.list.queryOptions({
       input: params,
@@ -34,9 +31,9 @@ export function useCreateUser() {
 
   return useMutation(
     orpc.users.create.mutationOptions({
-      onSuccess: () => {
+      onSuccess: async () => {
         toast.success("Usuario creado");
-        queryClient.invalidateQueries({ queryKey: orpc.users.key() });
+        await queryClient.invalidateQueries({ queryKey: orpc.users.key() });
       },
       onError: (error) => toast.error(error.message),
     })
@@ -48,9 +45,9 @@ export function useUpdateUser() {
 
   return useMutation(
     orpc.users.update.mutationOptions({
-      onSuccess: () => {
+      onSuccess: async () => {
         toast.success("Usuario actualizado");
-        queryClient.invalidateQueries({ queryKey: orpc.users.key() });
+        await queryClient.invalidateQueries({ queryKey: orpc.users.key() });
       },
       onError: (error) => toast.error(error.message),
     })
