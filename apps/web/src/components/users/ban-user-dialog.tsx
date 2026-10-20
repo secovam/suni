@@ -87,7 +87,7 @@ export function ChangeUserStatusDialog({
             disabled={disabled}
             size="icon-sm"
             title={disabled ? "No puedes cambiar tu propio estado" : label}
-            variant={isBanned ? "outlineGreen" : "outlineDestructive"}
+            variant={isBanned ? "outline-green" : "outline-destructive"}
           />
         }
       >

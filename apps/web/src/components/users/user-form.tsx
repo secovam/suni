@@ -141,7 +141,7 @@ export function FormUser({ user }: FormUserProps) {
               disabled={submitting}
               nativeButton={false}
               render={<Link to="/users" />}
-              variant="outlineDestructive"
+              variant="outline-destructive"
             >
               Cancelar
             </Button>

@@ -19,9 +19,9 @@ const buttonVariants = cva(
         link: "text-primary underline-offset-4 hover:underline",
         green:
           "bg-success text-white shadow transition-colors duration-400 hover:bg-success/80 active:bg-success-pressed",
-        outlineGreen:
+        "outline-green":
           "border border-success text-success hover:bg-success/10 duration-500 active:bg-success-pressed active:text-white",
-        outlineDestructive:
+        "outline-destructive":
           "border border-danger text-danger hover:bg-danger/10 duration-500 active:bg-danger-dark active:text-white",
         blue: "bg-brand text-white shadow transition-colors duration-400 hover:bg-brand/80 active:bg-brand-dark",
       },
