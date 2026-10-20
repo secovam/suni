@@ -144,6 +144,7 @@ function createColumns(currentUserId?: string) {
   ];
 }
 
+// Referencia estable para que TanStack Table no trate cada render como datos nuevos.
 const EMPTY: UserRow[] = [];
 
 function useDebouncedValue<T>(value: T, delayMs: number): T {
