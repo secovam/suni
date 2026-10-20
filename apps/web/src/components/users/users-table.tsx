@@ -39,10 +39,6 @@ import { useListUsers } from "@/hooks/use-users";
 
 type UserRow = AppRouterOutputs["users"]["list"]["items"][number];
 
-interface UsersDataTableProps {
-  currentUserId?: string;
-}
-
 const PAGE_SIZE = 20;
 
 const columnHelper = createColumnHelper<UserRow>();
@@ -160,6 +156,10 @@ function useDebouncedValue<T>(value: T, delayMs: number): T {
   }, [value, delayMs]);
 
   return debounced;
+}
+
+interface UsersDataTableProps {
+  currentUserId?: string;
 }
 
 export function UsersDataTable({ currentUserId }: UsersDataTableProps) {
