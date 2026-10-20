@@ -9,7 +9,7 @@ import { toast } from "sonner";
 
 import { orpc } from "@/utils/orpc";
 
-export function useUsers(params: AppRouterInputs["users"]["list"]) {
+export function useListUsers(params: AppRouterInputs["users"]["list"]) {
   return useQuery(
     orpc.users.list.queryOptions({
       input: params,
@@ -18,7 +18,7 @@ export function useUsers(params: AppRouterInputs["users"]["list"]) {
   );
 }
 
-export function useUser(id: string) {
+export function useGetUser(id: string) {
   return useQuery(
     orpc.users.get.queryOptions({
       input: { id },

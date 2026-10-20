@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Loader2, UserPen } from "lucide-react";
 
 import { FormUser } from "@/components/users/user-form";
-import { useUser } from "@/hooks/use-users";
+import { useGetUser } from "@/hooks/use-users";
 
 export const Route = createFileRoute("/_auth/users/$userId/edit")({
   component: RouteComponent,
@@ -10,7 +10,7 @@ export const Route = createFileRoute("/_auth/users/$userId/edit")({
 
 function RouteComponent() {
   const { userId } = Route.useParams();
-  const { data: user, isPending, isError } = useUser(userId);
+  const { data: user, isPending, isError } = useGetUser(userId);
 
   const renderContent = () => {
     if (isPending) {

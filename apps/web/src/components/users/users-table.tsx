@@ -34,10 +34,10 @@ import {
 import { useEffect, useMemo, useState } from "react";
 
 import { ChangeUserStatusDialog } from "@/components/users/ban-user-dialog";
-import { useUsers } from "@/hooks/use-users";
+import { useListUsers } from "@/hooks/use-users";
 
 type UserRow = NonNullable<
-  ReturnType<typeof useUsers>["data"]
+  ReturnType<typeof useListUsers>["data"]
 >["items"][number];
 
 interface UsersDataTableProps {
@@ -173,7 +173,7 @@ export function UsersDataTable({ currentUserId }: UsersDataTableProps) {
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebouncedValue(search.trim(), 300);
 
-  const users = useUsers({
+  const users = useListUsers({
     limit: pagination.pageSize,
     offset: pagination.pageIndex * pagination.pageSize,
     search: debouncedSearch || undefined,
