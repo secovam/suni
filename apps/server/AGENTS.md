@@ -6,12 +6,12 @@ This workspace runs the Bun and Hono server. It creates the database and auth in
 
 ## Key files
 
-| File              | Owns                                 |
-| ----------------- | ------------------------------------ |
-| `src/index.ts`    | Hono middleware and HTTP routes      |
-| `src/services.ts` | Database and auth instances          |
-| `src/context.ts`  | Session and database request context |
-| `.env.schema`     | Server environment values            |
+| File              | Owns                                                 |
+| ----------------- | ---------------------------------------------------- |
+| `src/index.ts`    | Hono middleware and HTTP routes                      |
+| `src/services.ts` | Database and auth instances                          |
+| `src/context.ts`  | Auth, headers, session, and database request context |
+| `.env.schema`     | Server environment values                            |
 
 ## Commands
 
