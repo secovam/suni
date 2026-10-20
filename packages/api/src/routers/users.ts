@@ -17,7 +17,7 @@ export const usersRouter = o
         z.object({
           limit: z.coerce.number().int().min(1).max(100).default(20),
           offset: z.coerce.number().int().min(0).default(0),
-          search: z.string().optional(),
+          search: z.string().trim().optional(),
         })
       )
       .handler(async ({ input, context }) => {
@@ -36,6 +36,7 @@ export const usersRouter = o
             .orderBy(desc(user.createdAt))
             .limit(input.limit)
             .offset(input.offset),
+
           context.db.select({ total: count() }).from(user).where(where),
         ]);
 
