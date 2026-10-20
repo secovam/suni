@@ -62,7 +62,7 @@ function StatusBadge({ banned }: { banned: boolean }) {
   );
 }
 
-function createColumns(currentUserId?: string) {
+function createColumns(currentUserId: string) {
   return [
     columnHelper.accessor("name", {
       header: "Usuario",
@@ -139,7 +139,7 @@ function useDebouncedValue<T>(value: T, delayMs: number): T {
 }
 
 interface UsersDataTableProps {
-  currentUserId?: string;
+  currentUserId: string;
 }
 
 export function UsersDataTable({ currentUserId }: UsersDataTableProps) {

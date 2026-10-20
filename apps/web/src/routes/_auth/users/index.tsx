@@ -37,7 +37,7 @@ function RouteComponent() {
           </Button>
         </div>
       </div>
-      <UsersDataTable currentUserId={session.data?.user.id} />
+      <UsersDataTable currentUserId={session.user.id} />
     </div>
   );
 }
