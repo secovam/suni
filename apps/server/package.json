@@ -19,7 +19,7 @@
     "@suni/auth": "workspace:*",
     "@suni/db": "workspace:*",
     "better-auth": "catalog:",
-    "evlog": "^2.28.1",
+    "evlog": "catalog:",
     "hono": "^4.13.7",
     "varlock": "catalog:",
     "zod": "catalog:"
