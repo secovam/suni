@@ -43,13 +43,6 @@ const PAGE_SIZE = 20;
 
 const columnHelper = createColumnHelper<UserRow>();
 
-const COLUMN_LABELS = {
-  name: "Usuario",
-  email: "Correo",
-  role: "Rol",
-  status: "Estado",
-} satisfies Record<string, string>;
-
 function RoleBadge({ role }: { role: string | null }) {
   if (role === "admin") {
     return (
@@ -81,6 +74,13 @@ function StatusBadge({ banned }: { banned: boolean }) {
     </Badge>
   );
 }
+
+const COLUMN_LABELS = {
+  name: "Usuario",
+  email: "Correo",
+  role: "Rol",
+  status: "Estado",
+};
 
 function createColumns(currentUserId?: string) {
   return [
