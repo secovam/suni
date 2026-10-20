@@ -1,12 +1,6 @@
 import type { AppRouterOutputs } from "@suni/api/routers/index";
 import { Badge } from "@suni/ui/components/badge";
 import { Button } from "@suni/ui/components/button";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "@suni/ui/components/dropdown-menu";
 import { Input } from "@suni/ui/components/input";
 import {
   Table,
@@ -23,15 +17,8 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import type { PaginationState, VisibilityState } from "@tanstack/react-table";
-import {
-  ChevronDown,
-  MonitorCheck,
-  MonitorX,
-  Pencil,
-  Shield,
-  User,
-} from "lucide-react";
+import type { PaginationState } from "@tanstack/react-table";
+import { MonitorCheck, MonitorX, Pencil, Shield, User } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { ChangeUserStatusDialog } from "@/components/users/ban-user-dialog";
@@ -75,17 +62,10 @@ function StatusBadge({ banned }: { banned: boolean }) {
   );
 }
 
-const COLUMN_LABELS = {
-  name: "Usuario",
-  email: "Correo",
-  role: "Rol",
-  status: "Estado",
-};
-
 function createColumns(currentUserId?: string) {
   return [
     columnHelper.accessor("name", {
-      header: COLUMN_LABELS.name,
+      header: "Usuario",
       cell: (info) => (
         <span className="flex items-center">
           {info.getValue()}
@@ -98,23 +78,22 @@ function createColumns(currentUserId?: string) {
       ),
     }),
     columnHelper.accessor("email", {
-      header: COLUMN_LABELS.email,
+      header: "Correo",
       cell: (info) => (
         <span className="text-muted-foreground">{info.getValue()}</span>
       ),
     }),
     columnHelper.accessor("role", {
-      header: COLUMN_LABELS.role,
+      header: "Rol",
       cell: (info) => <RoleBadge role={info.getValue()} />,
     }),
     columnHelper.accessor("banned", {
       id: "status",
-      header: COLUMN_LABELS.status,
+      header: "Estado",
       cell: (info) => <StatusBadge banned={!!info.getValue()} />,
     }),
     columnHelper.display({
       id: "actions",
-      enableHiding: false,
       cell: ({ row }) => {
         const user = row.original;
 
@@ -169,7 +148,6 @@ export function UsersDataTable({ currentUserId }: UsersDataTableProps) {
     pageSize: PAGE_SIZE,
   });
 
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebouncedValue(search.trim(), 300);
 
@@ -193,12 +171,8 @@ export function UsersDataTable({ currentUserId }: UsersDataTableProps) {
     manualPagination: true,
     pageCount,
     onPaginationChange: setPagination,
-    onColumnVisibilityChange: setColumnVisibility,
     getCoreRowModel: getCoreRowModel(),
-    state: {
-      pagination,
-      columnVisibility,
-    },
+    state: { pagination },
   });
 
   const { rows } = table.getRowModel();
@@ -230,30 +204,6 @@ export function UsersDataTable({ currentUserId }: UsersDataTableProps) {
           placeholder="Buscar por nombre o correo..."
           value={search}
         />
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            render={<Button className="ml-auto" variant="outline" />}
-          >
-            Columnas <ChevronDown className="ml-2 h-4 w-4" />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {Object.entries(COLUMN_LABELS).map(([id, label]) => {
-              const column = table.getColumn(id);
-
-              return (
-                column && (
-                  <DropdownMenuCheckboxItem
-                    checked={column.getIsVisible()}
-                    key={id}
-                    onCheckedChange={(value) => column.toggleVisibility(value)}
-                  >
-                    {label}
-                  </DropdownMenuCheckboxItem>
-                )
-              );
-            })}
-          </DropdownMenuContent>
-        </DropdownMenu>
       </div>
       <div
         className={`rounded-md border ${users.isPlaceholderData ? "opacity-60" : ""}`}
