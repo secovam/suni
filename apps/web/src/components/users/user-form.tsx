@@ -10,7 +10,7 @@ import {
 } from "@suni/ui/components/form";
 import { Input } from "@suni/ui/components/input";
 import { ReactSelect } from "@suni/ui/components/react-select";
-import { useRouter } from "@tanstack/react-router";
+import { Link, useRouter } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -139,11 +139,8 @@ export function FormUser({ user }: FormUserProps) {
             <Button
               className="w-full"
               disabled={submitting}
-              onClick={() => {
-                form.reset();
-                goToUsers();
-              }}
-              type="button"
+              nativeButton={false}
+              render={<Link to="/users" />}
               variant="outlineDestructive"
             >
               Cancelar

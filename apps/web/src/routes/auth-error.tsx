@@ -1,5 +1,5 @@
 import { Button } from "@suni/ui/components/button";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 
 const ERROR_MESSAGE =
@@ -14,7 +14,6 @@ export const Route = createFileRoute("/auth-error")({
 });
 
 function AuthErrorPage() {
-  const navigate = useNavigate();
   const { error } = Route.useSearch();
 
   const authError =
@@ -35,7 +34,11 @@ function AuthErrorPage() {
           <p className="text-muted-foreground text-sm">{authError}</p>
         </div>
 
-        <Button className="h-11 w-full" onClick={() => navigate({ to: "/" })}>
+        <Button
+          className="h-11 w-full"
+          nativeButton={false}
+          render={<Link to="/" />}
+        >
           Volver a iniciar sesión
         </Button>
       </div>
