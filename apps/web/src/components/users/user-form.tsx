@@ -1,4 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import type { AppRouterOutputs } from "@suni/api/routers/index";
 import { Button } from "@suni/ui/components/button";
 import {
   Form,
@@ -30,15 +31,8 @@ const userSchema = z.object({
 
 export type UserFormValues = z.infer<typeof userSchema>;
 
-interface UserRecord {
-  id: string;
-  name: string;
-  email: string;
-  role: string | null;
-}
-
 interface FormUserProps {
-  user?: UserRecord;
+  user?: AppRouterOutputs["users"]["get"];
 }
 
 export function FormUser({ user }: FormUserProps) {

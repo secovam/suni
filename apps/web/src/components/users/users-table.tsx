@@ -1,3 +1,4 @@
+import type { AppRouterOutputs } from "@suni/api/routers/index";
 import { Badge } from "@suni/ui/components/badge";
 import { Button } from "@suni/ui/components/button";
 import {
@@ -36,9 +37,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ChangeUserStatusDialog } from "@/components/users/ban-user-dialog";
 import { useListUsers } from "@/hooks/use-users";
 
-type UserRow = NonNullable<
-  ReturnType<typeof useListUsers>["data"]
->["items"][number];
+type UserRow = AppRouterOutputs["users"]["list"]["items"][number];
 
 interface UsersDataTableProps {
   currentUserId?: string;
