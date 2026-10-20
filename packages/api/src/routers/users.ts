@@ -1,6 +1,6 @@
 import { ORPCError } from "@orpc/server";
 import { user } from "@suni/db/schema/auth";
-import { and, count, desc, eq, ilike, ne, or } from "drizzle-orm";
+import { and, desc, eq, ilike, ne, or } from "drizzle-orm";
 import { z } from "zod";
 
 import { adminProcedure, o, protectedProcedure } from "../index";
@@ -28,7 +28,7 @@ export const usersRouter = o
             )
           : undefined;
 
-        const [items, [counted]] = await Promise.all([
+        const [items, total] = await Promise.all([
           context.db
             .select()
             .from(user)
@@ -37,10 +37,10 @@ export const usersRouter = o
             .limit(input.limit)
             .offset(input.offset),
 
-          context.db.select({ total: count() }).from(user).where(where),
+          context.db.$count(user, where),
         ]);
 
-        return { items, total: counted?.total ?? 0 };
+        return { items, total };
       }),
 
     get: adminProcedure
