@@ -15,6 +15,7 @@ const SEGMENT_LABELS = {
   users: "Usuarios",
   new: "Nuevo",
   edit: "Editar",
+  customers: "Clientes",
 } satisfies Record<string, string>;
 
 type KnownSegment = keyof typeof SEGMENT_LABELS;
