@@ -15,7 +15,7 @@ export const appRouter = {
     user: context.session?.user,
   })),
   users: usersRouter,
-  customer: customersRouter,
+  customers: customersRouter,
 };
 
 export type AppRouter = typeof appRouter;
