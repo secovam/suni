@@ -5,6 +5,7 @@ import type {
 } from "@orpc/server";
 
 import { protectedProcedure, publicProcedure } from "../index";
+import { customersRouter } from "./customers";
 import { usersRouter } from "./users";
 
 export const appRouter = {
@@ -14,6 +15,7 @@ export const appRouter = {
     user: context.session?.user,
   })),
   users: usersRouter,
+  customer: customersRouter,
 };
 
 export type AppRouter = typeof appRouter;
