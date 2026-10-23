@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ContactRound } from "lucide-react";
 
-import { CustomerCreateForm } from "@/components/customers/customers-form";
+import { CustomerCreateForm } from "@/components/customers/create-form";
 
 export const Route = createFileRoute("/_auth/customers/new")({
   component: RouteComponent,

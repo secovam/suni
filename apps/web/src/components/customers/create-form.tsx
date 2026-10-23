@@ -24,7 +24,9 @@ import {
 const required = (message = "Campo requerido") =>
   z.string().trim().min(1, message);
 
-const customerFormSchema = z.object({
+// Mover schema y secciones a archivos propios
+// oxlint-disable-next-line react-doctor/only-export-components
+export const customerFormSchema = z.object({
   name: required("La razón social es requerida"),
   rfc: z.string().regex(/^[A-ZÑ&]{3,4}\d{6}[A-Z0-9]{3}$/u, "RFC inválido"),
   street: required("La calle es requerida"),
@@ -43,7 +45,7 @@ const customerFormSchema = z.object({
   type: z.enum(CUSTOMER_TYPES),
 });
 
-type CustomerFormValues = z.infer<typeof customerFormSchema>;
+export type CustomerFormValues = z.infer<typeof customerFormSchema>;
 
 const defaultValues: CustomerFormValues = {
   name: "",
@@ -74,7 +76,7 @@ const typeOptions = CUSTOMER_TYPES.map((value) => ({
 
 const onlyDigits = (value: string) => value.replaceAll(/\D/gu, "");
 
-function BasicInfoSection() {
+export function BasicInfoSection() {
   return (
     <>
       <FormField
@@ -194,7 +196,7 @@ function BasicInfoSection() {
   );
 }
 
-function LocationSection() {
+export function LocationSection() {
   return (
     <>
       <FormField
@@ -287,7 +289,7 @@ function LocationSection() {
   );
 }
 
-function ContactAndMetaSection({ isAdmin }: { isAdmin: boolean }) {
+export function ContactAndMetaSection({ isAdmin }: { isAdmin: boolean }) {
   return (
     <>
       <div className="flex space-x-4">
