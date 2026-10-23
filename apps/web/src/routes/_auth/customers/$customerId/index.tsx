@@ -1,4 +1,4 @@
-import { Button } from "@suni/ui/components/button";
+import { buttonVariants } from "@suni/ui/components/button";
 import { Tabs, TabsList, TabsTrigger } from "@suni/ui/components/tabs";
 import { cn } from "@suni/ui/lib/utils";
 import { createFileRoute, Link } from "@tanstack/react-router";
@@ -64,18 +64,13 @@ function RouteComponent() {
             </span>
           </div>
         </div>
-        <Button
-          nativeButton={false}
-          render={
-            <Link
-              params={{ customerId: customer.id }}
-              to="/customers/$customerId/edit"
-            />
-          }
-          variant="green"
+        <Link
+          className={buttonVariants({ variant: "green" })}
+          params={{ customerId: customer.id }}
+          to="/customers/$customerId/edit"
         >
           Editar
-        </Button>
+        </Link>
       </div>
 
       <CustomerData customer={customer} />
