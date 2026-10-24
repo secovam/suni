@@ -20,6 +20,7 @@ import {
   acquisitionEnum,
   CUSTOMER_TYPES,
 } from "../../../constants/customers-contant";
+import { LocationSection } from "./location-form";
 
 const required = (message = "Campo requerido") =>
   z.string().trim().min(1, message);
@@ -35,8 +36,7 @@ export const customerFormSchema = z.object({
   city: required("El municipio es requerido"),
   suburb: required("La colonia es requerida"),
   state: required("El estado es requerido"),
-  // Se validará el formato cuando se conecte el endpoint de códigos postales
-  postalCode: required("El código postal es requerido"),
+  postalCode: z.string().regex(/^\d{5}$/u, "Debe tener 5 dígitos"),
   phone: z.string().regex(/^(?:\d{10})?$/u, "Debe tener 10 dígitos"),
   phoneExtension: z.string(),
   acquisition: z.enum(acquisitionEnum, {
@@ -119,164 +119,6 @@ export function BasicInfoSection() {
                   )
                 }
                 placeholder="AAA010101AAA"
-                type="text"
-                value={field.state.value}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <FormField
-        name="street"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>
-              Calle<span className="text-destructive">*</span>
-            </FormLabel>
-            <FormControl>
-              <Input
-                name={field.name}
-                onBlur={field.handleBlur}
-                onChange={(e) => field.handleChange(e.target.value)}
-                type="text"
-                value={field.state.value}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <div className="flex space-x-4">
-        <FormField
-          name="intNumber"
-          render={({ field }) => (
-            <FormItem className="w-full">
-              <FormLabel>No. Interior</FormLabel>
-              <FormControl>
-                <Input
-                  name={field.name}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  placeholder="Opcional"
-                  type="text"
-                  value={field.state.value}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          name="extNumber"
-          render={({ field }) => (
-            <FormItem className="w-full">
-              <FormLabel>
-                No. Exterior<span className="text-destructive">*</span>
-              </FormLabel>
-              <FormControl>
-                <Input
-                  name={field.name}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  placeholder="123-A"
-                  type="text"
-                  value={field.state.value}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </div>
-    </>
-  );
-}
-
-export function LocationSection() {
-  return (
-    <>
-      <FormField
-        name="postalCode"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>
-              Código Postal<span className="text-destructive">*</span>
-            </FormLabel>
-            <FormControl>
-              <Input
-                inputMode="numeric"
-                maxLength={5}
-                name={field.name}
-                onBlur={field.handleBlur}
-                onChange={(e) => field.handleChange(onlyDigits(e.target.value))}
-                placeholder="64000"
-                type="text"
-                value={field.state.value}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <FormField
-        name="suburb"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>
-              Colonia<span className="text-destructive">*</span>
-            </FormLabel>
-            <FormControl>
-              <Input
-                name={field.name}
-                onBlur={field.handleBlur}
-                onChange={(e) => field.handleChange(e.target.value)}
-                type="text"
-                value={field.state.value}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <FormField
-        name="city"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>
-              Municipio<span className="text-destructive">*</span>
-            </FormLabel>
-            <FormControl>
-              <Input
-                name={field.name}
-                onBlur={field.handleBlur}
-                onChange={(e) => field.handleChange(e.target.value)}
-                type="text"
-                value={field.state.value}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <FormField
-        name="state"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>
-              Estado<span className="text-destructive">*</span>
-            </FormLabel>
-            <FormControl>
-              <Input
-                name={field.name}
-                onBlur={field.handleBlur}
-                onChange={(e) => field.handleChange(e.target.value)}
                 type="text"
                 value={field.state.value}
               />
@@ -455,7 +297,7 @@ export function CustomerCreateForm() {
       >
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           <BasicInfoSection />
-          <LocationSection />
+          <LocationSection form={form} />
           <ContactAndMetaSection isAdmin={isAdmin} />
         </div>
 

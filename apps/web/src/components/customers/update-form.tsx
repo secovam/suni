@@ -11,9 +11,9 @@ import {
   BasicInfoSection,
   ContactAndMetaSection,
   customerFormSchema,
-  LocationSection,
 } from "./create-form";
 import type { CustomerFormValues } from "./create-form";
+import { LocationSection } from "./location-form";
 
 type Customer = NonNullable<AppRouterOutputs["customers"]["get"]>;
 
@@ -80,7 +80,7 @@ export function CustomerUpdateForm({ customer }: { customer: Customer }) {
       >
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           <BasicInfoSection />
-          <LocationSection />
+          <LocationSection form={form} />
           <ContactAndMetaSection isAdmin={isAdmin} />
         </div>
 
