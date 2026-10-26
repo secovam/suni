@@ -14,13 +14,22 @@ import { z } from "zod";
 import CustomerCard from "@/components/customers/customer-card";
 import { useListCustomers } from "@/hooks/use-customers";
 
-const defaultFilters = { name: "", type: "all", archived: false };
-
 const searchSchema = z.object({
   name: z.string().optional(),
   type: z.string().optional(),
-  archived: z.boolean().optional(),
+  status: z.enum(["active", "archived", "all"]).optional(),
 });
+
+type Status = NonNullable<z.infer<typeof searchSchema>["status"]>;
+
+const statusOptions: { value: Status; label: string }[] = [
+  { value: "active", label: "Clientes Activos" },
+  { value: "archived", label: "Clientes Archivados" },
+  { value: "all", label: "Todos los clientes" },
+];
+
+// SAFETY: "active" is guaranteed to be a valid Status union value.
+const defaultFilters = { name: "", type: "all", status: "active" as Status };
 
 export const Route = createFileRoute("/_auth/customers/")({
   validateSearch: searchSchema,
@@ -83,7 +92,7 @@ function RouteComponent() {
   const {
     name = defaultFilters.name,
     type = defaultFilters.type,
-    archived = defaultFilters.archived,
+    status = defaultFilters.status,
   } = Route.useSearch();
 
   const navigate = Route.useNavigate();
@@ -94,25 +103,33 @@ function RouteComponent() {
   const setType = (value: string) =>
     navigate({ search: (prev) => ({ ...prev, type: value }), replace: true });
 
-  const setArchived = (value: boolean) =>
-    navigate({
-      search: (prev) => ({ ...prev, archived: value }),
-      replace: true,
-    });
+  const setStatus = (value: Status) =>
+    navigate({ search: (prev) => ({ ...prev, status: value }), replace: true });
 
   const clearFilters = () => navigate({ search: defaultFilters });
 
   const { data: customers = [], isPending } = useListCustomers({
-    includeArchived: archived,
+    includeArchived: status !== "active",
   });
 
   const matchingName = useMemo(() => {
     const term = name.trim().toLowerCase();
+    const filtered: CustomerItem[] = [];
 
-    return customers
-      .filter((customer) => customer.name.toLowerCase().includes(term))
-      .toSorted((a, b) => a.name.localeCompare(b.name, "es"));
-  }, [customers, name]);
+    for (const customer of customers) {
+      const matchesStatus =
+        status === "all" ||
+        (status === "archived"
+          ? Boolean(customer.archived)
+          : !customer.archived);
+
+      if (matchesStatus && customer.name.toLowerCase().includes(term)) {
+        filtered.push(customer);
+      }
+    }
+
+    return filtered.toSorted((a, b) => a.name.localeCompare(b.name, "es"));
+  }, [customers, name, status]);
 
   const typeOptions = useMemo(() => {
     const count = (value: string) =>
@@ -130,7 +147,8 @@ function RouteComponent() {
       ? matchingName
       : matchingName.filter((customer) => customer.type === type);
 
-  const hasFilters = name.trim() !== "" || type !== "all" || archived;
+  const hasFilters =
+    name.trim() !== "" || type !== "all" || status !== defaultFilters.status;
 
   return (
     <div className="flex flex-col gap-6 p-6">
@@ -176,15 +194,12 @@ function RouteComponent() {
           placeholder="Filtrar por tipo..."
           value={typeOptions.find((option) => option.value === type)}
         />
-        <label className="flex cursor-pointer items-center gap-2 text-sm whitespace-nowrap select-none">
-          <input
-            checked={archived}
-            className="size-4 cursor-pointer"
-            onChange={(event) => setArchived(event.target.checked)}
-            type="checkbox"
-          />
-          Mostrar archivados
-        </label>
+        <ReactSelect
+          className="w-full sm:w-55"
+          onChange={(option) => setStatus(option?.value ?? "active")}
+          options={statusOptions}
+          value={statusOptions.find((option) => option.value === status)}
+        />
         {hasFilters && (
           <Button onClick={clearFilters} variant="ghost">
             Limpiar
