@@ -3,10 +3,11 @@ import { customerFormSchema } from "@suni/db/validation/customers";
 import { Button } from "@suni/ui/components/button";
 import { Form } from "@suni/ui/components/form";
 import { revalidateLogic, useForm } from "@tanstack/react-form";
-import { Link, useNavigate, useRouteContext } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
 
 import { useUpdateCustomer } from "@/hooks/use-customers";
+import { useIsAdmin } from "@/hooks/use-is-admin";
 
 import { BasicInfoSection, ContactAndMetaSection } from "./create-form";
 import type { CustomerFormValues } from "./create-form";
@@ -34,12 +35,7 @@ export function CustomerUpdateForm({ customer }: { customer: Customer }) {
   const navigate = useNavigate();
   const updateCustomer = useUpdateCustomer();
 
-  const session = useRouteContext({
-    from: "/_auth",
-    select: (ctx) => ctx.session,
-  });
-
-  const isAdmin = session.user.role === "admin";
+  const isAdmin = useIsAdmin();
   const submitting = updateCustomer.isPending;
 
   const form = useForm({

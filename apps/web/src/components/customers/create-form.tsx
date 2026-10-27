@@ -15,11 +15,12 @@ import {
 import { Input } from "@suni/ui/components/input";
 import { ReactSelect } from "@suni/ui/components/react-select";
 import { revalidateLogic, useForm } from "@tanstack/react-form";
-import { Link, useNavigate, useRouteContext } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
 import type { z } from "zod";
 
 import { useCreateCustomer } from "@/hooks/use-customers";
+import { useIsAdmin } from "@/hooks/use-is-admin";
 
 import { LocationSection } from "./location-form";
 
@@ -233,12 +234,7 @@ export function CustomerCreateForm() {
   const navigate = useNavigate();
   const createCustomer = useCreateCustomer();
 
-  const session = useRouteContext({
-    from: "/_auth",
-    select: (ctx) => ctx.session,
-  });
-
-  const isAdmin = session.user.role === "admin";
+  const isAdmin = useIsAdmin();
   const submitting = createCustomer.isPending;
 
   const form = useForm({
