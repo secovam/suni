@@ -40,19 +40,30 @@ type ReactSelectProps<
   Group extends GroupBase<Option>,
 > = Props<Option, IsMulti, Group> & {
   ref?: Ref<SelectInstance<Option, IsMulti, Group>>;
+  "aria-describedby"?: string;
 };
 
 export function ReactSelect<
   Option,
   IsMulti extends boolean = false,
   Group extends GroupBase<Option> = GroupBase<Option>,
->({ classNames, ref, ...props }: ReactSelectProps<Option, IsMulti, Group>) {
+>({
+  classNames,
+  ref,
+  id,
+  inputId,
+  "aria-describedby": describedBy,
+  ...props
+}: ReactSelectProps<Option, IsMulti, Group>) {
   return (
     <div className="notranslate" translate="no">
       <Select<Option, IsMulti, Group>
         classNames={{
         ...(selectClassNames as unknown as ClassNamesConfig<Option, IsMulti, Group>),          ...classNames,
         }}
+        // FormControl passes id/aria-describedby; react-select needs them on the inner input so labels and errors link up.
+        aria-errormessage={props["aria-invalid"] ? describedBy : undefined}
+        inputId={inputId ?? id}
         ref={ref}
         unstyled
         {...props}
