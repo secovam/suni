@@ -18,7 +18,8 @@ export const selectClassNames = {
       // aria-invalid sits on the inner input, so Input's aria-invalid: variants can't reach this box.
       isInvalid(state.selectProps["aria-invalid"]) &&
         "border-destructive ring-3 ring-destructive/20 dark:border-destructive/50 dark:ring-destructive/40",
-      state.isDisabled && "opacity-50"
+      // Matches Input's read-only look, since disabled is how the form makes a select read-only.
+      state.isDisabled && "cursor-default bg-muted/60"
     ),
   valueContainer: () => "gap-1",
   placeholder: () => "text-muted-foreground",

@@ -128,16 +128,25 @@ export function DigitsField({
   );
 }
 
+// Disabled, so it can't be picked; typing filters it out and react-select shows the "Usar" option instead.
+const CREATE_HINT = {
+  value: "",
+  label: "¿No está en la lista? Escríbela para agregarla",
+  isDisabled: true,
+};
+
 export function SelectField({
   label,
   required,
   options,
   placeholder,
   creatable = false,
+  readOnly = false,
 }: FrameProps & {
   options: readonly { value: string; label: string }[];
   placeholder?: string;
   creatable?: boolean;
+  readOnly?: boolean;
 }) {
   const field = useFieldContext<string>();
   const current = field.state.value;
@@ -157,10 +166,11 @@ export function SelectField({
             {...control}
             formatCreateLabel={(input) => `Usar "${input}"`}
             inputId={id}
-            noOptionsMessage={() => "Escribe para agregar una opción"}
+            // react-select has no readOnly; disabled is the closest and keeps the value visible.
+            isDisabled={readOnly}
             onBlur={field.handleBlur}
             onChange={onChange}
-            options={options}
+            options={[...options, CREATE_HINT]}
             placeholder={placeholder}
             // A stored or typed value missing from options still shows as selected.
             value={
@@ -171,6 +181,7 @@ export function SelectField({
           <ReactSelect
             {...control}
             inputId={id}
+            isDisabled={readOnly}
             onBlur={field.handleBlur}
             onChange={onChange}
             options={options}
