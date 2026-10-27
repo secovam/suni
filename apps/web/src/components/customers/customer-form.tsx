@@ -32,6 +32,8 @@ const RFC_MAX_LENGTH = 13;
 
 const PHONE_LENGTH = 10;
 
+const FILLED_BY_POSTAL_CODE = "Se llena con el código postal";
+
 const EMPTY_VALUES: FormValues = {
   name: "",
   rfc: "",
@@ -133,6 +135,15 @@ export function CustomerForm({ customer }: CustomerFormProps) {
   const zip = useSelector(form.store, (state) => state.values.postalCode);
   const postalCode = usePostalCode(zip);
   const settlements = postalCode.data ?? [];
+
+  // SEPOMEX owns municipio and estado; only a miss or an error unlocks them so the address can be typed by hand.
+  const regionLocked = !(
+    postalCode.isError ||
+    (postalCode.isSuccess && settlements.length === 0)
+  );
+
+  // Colonia only waits for the lookup; it stays open afterwards so a colonia SEPOMEX lacks can be typed.
+  const suburbLocked = !(postalCode.isSuccess || postalCode.isError);
 
   const suburbOptions = [...new Set(settlements.map((s) => s.d_asenta))].map(
     (value) => ({ value, label: value })
@@ -270,7 +281,12 @@ export function CustomerForm({ customer }: CustomerFormProps) {
                 creatable
                 label="Colonia"
                 options={suburbOptions}
-                placeholder="Selecciona o escribe la colonia..."
+                placeholder={
+                  suburbLocked
+                    ? FILLED_BY_POSTAL_CODE
+                    : "Selecciona o escribe la colonia..."
+                }
+                readOnly={suburbLocked}
                 required
               />
             )}
@@ -280,6 +296,8 @@ export function CustomerForm({ customer }: CustomerFormProps) {
               <field.TextField
                 autoComplete="address-level2"
                 label="Municipio"
+                placeholder={regionLocked ? FILLED_BY_POSTAL_CODE : ""}
+                readOnly={regionLocked}
                 required
               />
             )}
@@ -289,6 +307,8 @@ export function CustomerForm({ customer }: CustomerFormProps) {
               <field.TextField
                 autoComplete="address-level1"
                 label="Estado"
+                placeholder={regionLocked ? FILLED_BY_POSTAL_CODE : ""}
+                readOnly={regionLocked}
                 required
               />
             )}
