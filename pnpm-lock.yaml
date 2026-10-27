@@ -345,6 +345,9 @@ importers:
       '@suni/api':
         specifier: workspace:*
         version: link:../../packages/api
+      '@suni/db':
+        specifier: workspace:*
+        version: link:../../packages/db
       '@suni/ui':
         specifier: workspace:*
         version: link:../../packages/ui

@@ -1,18 +1,11 @@
 import { pgEnum, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 
 import { user } from "./auth";
+import { ACQUISITION_CHANNELS, CUSTOMER_TYPES } from "./customer-enums";
 
-export const acquisitionEnum = pgEnum("acquisition", [
-  "Redes sociales",
-  "Recomendación",
-  "Prospección",
-  "Teléfono",
-  "Correo",
-  "Página web",
-  "Díptico",
-]);
+export const acquisitionEnum = pgEnum("acquisition", ACQUISITION_CHANNELS);
 
-export const customerTypeEnum = pgEnum("customer_type", ["Cliente", "Asesor"]);
+export const customerTypeEnum = pgEnum("customer_type", CUSTOMER_TYPES);
 
 export const customer = pgTable("customer", {
   id: text("id")

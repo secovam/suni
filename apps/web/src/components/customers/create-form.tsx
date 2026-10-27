@@ -1,3 +1,7 @@
+import {
+  ACQUISITION_CHANNELS,
+  CUSTOMER_TYPES,
+} from "@suni/db/schema/customer-enums";
 import { Button } from "@suni/ui/components/button";
 import {
   Form,
@@ -16,10 +20,6 @@ import { z } from "zod";
 
 import { useCreateCustomer } from "@/hooks/use-customers";
 
-import {
-  acquisitionEnum,
-  CUSTOMER_TYPES,
-} from "../../../constants/customers-contant";
 import { LocationSection } from "./location-form";
 
 const required = (message = "Campo requerido") =>
@@ -39,7 +39,7 @@ export const customerFormSchema = z.object({
   postalCode: z.string().regex(/^\d{5}$/u, "Debe tener 5 dígitos"),
   phone: z.string().regex(/^(?:\d{10})?$/u, "Debe tener 10 dígitos"),
   phoneExtension: z.string(),
-  acquisition: z.enum(acquisitionEnum, {
+  acquisition: z.enum(ACQUISITION_CHANNELS, {
     message: "Selecciona un medio de adquisición",
   }),
   type: z.enum(CUSTOMER_TYPES),
@@ -64,7 +64,7 @@ const defaultValues: CustomerFormValues = {
   type: "Cliente",
 };
 
-const acquisitionOptions = acquisitionEnum.map((value) => ({
+const acquisitionOptions = ACQUISITION_CHANNELS.map((value) => ({
   value,
   label: value,
 }));
