@@ -1,9 +1,13 @@
 import { cn } from "@suni/ui/lib/utils";
-import type { Ref } from "react";
+import type { AriaAttributes, Ref } from "react";
 import Select from "react-select";
 import CreatableSelect from "react-select/creatable";
 import type { CreatableProps } from "react-select/creatable";
 import type { ClassNamesConfig, GroupBase, Props, SelectInstance } from "react-select";
+
+function isInvalid(value: AriaAttributes["aria-invalid"]) {
+  return value !== undefined && value !== false && value !== "false";
+}
 
 export const selectClassNames = {
   control: (state) =>
@@ -11,6 +15,9 @@ export const selectClassNames = {
       // Mirrors Input so selects line up with text fields; min-h needs ! to beat react-select's base minHeight of 38px.
       "min-h-8! rounded-lg border border-input bg-transparent px-2.5 text-base transition-colors md:text-sm dark:bg-input/30",
       state.isFocused && "border-ring ring-3 ring-ring/50",
+      // aria-invalid sits on the inner input, so Input's aria-invalid: variants can't reach this box.
+      isInvalid(state.selectProps["aria-invalid"]) &&
+        "border-destructive ring-3 ring-destructive/20 dark:border-destructive/50 dark:ring-destructive/40",
       state.isDisabled && "opacity-50"
     ),
   valueContainer: () => "gap-1",
