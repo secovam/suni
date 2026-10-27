@@ -31,10 +31,11 @@ export const selectClassNames = {
     cn("text-muted-foreground", state.isDisabled && "opacity-30"),
   clearIndicator: () => "text-muted-foreground hover:text-foreground",
   menu: () =>
-    "z-50 mt-1 overflow-hidden rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-md",
+    // Text size lives here because react-select gives options font-size: inherit, which beats a class on the option.
+    "z-50 mt-1 overflow-hidden rounded-md border border-border bg-popover p-1 text-base text-popover-foreground shadow-md md:text-sm",
   option: (state) =>
     cn(
-      "cursor-pointer rounded-sm px-2 py-1.5 text-base md:text-sm",
+      "cursor-pointer rounded-sm px-2 py-1.5",
       state.isFocused && "bg-accent text-accent-foreground",
       state.isSelected && "bg-primary text-primary-foreground",
       state.isDisabled && "opacity-50"
