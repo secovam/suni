@@ -1,31 +1,16 @@
-import {
-  ACQUISITION_CHANNELS,
-  CUSTOMER_TYPES,
-} from "@suni/db/schema/customer-enums";
 import { customerFormSchema } from "@suni/db/validation/customers";
 import { Button } from "@suni/ui/components/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@suni/ui/components/form";
-import { Input } from "@suni/ui/components/input";
-import { ReactSelect } from "@suni/ui/components/react-select";
+import { Form } from "@suni/ui/components/form";
 import { revalidateLogic, useForm } from "@tanstack/react-form";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
-import type { z } from "zod";
 
 import { useCreateCustomer } from "@/hooks/use-customers";
 import { useIsAdmin } from "@/hooks/use-is-admin";
 
+import { BasicInfoSection, ContactAndMetaSection } from "./form-sections";
+import type { CustomerFormValues } from "./form-sections";
 import { LocationSection } from "./location-form";
-
-// Mover secciones a archivos propios
-export type CustomerFormValues = z.infer<typeof customerFormSchema>;
 
 const defaultValues: CustomerFormValues = {
   name: "",
@@ -39,196 +24,9 @@ const defaultValues: CustomerFormValues = {
   postalCode: "",
   phone: "",
   phoneExtension: "",
-  // SAFETY: Initial empty state for the form before user selection
-  acquisition: "" as CustomerFormValues["acquisition"],
+  acquisition: "",
   type: "Cliente",
 };
-
-const acquisitionOptions = ACQUISITION_CHANNELS.map((value) => ({
-  value,
-  label: value,
-}));
-
-const typeOptions = CUSTOMER_TYPES.map((value) => ({
-  value,
-  label: value,
-}));
-
-const onlyDigits = (value: string) => value.replaceAll(/\D/gu, "");
-
-export function BasicInfoSection() {
-  return (
-    <>
-      <FormField
-        name="name"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>
-              Razón Social<span className="text-destructive">*</span>
-            </FormLabel>
-            <FormControl>
-              <Input
-                name={field.name}
-                onBlur={field.handleBlur}
-                onChange={(e) => field.handleChange(e.target.value)}
-                placeholder="Razón Social SA de CV"
-                type="text"
-                value={field.state.value}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <FormField
-        name="rfc"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>
-              RFC<span className="text-destructive">*</span>
-            </FormLabel>
-            <FormControl>
-              <Input
-                maxLength={13}
-                name={field.name}
-                onBlur={field.handleBlur}
-                onChange={(e) =>
-                  field.handleChange(
-                    e.target.value.toUpperCase().replaceAll(/[^A-Z0-9Ñ&]/gu, "")
-                  )
-                }
-                placeholder="AAA010101AAA"
-                type="text"
-                value={field.state.value}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-    </>
-  );
-}
-
-export function ContactAndMetaSection({ isAdmin }: { isAdmin: boolean }) {
-  return (
-    <>
-      <div className="flex space-x-4">
-        <FormField
-          name="phone"
-          render={({ field }) => (
-            <FormItem className="w-full">
-              <FormLabel>
-                Teléfono<span className="text-destructive">*</span>
-              </FormLabel>
-              <FormControl>
-                <Input
-                  inputMode="numeric"
-                  maxLength={10}
-                  name={field.name}
-                  onBlur={field.handleBlur}
-                  onChange={(e) =>
-                    field.handleChange(onlyDigits(e.target.value))
-                  }
-                  placeholder="8112341234"
-                  value={field.state.value}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          name="phoneExtension"
-          render={({ field }) => (
-            <FormItem className="w-full">
-              <FormLabel>No. Extensión</FormLabel>
-              <FormControl>
-                <Input
-                  inputMode="numeric"
-                  maxLength={10}
-                  name={field.name}
-                  onBlur={field.handleBlur}
-                  onChange={(e) =>
-                    field.handleChange(onlyDigits(e.target.value))
-                  }
-                  placeholder="3412"
-                  value={field.state.value}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </div>
-
-      <FormField
-        name="acquisition"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>
-              Medio de adquisición
-              <span className="text-destructive">*</span>
-            </FormLabel>
-            <FormControl>
-              <ReactSelect
-                isClearable
-                onBlur={field.handleBlur}
-                onChange={(option) =>
-                  field.handleChange(
-                    // SAFETY: Ensuring type safety when mapping option value to form acquisition type
-                    (option?.value ?? "") as CustomerFormValues["acquisition"]
-                  )
-                }
-                options={acquisitionOptions}
-                placeholder="Selecciona un medio..."
-                value={
-                  acquisitionOptions.find(
-                    (opt) => opt.value === field.state.value
-                  ) ?? null
-                }
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      {isAdmin && (
-        <FormField
-          name="type"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>
-                Tipo<span className="text-destructive">*</span>
-              </FormLabel>
-              <FormControl>
-                <ReactSelect
-                  onBlur={field.handleBlur}
-                  onChange={(option) => {
-                    if (option) {
-                      field.handleChange(option.value);
-                    }
-                  }}
-                  options={typeOptions}
-                  placeholder="Selecciona un tipo..."
-                  value={
-                    typeOptions.find(
-                      (opt) => opt.value === field.state.value
-                    ) ?? null
-                  }
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      )}
-    </>
-  );
-}
 
 export function CustomerCreateForm() {
   const navigate = useNavigate();
@@ -242,9 +40,9 @@ export function CustomerCreateForm() {
     validationLogic: revalidateLogic(),
     validators: { onDynamic: customerFormSchema },
     onSubmit: ({ value }) => {
-      createCustomer.mutate(value, {
+      createCustomer.mutate(customerFormSchema.parse(value), {
         onSuccess: (customer) => {
-          if (customer?.id) {
+          if (customer) {
             navigate({
               to: "/customers/$customerId",
               params: { customerId: customer.id },

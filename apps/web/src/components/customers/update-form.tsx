@@ -9,8 +9,8 @@ import { Loader2 } from "lucide-react";
 import { useUpdateCustomer } from "@/hooks/use-customers";
 import { useIsAdmin } from "@/hooks/use-is-admin";
 
-import { BasicInfoSection, ContactAndMetaSection } from "./create-form";
-import type { CustomerFormValues } from "./create-form";
+import { BasicInfoSection, ContactAndMetaSection } from "./form-sections";
+import type { CustomerFormValues } from "./form-sections";
 import { LocationSection } from "./location-form";
 
 type Customer = NonNullable<AppRouterOutputs["customers"]["get"]>;
@@ -44,7 +44,7 @@ export function CustomerUpdateForm({ customer }: { customer: Customer }) {
     validators: { onDynamic: customerFormSchema },
     onSubmit: ({ value }) => {
       updateCustomer.mutate(
-        { ...value, id: customer.id },
+        { ...customerFormSchema.parse(value), id: customer.id },
         {
           onSuccess: () =>
             navigate({
