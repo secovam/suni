@@ -2,7 +2,12 @@ import type {
   AppRouterInputs,
   AppRouterOutputs,
 } from "@suni/api/routers/index";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { client, orpc } from "@/utils/orpc";
@@ -10,7 +15,10 @@ import { client, orpc } from "@/utils/orpc";
 type CustomerRow = AppRouterOutputs["customers"]["list"][number];
 
 export function useListCustomers(params: AppRouterInputs["customers"]["list"]) {
-  return useQuery(orpc.customers.list.queryOptions({ input: params }));
+  return useQuery({
+    ...orpc.customers.list.queryOptions({ input: params }),
+    placeholderData: keepPreviousData,
+  });
 }
 
 export function useGetCustomer(id: string) {

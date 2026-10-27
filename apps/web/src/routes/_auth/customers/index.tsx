@@ -1,3 +1,7 @@
+import {
+  CUSTOMER_STATUSES,
+  CUSTOMER_TYPES,
+} from "@suni/db/schema/customer-enums";
 import { Button } from "@suni/ui/components/button";
 import { Input } from "@suni/ui/components/input";
 import { ReactSelect } from "@suni/ui/components/react-select";
@@ -6,7 +10,15 @@ import {
   createFileRoute,
   stripSearchParams,
 } from "@tanstack/react-router";
-import { ContactRound, Loader2, Plus, SearchX, Users, X } from "lucide-react";
+import {
+  CircleAlert,
+  ContactRound,
+  Loader2,
+  Plus,
+  SearchX,
+  Users,
+  X,
+} from "lucide-react";
 import { useMemo } from "react";
 import type { ComponentProps } from "react";
 import { z } from "zod";
@@ -14,22 +26,29 @@ import { z } from "zod";
 import CustomerCard from "@/components/customers/customer-card";
 import { useListCustomers } from "@/hooks/use-customers";
 
+/* oxlint-disable promise/prefer-await-to-then, github/no-then */
 const searchSchema = z.object({
-  name: z.string().optional(),
-  type: z.string().optional(),
-  status: z.enum(["active", "archived", "all"]).optional(),
+  name: z.string().default("").catch(""),
+  type: z
+    .enum(["all", ...CUSTOMER_TYPES])
+    .default("all")
+    .catch("all"),
+  status: z.enum(CUSTOMER_STATUSES).default("active").catch("active"),
 });
+/* oxlint-enable promise/prefer-await-to-then, github/no-then */
 
-type Status = NonNullable<z.infer<typeof searchSchema>["status"]>;
+type Search = z.infer<typeof searchSchema>;
 
-const statusOptions: { value: Status; label: string }[] = [
-  { value: "active", label: "Clientes Activos" },
-  { value: "archived", label: "Clientes Archivados" },
+const defaultFilters = searchSchema.parse({});
+
+const statusOptions: { value: Search["status"]; label: string }[] = [
+  { value: "active", label: "Clientes activos" },
+  { value: "archived", label: "Clientes archivados" },
   { value: "all", label: "Todos los clientes" },
 ];
 
-// SAFETY: "active" is guaranteed to be a valid Status union value.
-const defaultFilters = { name: "", type: "all", status: "active" as Status };
+const stripAccents = (value: string) =>
+  value.normalize("NFD").replaceAll(/\p{Diacritic}/gu, "");
 
 export const Route = createFileRoute("/_auth/customers/")({
   validateSearch: searchSchema,
@@ -42,16 +61,41 @@ type CustomerItem = ComponentProps<typeof CustomerCard>["customer"];
 function CustomerList({
   customers,
   hasFilters,
+  isError,
   isPending,
 }: {
   customers: CustomerItem[];
   hasFilters: boolean;
+  isError: boolean;
   isPending: boolean;
 }) {
   if (isPending) {
     return (
-      <div className="flex items-center justify-center py-12">
+      <output
+        aria-label="Cargando clientes"
+        className="flex items-center justify-center py-12"
+      >
         <Loader2 className="text-muted-foreground size-6 animate-spin" />
+      </output>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div
+        className="flex min-h-70 flex-col items-center justify-center gap-1 p-8 text-center"
+        role="alert"
+      >
+        <CircleAlert
+          className="text-destructive/70 mb-3 size-12"
+          strokeWidth={1}
+        />
+        <p className="text-muted-foreground text-sm font-medium">
+          No se pudieron cargar los clientes
+        </p>
+        <p className="text-muted-foreground text-xs">
+          Recarga la página para intentar de nuevo
+        </p>
       </div>
     );
   }
@@ -89,38 +133,27 @@ function CustomerList({
 }
 
 function RouteComponent() {
-  const {
-    name = defaultFilters.name,
-    type = defaultFilters.type,
-    status = defaultFilters.status,
-  } = Route.useSearch();
+  const { name, type, status } = Route.useSearch();
 
   const navigate = Route.useNavigate();
 
-  const setName = (value: string) =>
-    navigate({ search: (prev) => ({ ...prev, name: value }), replace: true });
+  const setFilters = (filters: Partial<Search>) =>
+    navigate({ search: (prev) => ({ ...prev, ...filters }), replace: true });
 
-  const setType = (value: string) =>
-    navigate({ search: (prev) => ({ ...prev, type: value }), replace: true });
-
-  const setStatus = (value: Status) =>
-    navigate({ search: (prev) => ({ ...prev, status: value }), replace: true });
-
-  const clearFilters = () => navigate({ search: defaultFilters });
-
-  const { data: customers = [], isPending } = useListCustomers({ status });
+  const {
+    data: customers = [],
+    isError,
+    isPending,
+  } = useListCustomers({ status });
 
   const matchingName = useMemo(() => {
-    const term = name.trim().toLowerCase();
-    const filtered: CustomerItem[] = [];
+    const term = stripAccents(name.trim()).toLowerCase();
 
-    for (const customer of customers) {
-      if (customer.name.toLowerCase().includes(term)) {
-        filtered.push(customer);
-      }
-    }
-
-    return filtered.toSorted((a, b) => a.name.localeCompare(b.name, "es"));
+    return customers
+      .filter((customer) =>
+        stripAccents(customer.name).toLowerCase().includes(term)
+      )
+      .toSorted((a, b) => a.name.localeCompare(b.name, "es"));
   }, [customers, name]);
 
   const typeOptions = useMemo(() => {
@@ -128,9 +161,14 @@ function RouteComponent() {
       matchingName.filter((customer) => customer.type === value).length;
 
     return [
-      { value: "all", label: `Todos los tipos (${matchingName.length})` },
-      { value: "Cliente", label: `Cliente (${count("Cliente")})` },
-      { value: "Asesor", label: `Asesor (${count("Asesor")})` },
+      {
+        value: "all" as const,
+        label: `Todos los tipos (${matchingName.length})`,
+      },
+      ...CUSTOMER_TYPES.map((value) => ({
+        value,
+        label: `${value} (${count(value)})`,
+      })),
     ];
   }, [matchingName]);
 
@@ -172,28 +210,33 @@ function RouteComponent() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="flex-1">
           <Input
-            onChange={(event) => setName(event.target.value)}
+            aria-label="Buscar por nombre"
+            onChange={(event) => setFilters({ name: event.target.value })}
             placeholder="Buscar por nombre..."
             type="search"
             value={name}
           />
         </div>
         <ReactSelect
+          aria-label="Filtrar por tipo"
           className="w-full sm:w-55"
           isClearable
-          onChange={(option) => setType(option?.value || "all")}
+          onChange={(option) => setFilters({ type: option?.value ?? "all" })}
           options={typeOptions}
           placeholder="Filtrar por tipo..."
           value={typeOptions.find((option) => option.value === type)}
         />
         <ReactSelect
+          aria-label="Filtrar por estado"
           className="w-full sm:w-55"
-          onChange={(option) => setStatus(option?.value ?? "active")}
+          onChange={(option) =>
+            setFilters({ status: option?.value ?? "active" })
+          }
           options={statusOptions}
           value={statusOptions.find((option) => option.value === status)}
         />
         {hasFilters && (
-          <Button onClick={clearFilters} variant="ghost">
+          <Button onClick={() => setFilters(defaultFilters)} variant="ghost">
             Limpiar
             <X className="ml-1 size-3" />
           </Button>
@@ -203,6 +246,7 @@ function RouteComponent() {
       <CustomerList
         customers={visibleCustomers}
         hasFilters={hasFilters}
+        isError={isError}
         isPending={isPending}
       />
     </div>
