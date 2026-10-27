@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ContactRound } from "lucide-react";
 
-import { CustomerCreateForm } from "@/components/customers/create-form";
+import { CustomerForm } from "@/components/customers/customer-form";
 
 export const Route = createFileRoute("/_auth/customers/new")({
   component: RouteComponent,
@@ -23,7 +23,7 @@ function RouteComponent() {
           </p>
         </div>
       </div>
-      <CustomerCreateForm />
+      <CustomerForm />
     </div>
   );
 }

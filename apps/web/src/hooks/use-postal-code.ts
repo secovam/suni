@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { queryOptions, useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 
 import { ENV } from "@/env";
@@ -17,8 +17,8 @@ const responseSchema = z.object({
 
 export type Settlement = z.infer<typeof settlementSchema>;
 
-export function usePostalCode(zip: string) {
-  return useQuery({
+export function postalCodeQueryOptions(zip: string) {
+  return queryOptions({
     queryKey: ["postal-code", zip],
     enabled: /^\d{5}$/u.test(zip),
     staleTime: Number.POSITIVE_INFINITY,
@@ -38,4 +38,8 @@ export function usePostalCode(zip: string) {
       return json.zip_codes.filter((s) => s.d_codigo === zip);
     },
   });
+}
+
+export function usePostalCode(zip: string) {
+  return useQuery(postalCodeQueryOptions(zip));
 }
