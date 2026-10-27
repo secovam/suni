@@ -2,9 +2,9 @@ import { customer } from "@suni/db/schema/customers";
 import { asc, isNull } from "drizzle-orm";
 import { z } from "zod";
 
-import { adminProcedure } from "../../index";
+import { protectedProcedure } from "../../index";
 
-export const list = adminProcedure
+export const list = protectedProcedure
   .route({ method: "GET", path: "/" })
   .input(z.object({ includeArchived: z.boolean().default(false) }))
   .handler(({ input, context }) =>

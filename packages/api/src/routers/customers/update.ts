@@ -4,13 +4,19 @@ import { customerInputSchema } from "@suni/db/validation/customers";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 
-import { adminProcedure } from "../../index";
+import { isAdmin, protectedProcedure } from "../../index";
 
-export const update = adminProcedure
+export const update = protectedProcedure
   .route({ method: "PATCH", path: "/{id}" })
   .input(customerInputSchema.partial().extend({ id: z.string() }))
   .handler(async ({ input, context }) => {
-    const { id, ...data } = input;
+    const { id, type, ...fields } = input;
+
+    const userId = context.session.user.id;
+
+    const data = (await isAdmin(context, userId))
+      ? { ...fields, type }
+      : fields;
 
     if (Object.values(data).every((v) => v === undefined)) {
       throw new ORPCError("BAD_REQUEST", {
@@ -20,7 +26,7 @@ export const update = adminProcedure
 
     const [updated] = await context.db
       .update(customer)
-      .set({ ...data, modifiedBy: context.session.user.id })
+      .set({ ...data, modifiedBy: userId })
       .where(eq(customer.id, id))
       .returning();
 

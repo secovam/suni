@@ -22,15 +22,19 @@ const requireAuth = o.middleware(({ context, next }) => {
 
 export const protectedProcedure = publicProcedure.use(requireAuth);
 
+export async function isAdmin(context: Pick<Context, "db">, userId: string) {
+  const [currentUser] = await context.db
+    .select({ role: user.role })
+    .from(user)
+    .where(eq(user.id, userId))
+    .limit(1);
+
+  return currentUser?.role === "admin";
+}
+
 export const adminProcedure = protectedProcedure.use(
   async ({ context, next }) => {
-    const [currentUser] = await context.db
-      .select({ role: user.role })
-      .from(user)
-      .where(eq(user.id, context.session.user.id))
-      .limit(1);
-
-    if (currentUser?.role !== "admin") {
+    if (!(await isAdmin(context, context.session.user.id))) {
       throw new ORPCError("FORBIDDEN");
     }
 

@@ -3,9 +3,9 @@ import { customer } from "@suni/db/schema/customers";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 
-import { adminProcedure } from "../../index";
+import { protectedProcedure } from "../../index";
 
-export const get = adminProcedure
+export const get = protectedProcedure
   .route({ method: "GET", path: "/{id}" })
   .input(z.object({ id: z.string() }))
   .handler(async ({ input, context }) => {
