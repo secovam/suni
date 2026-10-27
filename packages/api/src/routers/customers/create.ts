@@ -1,20 +1,11 @@
 import { customer } from "@suni/db/schema/customers";
-import { createInsertSchema } from "drizzle-orm/zod";
+import { customerInputSchema } from "@suni/db/validation/customers";
 
 import { adminProcedure } from "../../index";
 
 export const create = adminProcedure
   .route({ method: "POST", path: "/" })
-  .input(
-    createInsertSchema(customer).omit({
-      id: true,
-      sellerId: true,
-      modifiedBy: true,
-      createdAt: true,
-      updatedAt: true,
-      archived: true,
-    })
-  )
+  .input(customerInputSchema)
   .handler(async ({ input, context }) => {
     const userId = context.session.user.id;
 

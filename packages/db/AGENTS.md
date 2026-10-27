@@ -6,12 +6,13 @@ This package owns the Drizzle schema, relations, and database factory for Postgr
 
 ## Key files
 
-| File                | Owns                      |
-| ------------------- | ------------------------- |
-| `src/index.ts`      | Database factory and type |
-| `src/schema/`       | Table definitions         |
-| `src/relations.ts`  | Drizzle relations         |
-| `drizzle.config.ts` | Migration settings        |
+| File | Owns |
+| --- | --- |
+| `src/index.ts` | Database factory and type |
+| `src/schema/` | Table definitions |
+| `src/validation/` | Zod input rules shared by the web forms and API (no drizzle imports) |
+| `src/relations.ts` | Drizzle relations |
+| `drizzle.config.ts` | Migration settings |
 
 ## Commands
 

@@ -20,7 +20,7 @@ export const customer = pgTable("customer", {
   suburb: text("suburb").notNull(),
   state: text("state").notNull(),
   postalCode: text("postal_code").notNull(),
-  phone: text("phone"),
+  phone: text("phone").notNull(),
   phoneExtension: text("phone_extension"),
   acquisition: acquisitionEnum("acquisition").notNull(),
   type: customerTypeEnum("type").notNull().default("Cliente"),

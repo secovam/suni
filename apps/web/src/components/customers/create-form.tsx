@@ -2,6 +2,7 @@ import {
   ACQUISITION_CHANNELS,
   CUSTOMER_TYPES,
 } from "@suni/db/schema/customer-enums";
+import { customerFormSchema } from "@suni/db/validation/customers";
 import { Button } from "@suni/ui/components/button";
 import {
   Form,
@@ -16,35 +17,13 @@ import { ReactSelect } from "@suni/ui/components/react-select";
 import { revalidateLogic, useForm } from "@tanstack/react-form";
 import { Link, useNavigate, useRouteContext } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
-import { z } from "zod";
+import type { z } from "zod";
 
 import { useCreateCustomer } from "@/hooks/use-customers";
 
 import { LocationSection } from "./location-form";
 
-const required = (message = "Campo requerido") =>
-  z.string().trim().min(1, message);
-
-// Mover schema y secciones a archivos propios
-// oxlint-disable-next-line react-doctor/only-export-components
-export const customerFormSchema = z.object({
-  name: required("La razón social es requerida"),
-  rfc: z.string().regex(/^[A-ZÑ&]{3,4}\d{6}[A-Z0-9]{3}$/u, "RFC inválido"),
-  street: required("La calle es requerida"),
-  intNumber: z.string(),
-  extNumber: required("El número exterior es requerido"),
-  city: required("El municipio es requerido"),
-  suburb: required("La colonia es requerida"),
-  state: required("El estado es requerido"),
-  postalCode: z.string().regex(/^\d{5}$/u, "Debe tener 5 dígitos"),
-  phone: z.string().regex(/^(?:\d{10})?$/u, "Debe tener 10 dígitos"),
-  phoneExtension: z.string(),
-  acquisition: z.enum(ACQUISITION_CHANNELS, {
-    message: "Selecciona un medio de adquisición",
-  }),
-  type: z.enum(CUSTOMER_TYPES),
-});
-
+// Mover secciones a archivos propios
 export type CustomerFormValues = z.infer<typeof customerFormSchema>;
 
 const defaultValues: CustomerFormValues = {
@@ -139,7 +118,9 @@ export function ContactAndMetaSection({ isAdmin }: { isAdmin: boolean }) {
           name="phone"
           render={({ field }) => (
             <FormItem className="w-full">
-              <FormLabel>Teléfono</FormLabel>
+              <FormLabel>
+                Teléfono<span className="text-destructive">*</span>
+              </FormLabel>
               <FormControl>
                 <Input
                   inputMode="numeric"
@@ -265,24 +246,16 @@ export function CustomerCreateForm() {
     validationLogic: revalidateLogic(),
     validators: { onDynamic: customerFormSchema },
     onSubmit: ({ value }) => {
-      createCustomer.mutate(
-        {
-          ...value,
-          intNumber: value.intNumber || null,
-          phone: value.phone || null,
-          phoneExtension: value.phoneExtension || null,
+      createCustomer.mutate(value, {
+        onSuccess: (customer) => {
+          if (customer?.id) {
+            navigate({
+              to: "/customers/$customerId",
+              params: { customerId: customer.id },
+            });
+          }
         },
-        {
-          onSuccess: (customer) => {
-            if (customer?.id) {
-              navigate({
-                to: "/customers/$customerId",
-                params: { customerId: customer.id },
-              });
-            }
-          },
-        }
-      );
+      });
     },
   });
 

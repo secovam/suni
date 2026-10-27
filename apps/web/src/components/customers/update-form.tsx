@@ -1,4 +1,5 @@
 import type { AppRouterOutputs } from "@suni/api/routers/index";
+import { customerFormSchema } from "@suni/db/validation/customers";
 import { Button } from "@suni/ui/components/button";
 import { Form } from "@suni/ui/components/form";
 import { revalidateLogic, useForm } from "@tanstack/react-form";
@@ -7,11 +8,7 @@ import { Loader2 } from "lucide-react";
 
 import { useUpdateCustomer } from "@/hooks/use-customers";
 
-import {
-  BasicInfoSection,
-  ContactAndMetaSection,
-  customerFormSchema,
-} from "./create-form";
+import { BasicInfoSection, ContactAndMetaSection } from "./create-form";
 import type { CustomerFormValues } from "./create-form";
 import { LocationSection } from "./location-form";
 
@@ -27,7 +24,7 @@ const toFormValues = (customer: Customer): CustomerFormValues => ({
   suburb: customer.suburb,
   state: customer.state,
   postalCode: customer.postalCode,
-  phone: customer.phone ?? "",
+  phone: customer.phone,
   phoneExtension: customer.phoneExtension ?? "",
   acquisition: customer.acquisition,
   type: customer.type,
@@ -51,13 +48,7 @@ export function CustomerUpdateForm({ customer }: { customer: Customer }) {
     validators: { onDynamic: customerFormSchema },
     onSubmit: ({ value }) => {
       updateCustomer.mutate(
-        {
-          ...value,
-          id: customer.id,
-          intNumber: value.intNumber || null,
-          phone: value.phone || null,
-          phoneExtension: value.phoneExtension || null,
-        },
+        { ...value, id: customer.id },
         {
           onSuccess: () =>
             navigate({
