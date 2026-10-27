@@ -108,28 +108,20 @@ function RouteComponent() {
 
   const clearFilters = () => navigate({ search: defaultFilters });
 
-  const { data: customers = [], isPending } = useListCustomers({
-    includeArchived: status !== "active",
-  });
+  const { data: customers = [], isPending } = useListCustomers({ status });
 
   const matchingName = useMemo(() => {
     const term = name.trim().toLowerCase();
     const filtered: CustomerItem[] = [];
 
     for (const customer of customers) {
-      const matchesStatus =
-        status === "all" ||
-        (status === "archived"
-          ? Boolean(customer.archived)
-          : !customer.archived);
-
-      if (matchesStatus && customer.name.toLowerCase().includes(term)) {
+      if (customer.name.toLowerCase().includes(term)) {
         filtered.push(customer);
       }
     }
 
     return filtered.toSorted((a, b) => a.name.localeCompare(b.name, "es"));
-  }, [customers, name, status]);
+  }, [customers, name]);
 
   const typeOptions = useMemo(() => {
     const count = (value: string) =>
