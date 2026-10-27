@@ -6,11 +6,12 @@ import type { ClassNamesConfig, GroupBase, Props, SelectInstance } from "react-s
 export const selectClassNames = {
   control: (state) =>
     cn(
-      "min-h-9 rounded-md border border-input bg-background px-3 text-base md:text-sm",
-      state.isFocused && "border-ring ring-2 ring-ring/50",
+      // Mirrors Input so selects line up with text fields; min-h needs ! to beat react-select's base minHeight of 38px.
+      "min-h-8! rounded-lg border border-input bg-transparent px-2.5 text-base transition-colors md:text-sm dark:bg-input/30",
+      state.isFocused && "border-ring ring-3 ring-ring/50",
       state.isDisabled && "opacity-50"
     ),
-  valueContainer: () => "gap-1 py-0.5",
+  valueContainer: () => "gap-1",
   placeholder: () => "text-muted-foreground",
   singleValue: () => "text-foreground",
   input: () => "text-foreground",
