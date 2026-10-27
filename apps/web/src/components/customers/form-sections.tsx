@@ -3,6 +3,7 @@ import {
   CUSTOMER_TYPES,
 } from "@suni/db/schema/customer-enums";
 import type { customerFormSchema } from "@suni/db/validation/customers";
+import { DigitsInput } from "@suni/ui/components/digits-input";
 import {
   FormControl,
   FormField,
@@ -30,8 +31,6 @@ const typeOptions = CUSTOMER_TYPES.map((value) => ({
   value,
   label: value,
 }));
-
-const onlyDigits = (value: string) => value.replaceAll(/\D/gu, "");
 
 export function BasicInfoSection() {
   return (
@@ -100,14 +99,11 @@ export function ContactAndMetaSection({ isAdmin }: { isAdmin: boolean }) {
                 Teléfono<span className="text-destructive">*</span>
               </FormLabel>
               <FormControl>
-                <Input
-                  inputMode="numeric"
+                <DigitsInput
                   maxLength={10}
                   name={field.name}
                   onBlur={field.handleBlur}
-                  onChange={(e) =>
-                    field.handleChange(onlyDigits(e.target.value))
-                  }
+                  onValueChange={field.handleChange}
                   placeholder="8112341234"
                   value={field.state.value}
                 />
@@ -123,14 +119,11 @@ export function ContactAndMetaSection({ isAdmin }: { isAdmin: boolean }) {
             <FormItem className="w-full">
               <FormLabel>No. Extensión</FormLabel>
               <FormControl>
-                <Input
-                  inputMode="numeric"
+                <DigitsInput
                   maxLength={10}
                   name={field.name}
                   onBlur={field.handleBlur}
-                  onChange={(e) =>
-                    field.handleChange(onlyDigits(e.target.value))
-                  }
+                  onValueChange={field.handleChange}
                   placeholder="3412"
                   value={field.state.value}
                 />

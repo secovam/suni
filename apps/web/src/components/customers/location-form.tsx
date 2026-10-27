@@ -1,3 +1,4 @@
+import { DigitsInput } from "@suni/ui/components/digits-input";
 import {
   FormControl,
   FormField,
@@ -11,8 +12,6 @@ import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { usePostalCode } from "@/hooks/use-postal-code";
-
-const onlyDigits = (value: string) => value.replaceAll(/\D/gu, "");
 
 interface LocationFormApi {
   getFieldValue: (name: "postalCode" | "suburb") => string;
@@ -106,27 +105,24 @@ export function LocationSection({ form }: { form: LocationFormApi }) {
             <FormLabel>
               Código Postal<span className="text-destructive">*</span>
             </FormLabel>
-            <FormControl>
-              <div className="relative">
-                <Input
-                  inputMode="numeric"
+            <div className="relative">
+              <FormControl>
+                <DigitsInput
                   maxLength={5}
                   name={field.name}
                   onBlur={field.handleBlur}
-                  onChange={(e) => {
-                    const digits = onlyDigits(e.target.value);
+                  onValueChange={(digits) => {
                     field.handleChange(digits);
                     setPostalCode(digits);
                   }}
                   placeholder="64000"
-                  type="text"
                   value={field.state.value}
                 />
-                {isFetching && (
-                  <Loader2 className="absolute top-2.5 right-3 size-4 animate-spin" />
-                )}
-              </div>
-            </FormControl>
+              </FormControl>
+              {isFetching && (
+                <Loader2 className="absolute top-2.5 right-3 size-4 animate-spin" />
+              )}
+            </div>
             {hint && <p className="text-muted-foreground text-sm">{hint}</p>}
             <FormMessage />
           </FormItem>
