@@ -1,6 +1,8 @@
 import { cn } from "@suni/ui/lib/utils";
 import type { Ref } from "react";
 import Select from "react-select";
+import CreatableSelect from "react-select/creatable";
+import type { CreatableProps } from "react-select/creatable";
 import type { ClassNamesConfig, GroupBase, Props, SelectInstance } from "react-select";
 
 export const selectClassNames = {
@@ -44,31 +46,57 @@ type ReactSelectProps<
   "aria-describedby"?: string;
 };
 
-export function ReactSelect<
+type ReactCreatableSelectProps<
   Option,
-  IsMulti extends boolean = false,
-  Group extends GroupBase<Option> = GroupBase<Option>,
+  IsMulti extends boolean,
+  Group extends GroupBase<Option>,
+> = CreatableProps<Option, IsMulti, Group> &
+  ReactSelectProps<Option, IsMulti, Group>;
+
+function withSharedProps<
+  Option,
+  IsMulti extends boolean,
+  Group extends GroupBase<Option>,
 >({
   classNames,
-  ref,
   id,
   inputId,
   "aria-describedby": describedBy,
   ...props
 }: ReactSelectProps<Option, IsMulti, Group>) {
+  return {
+    classNames: {
+      ...(selectClassNames as unknown as ClassNamesConfig<Option, IsMulti, Group>),
+      ...classNames,
+    },
+    // FormControl passes id/aria-describedby; react-select needs them on the inner input so labels and errors link up.
+    "aria-errormessage": props["aria-invalid"] ? describedBy : undefined,
+    inputId: inputId ?? id,
+    unstyled: true,
+    ...props,
+  } as const;
+}
+
+export function ReactSelect<
+  Option,
+  IsMulti extends boolean = false,
+  Group extends GroupBase<Option> = GroupBase<Option>,
+>(props: ReactSelectProps<Option, IsMulti, Group>) {
   return (
     <div className="notranslate" translate="no">
-      <Select<Option, IsMulti, Group>
-        classNames={{
-        ...(selectClassNames as unknown as ClassNamesConfig<Option, IsMulti, Group>),          ...classNames,
-        }}
-        // FormControl passes id/aria-describedby; react-select needs them on the inner input so labels and errors link up.
-        aria-errormessage={props["aria-invalid"] ? describedBy : undefined}
-        inputId={inputId ?? id}
-        ref={ref}
-        unstyled
-        {...props}
-      />
+      <Select<Option, IsMulti, Group> {...withSharedProps(props)} />
+    </div>
+  );
+}
+
+export function ReactCreatableSelect<
+  Option,
+  IsMulti extends boolean = false,
+  Group extends GroupBase<Option> = GroupBase<Option>,
+>(props: ReactCreatableSelectProps<Option, IsMulti, Group>) {
+  return (
+    <div className="notranslate" translate="no">
+      <CreatableSelect<Option, IsMulti, Group> {...withSharedProps(props)} />
     </div>
   );
 }
