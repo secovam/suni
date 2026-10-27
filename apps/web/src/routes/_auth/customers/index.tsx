@@ -13,6 +13,7 @@ import { z } from "zod";
 
 import CustomerCard from "@/components/customers/customer-card";
 import { useListCustomers } from "@/hooks/use-customers";
+import { useIsAdmin } from "@/hooks/use-is-admin";
 
 const searchSchema = z.object({
   name: z.string().optional(),
@@ -48,6 +49,8 @@ function CustomerList({
   hasFilters: boolean;
   isPending: boolean;
 }) {
+  const isAdmin = useIsAdmin();
+
   if (isPending) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -82,7 +85,12 @@ function CustomerList({
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
       {customers.map((customer) => (
-        <CustomerCard customer={customer} key={customer.id} />
+        <CustomerCard
+          customer={customer}
+          isAdmin={isAdmin}
+          key={customer.id}
+          seller={customer.seller}
+        />
       ))}
     </div>
   );

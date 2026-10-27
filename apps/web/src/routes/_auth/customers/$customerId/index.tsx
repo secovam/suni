@@ -14,6 +14,7 @@ import {
 
 import { CustomerData } from "@/components/customers/data";
 import { useGetCustomer } from "@/hooks/use-customers";
+import { useIsAdmin } from "@/hooks/use-is-admin";
 
 export const Route = createFileRoute("/_auth/customers/$customerId/")({
   component: RouteComponent,
@@ -31,6 +32,7 @@ const TABS = [
 function RouteComponent() {
   const { customerId } = Route.useParams();
   const { data: customer, isLoading } = useGetCustomer(customerId);
+  const isAdmin = useIsAdmin();
 
   if (isLoading) {
     return <p>Cargando...</p>;
@@ -73,7 +75,11 @@ function RouteComponent() {
         </Link>
       </div>
 
-      <CustomerData customer={customer} />
+      <CustomerData
+        customer={customer}
+        isAdmin={isAdmin}
+        seller={customer.seller}
+      />
 
       <Tabs className="mt-6" defaultValue="branches">
         <TabsList className="mb-3 h-auto w-full justify-start">
