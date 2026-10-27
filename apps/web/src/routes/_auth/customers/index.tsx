@@ -3,6 +3,7 @@ import {
   CUSTOMER_TYPES,
 } from "@suni/db/schema/customer-enums";
 import { Button } from "@suni/ui/components/button";
+import { cn } from "@suni/ui/lib/utils";
 import {
   Link,
   createFileRoute,
@@ -43,6 +44,7 @@ function RouteComponent() {
     data: customers = [],
     isError,
     isPending,
+    isPlaceholderData,
   } = useListCustomers({ status });
 
   const matchingName = useMemo(() => {
@@ -92,12 +94,21 @@ function RouteComponent() {
 
       <CustomerFilters customers={matchingName} hasFilters={hasFilters} />
 
-      <CustomerList
-        customers={visibleCustomers}
-        hasFilters={hasFilters}
-        isError={isError}
-        isPending={isPending}
-      />
+      {/* Placeholder data is the previous filter's list; dim it until the new one arrives. */}
+      <div
+        aria-busy={isPlaceholderData}
+        className={cn(
+          "transition-opacity",
+          isPlaceholderData && "pointer-events-none opacity-50"
+        )}
+      >
+        <CustomerList
+          customers={visibleCustomers}
+          hasFilters={hasFilters}
+          isError={isError}
+          isPending={isPending}
+        />
+      </div>
     </div>
   );
 }
