@@ -24,19 +24,11 @@ import { useState } from "react";
 
 import { ChangeCustomerStatusDialog } from "./change-customer-status-dialog";
 
-type CustomerRow = AppRouterOutputs["customers"]["list"][number];
-
 interface CustomerCardProps {
-  customer: CustomerRow;
-  isAdmin?: boolean;
-  seller?: { name: string } | null;
+  customer: AppRouterOutputs["customers"]["list"][number];
 }
 
-export default function CustomerCard({
-  customer,
-  isAdmin = false,
-  seller,
-}: CustomerCardProps) {
+export default function CustomerCard({ customer }: CustomerCardProps) {
   const isArchived = !!customer.archived;
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
 
@@ -117,13 +109,13 @@ export default function CustomerCard({
             </span>
           </div>
 
-          {/* Seller */}
-          {isAdmin && (
+          {/* Seller (the API only sends it to admins) */}
+          {customer.seller && (
             <div className="mt-3 flex items-center gap-2 text-sm">
               <UserRound className="text-muted-foreground/70 size-4 shrink-0" />
               <span className="text-muted-foreground/70">Vendedor:</span>
               <span className="text-muted-foreground">
-                {seller?.name ?? "—"}
+                {customer.seller.name}
               </span>
             </div>
           )}
@@ -134,12 +126,10 @@ export default function CustomerCard({
               <MapPin className="text-muted-foreground/70 mt-0.5 size-4 shrink-0" />
               <div className="text-muted-foreground flex flex-col text-sm leading-relaxed">
                 <span className="line-clamp-1">
-                  {customer.suburb && `${customer.suburb}, `}
-                  {customer.city}
+                  {customer.suburb}, {customer.city}
                 </span>
                 <span className="text-muted-foreground/70 text-xs">
-                  {customer.state}
-                  {customer.postalCode && ` · CP ${customer.postalCode}`}
+                  {customer.state} · CP {customer.postalCode}
                 </span>
               </div>
             </div>
