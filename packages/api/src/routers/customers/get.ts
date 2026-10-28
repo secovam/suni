@@ -1,32 +1,39 @@
 import { ORPCError } from "@orpc/server";
-import { user } from "@suni/db/schema/auth";
-import { customer } from "@suni/db/schema/customers";
-import { eq, getTableColumns } from "drizzle-orm";
 import { z } from "zod";
 
 import { isAdmin, protectedProcedure } from "../../index";
+
+function notFound() {
+  return new ORPCError("NOT_FOUND", { message: "Customer not found" });
+}
 
 export const get = protectedProcedure
   .route({ method: "GET", path: "/{id}" })
   .input(z.object({ id: z.string() }))
   .handler(async ({ input, context }) => {
-    const [found] = await context.db
-      .select({
-        ...getTableColumns(customer),
-        seller: { id: user.id, name: user.name },
-      })
-      .from(customer)
-      .innerJoin(user, eq(user.id, customer.sellerId))
-      .where(eq(customer.id, input.id))
-      .limit(1);
+    const where = { id: input.id };
 
-    if (!found) {
-      throw new ORPCError("NOT_FOUND", { message: "Customer not found" });
+    if (await isAdmin(context, context.session.user.id)) {
+      const found = await context.db.query.customer.findFirst({
+        where,
+        with: { seller: { columns: { id: true, name: true } } },
+      });
+
+      if (!found) {
+        throw notFound();
+      }
+
+      return found;
     }
 
-    // Seller names are admin-only.
-    if (await isAdmin(context, context.session.user.id)) {
-      return found;
+    // Seller identity is admin-only.
+    const found = await context.db.query.customer.findFirst({
+      where,
+      columns: { sellerId: false, modifiedBy: false },
+    });
+
+    if (!found) {
+      throw notFound();
     }
 
     return { ...found, seller: null };

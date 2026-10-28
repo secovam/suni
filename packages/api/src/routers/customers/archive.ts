@@ -17,7 +17,7 @@ export const archive = protectedProcedure
         modifiedBy: context.session.user.id,
       })
       .where(eq(customer.id, input.id))
-      .returning();
+      .returning({ id: customer.id });
 
     if (!updated) {
       throw new ORPCError("NOT_FOUND", { message: "Customer not found" });

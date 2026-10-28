@@ -28,7 +28,7 @@ export const update = protectedProcedure
       .update(customer)
       .set({ ...data, modifiedBy: userId })
       .where(eq(customer.id, id))
-      .returning();
+      .returning({ id: customer.id });
 
     if (!updated) {
       throw new ORPCError("NOT_FOUND", { message: "Customer not found" });
