@@ -5,15 +5,18 @@ import { z } from "zod";
 
 import { protectedProcedure } from "../../index";
 
-export const archive = protectedProcedure
-  .route({ method: "POST", path: "/{id}/archive" })
-  .input(z.object({ id: z.string() }))
+export const setArchived = protectedProcedure
+  .route({ method: "POST", path: "/{id}/archived" })
+  .input(z.object({ id: z.string(), archived: z.boolean() }))
   .handler(async ({ input, context }) => {
-    // Flip inside the UPDATE so concurrent toggles cannot read the same value.
+    // Set the target state instead of toggling, so a repeated request is a no-op.
+    // COALESCE keeps the original archive date when it is already archived.
     const [updated] = await context.db
       .update(customer)
       .set({
-        archived: sql`CASE WHEN ${customer.archived} IS NULL THEN now() ELSE NULL END`,
+        archived: input.archived
+          ? sql`COALESCE(${customer.archived}, now())`
+          : null,
         modifiedBy: context.session.user.id,
       })
       .where(eq(customer.id, input.id))

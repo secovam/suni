@@ -71,9 +71,16 @@ export function ChangeCustomerStatusDialog({
           <AlertDialogAction
             disabled={mutation.isPending}
             onClick={() =>
-              mutation.mutate(customer, {
-                onSuccess: () => onOpenChange(false),
-              })
+              mutation.mutate(
+                {
+                  id: customer.id,
+                  name: customer.name,
+                  archived: !customer.archived,
+                },
+                {
+                  onSuccess: () => onOpenChange(false),
+                }
+              )
             }
             variant={action.confirmVariant}
           >

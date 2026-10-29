@@ -57,16 +57,18 @@ export function useArchiveCustomer() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (customer: Pick<CustomerRow, "id" | "name" | "archived">) =>
-      client.customers.archive({ id: customer.id }),
-    onSuccess: async (_data, customer) => {
+    // `archived` is the state the user confirmed in the dialog, sent as-is so a
+    // stale list cannot flip the customer the wrong way.
+    mutationFn: ({
+      id,
+      archived,
+    }: Pick<CustomerRow, "id" | "name"> & { archived: boolean }) =>
+      client.customers.setArchived({ id, archived }),
+    onSuccess: async (_data, { archived, name }) => {
       await queryClient.invalidateQueries({ queryKey: orpc.customers.key() });
-      toast.success(
-        customer.archived ? "Cliente desarchivado" : "Cliente archivado",
-        {
-          description: `Se ${customer.archived ? "desarchivó" : "archivó"} a ${customer.name} con éxito.`,
-        }
-      );
+      toast.success(archived ? "Cliente archivado" : "Cliente desarchivado", {
+        description: `Se ${archived ? "archivó" : "desarchivó"} a ${name} con éxito.`,
+      });
     },
     onError: (error) => {
       console.error("Error al archivar el cliente:", error);
