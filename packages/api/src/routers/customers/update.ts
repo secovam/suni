@@ -33,7 +33,7 @@ export const update = protectedProcedure
 
     if (!updated) {
       throw new ORPCError("NOT_FOUND", {
-        message: "Customer not found or archived",
+        message: "El cliente no existe o está archivado",
       });
     }
 
