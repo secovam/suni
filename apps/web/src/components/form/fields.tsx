@@ -25,6 +25,7 @@ function FieldFrame({
   children: (control: {
     "aria-describedby"?: string;
     "aria-invalid": boolean;
+    "aria-required": boolean;
     id: string;
     name: string;
   }) => ReactNode;
@@ -46,6 +47,7 @@ function FieldFrame({
       {children({
         "aria-describedby": describedBy,
         "aria-invalid": Boolean(error),
+        "aria-required": required,
         id: field.name,
         name: field.name,
       })}
@@ -160,7 +162,7 @@ export function SelectField({
 
   return (
     <FieldFrame label={label} required={required}>
-      {({ id, name: _name, ...control }) =>
+      {({ id, name: _name, "aria-required": _required, ...control }) =>
         creatable ? (
           <ReactCreatableSelect
             {...control}
