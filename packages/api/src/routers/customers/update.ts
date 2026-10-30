@@ -1,7 +1,7 @@
 import { ORPCError } from "@orpc/server";
 import { customer } from "@suni/db/schema/customers";
 import { customerInputSchema } from "@suni/db/validation/customers";
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { z } from "zod";
 
 import { isAdmin, protectedProcedure } from "../../index";
@@ -27,11 +27,14 @@ export const update = protectedProcedure
     const [updated] = await context.db
       .update(customer)
       .set({ ...data, modifiedBy: userId })
-      .where(eq(customer.id, id))
+      // Archived customers are read-only until restored.
+      .where(and(eq(customer.id, id), isNull(customer.archived)))
       .returning({ id: customer.id });
 
     if (!updated) {
-      throw new ORPCError("NOT_FOUND", { message: "Customer not found" });
+      throw new ORPCError("NOT_FOUND", {
+        message: "Customer not found or archived",
+      });
     }
 
     return updated;
