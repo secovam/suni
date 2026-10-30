@@ -230,7 +230,7 @@ export function CustomerForm({ customer }: CustomerFormProps) {
             )}
           </form.AppField>
           <form.AppField name="phoneExtension">
-            {(field) => <field.DigitsField label="Extensión" />}
+            {(field) => <field.DigitsField label="Extensión" maxLength={10} />}
           </form.AppField>
           <form.AppField name="acquisition">
             {(field) => (
