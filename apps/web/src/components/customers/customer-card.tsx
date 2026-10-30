@@ -59,7 +59,7 @@ export default function CustomerCard({ customer }: CustomerCardProps) {
               </h2>
             </Link>
 
-            <span className="shrink-0 transition-opacity md:opacity-0 md:group-hover:opacity-100 md:focus-within:opacity-100">
+            <span className="shrink-0 transition-opacity pointer-fine:opacity-0 pointer-fine:group-hover:opacity-100 pointer-fine:focus-within:opacity-100">
               <DropdownMenu>
                 <DropdownMenuTrigger
                   render={<Button size="icon-sm" variant="ghost" />}
