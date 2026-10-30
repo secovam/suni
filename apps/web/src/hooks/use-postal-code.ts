@@ -23,6 +23,9 @@ export function postalCodeQueryOptions(zip: string) {
     enabled: /^\d{5}$/u.test(zip),
     staleTime: Number.POSITIVE_INFINITY,
     retry: 1,
+    // A background success after an error would lock municipio/estado while they are still empty.
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
     queryFn: async ({ signal }) => {
       const res = await fetch(
         `${ENV.VITE_SEPOMEX_URL}/api/v1/zip_codes?zip_code=${zip}&per_page=200`,
