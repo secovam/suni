@@ -14,7 +14,7 @@ export const create = protectedProcedure
     const [created] = await context.db
       .insert(customer)
       .values({ ...input, type, sellerId: userId, modifiedBy: userId })
-      .returning();
+      .returning({ id: customer.id });
 
     return created;
   });
