@@ -13,10 +13,18 @@ import {
 } from "lucide-react";
 
 import { CustomerData } from "@/components/customers/data";
-import { useGetCustomer } from "@/hooks/use-customers";
 
 export const Route = createFileRoute("/_auth/customers/$customerId/")({
+  loader: ({ context: { orpc, queryClient }, params: { customerId } }) =>
+    queryClient.query(
+      orpc.customers.get.queryOptions({ input: { id: customerId } })
+    ),
   component: RouteComponent,
+  errorComponent: () => (
+    <p className="text-destructive p-6 text-sm">
+      No se pudo cargar el cliente.
+    </p>
+  ),
 });
 
 const TABS = [
@@ -29,16 +37,7 @@ const TABS = [
 ] as const;
 
 function RouteComponent() {
-  const { customerId } = Route.useParams();
-  const { data: customer, isLoading } = useGetCustomer(customerId);
-
-  if (isLoading) {
-    return <p>Cargando...</p>;
-  }
-
-  if (!customer) {
-    return <p>Cliente no encontrado...</p>;
-  }
+  const customer = Route.useLoaderData();
 
   return (
     <div className="flex flex-col">
@@ -60,17 +59,19 @@ function RouteComponent() {
                   : "bg-brand/10 text-brand"
               )}
             >
-              {customer.type ?? "Cliente"}
+              {customer.type}
             </span>
           </div>
         </div>
-        <Link
-          className={buttonVariants({ variant: "green" })}
-          params={{ customerId: customer.id }}
-          to="/customers/$customerId/edit"
-        >
-          Editar
-        </Link>
+        {customer.archived ? null : (
+          <Link
+            className={buttonVariants({ variant: "green" })}
+            params={{ customerId: customer.id }}
+            to="/customers/$customerId/edit"
+          >
+            Editar
+          </Link>
+        )}
       </div>
 
       <CustomerData customer={customer} />

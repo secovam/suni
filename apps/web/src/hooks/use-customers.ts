@@ -21,10 +21,6 @@ export function useListCustomers(params: AppRouterInputs["customers"]["list"]) {
   });
 }
 
-export function useGetCustomer(id: string) {
-  return useQuery(orpc.customers.get.queryOptions({ input: { id } }));
-}
-
 export function useCreateCustomer() {
   const queryClient = useQueryClient();
 
