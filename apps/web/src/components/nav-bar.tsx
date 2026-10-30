@@ -5,7 +5,7 @@ import type { LucideIcon } from "lucide-react";
 import { Home, Users } from "lucide-react";
 
 interface NavItem {
-  to: "/dashboard" | "/users";
+  to: "/dashboard" | "/users" | "/customers";
   label: string;
   icon: LucideIcon;
 }
@@ -13,6 +13,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { to: "/dashboard", label: "Inicio", icon: Home },
   { to: "/users", label: "Usuarios", icon: Users },
+  { to: "/customers", label: "Clientes", icon: Users },
 ];
 
 export function NavMain() {

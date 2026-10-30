@@ -1,13 +1,11 @@
 import type { AppRouterOutputs } from "@suni/api/routers/index";
 import { Button } from "@suni/ui/components/button";
-import { Input } from "@suni/ui/components/input";
-import { Label } from "@suni/ui/components/label";
-import { ReactSelect } from "@suni/ui/components/react-select";
-import { revalidateLogic, useForm } from "@tanstack/react-form";
+import { revalidateLogic } from "@tanstack/react-form";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
 import { z } from "zod";
 
+import { useAppForm } from "@/components/form/use-app-form";
 import { useCreateUser, useUpdateUser } from "@/hooks/use-users";
 
 const ROLE_OPTIONS = [
@@ -20,18 +18,6 @@ const userSchema = z.object({
   email: z.email({ message: "El correo no es válido" }),
   role: z.enum(["admin", "user"]),
 });
-
-function FieldError({ id, message }: { id: string; message?: string }) {
-  if (!message) {
-    return null;
-  }
-
-  return (
-    <p className="text-destructive text-sm" id={id} role="alert">
-      {message}
-    </p>
-  );
-}
 
 interface UserFormProps {
   user?: AppRouterOutputs["users"]["get"];
@@ -52,7 +38,7 @@ export function UserForm({ user }: UserFormProps) {
     role: user?.role === "admin" ? "admin" : "user",
   };
 
-  const form = useForm({
+  const form = useAppForm({
     defaultValues,
     // Valida al enviar y, después del primer envío, en cada cambio.
     validationLogic: revalidateLogic(),
@@ -75,95 +61,35 @@ export function UserForm({ user }: UserFormProps) {
       }}
     >
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <form.Field name="name">
-          {(field) => {
-            const [error] = field.state.meta.errors;
-            const errorId = `${field.name}-error`;
+        <form.AppField name="name">
+          {(field) => (
+            <field.TextField label="Nombre" placeholder="Juan Pérez" required />
+          )}
+        </form.AppField>
 
-            return (
-              <div className="space-y-2">
-                <Label htmlFor={field.name}>
-                  Nombre<span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  aria-describedby={error && errorId}
-                  aria-invalid={Boolean(error)}
-                  id={field.name}
-                  name={field.name}
-                  onBlur={field.handleBlur}
-                  onChange={(event) => field.handleChange(event.target.value)}
-                  placeholder="Juan Pérez"
-                  type="text"
-                  value={field.state.value}
-                />
-                <FieldError id={errorId} message={error?.message} />
-              </div>
-            );
-          }}
-        </form.Field>
-
-        <form.Field name="email">
-          {(field) => {
-            const [error] = field.state.meta.errors;
-            const errorId = `${field.name}-error`;
-
-            return (
-              <div className="space-y-2">
-                <Label htmlFor={field.name}>
-                  Correo<span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  aria-describedby={error && errorId}
-                  aria-invalid={Boolean(error)}
-                  id={field.name}
-                  name={field.name}
-                  onBlur={field.handleBlur}
-                  onChange={(event) => field.handleChange(event.target.value)}
-                  placeholder="correo@secovam.com"
-                  type="email"
-                  value={field.state.value}
-                />
-                <FieldError id={errorId} message={error?.message} />
-              </div>
-            );
-          }}
-        </form.Field>
+        <form.AppField name="email">
+          {(field) => (
+            <field.TextField
+              label="Correo"
+              placeholder="correo@secovam.com"
+              required
+              type="email"
+            />
+          )}
+        </form.AppField>
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <form.Field name="role">
-          {(field) => {
-            const [error] = field.state.meta.errors;
-            const errorId = `${field.name}-error`;
-
-            return (
-              <div className="space-y-2">
-                <Label htmlFor={field.name}>
-                  Rol del usuario<span className="text-destructive">*</span>
-                </Label>
-                <ReactSelect
-                  aria-describedby={error && errorId}
-                  aria-invalid={Boolean(error)}
-                  inputId={field.name}
-                  onBlur={field.handleBlur}
-                  onChange={(option) => {
-                    if (option) {
-                      field.handleChange(option.value);
-                    }
-                  }}
-                  options={ROLE_OPTIONS}
-                  placeholder="Selecciona el rol del usuario..."
-                  value={
-                    ROLE_OPTIONS.find(
-                      (option) => option.value === field.state.value
-                    ) ?? null
-                  }
-                />
-                <FieldError id={errorId} message={error?.message} />
-              </div>
-            );
-          }}
-        </form.Field>
+        <form.AppField name="role">
+          {(field) => (
+            <field.SelectField
+              label="Rol del usuario"
+              options={ROLE_OPTIONS}
+              placeholder="Selecciona el rol del usuario..."
+              required
+            />
+          )}
+        </form.AppField>
       </div>
 
       <div className="flex w-full justify-end">
