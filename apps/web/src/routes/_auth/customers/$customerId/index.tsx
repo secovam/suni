@@ -1,6 +1,7 @@
 import { buttonVariants } from "@suni/ui/components/button";
 import { Tabs, TabsList, TabsTrigger } from "@suni/ui/components/tabs";
 import { cn } from "@suni/ui/lib/utils";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ContactRound,
@@ -13,9 +14,10 @@ import {
 } from "lucide-react";
 
 import { CustomerData } from "@/components/customers/data";
+import { orpc } from "@/utils/orpc";
 
 export const Route = createFileRoute("/_auth/customers/$customerId/")({
-  loader: ({ context: { orpc, queryClient }, params: { customerId } }) =>
+  loader: ({ context: { queryClient }, params: { customerId } }) =>
     queryClient.query(
       orpc.customers.get.queryOptions({ input: { id: customerId } })
     ),
@@ -37,7 +39,12 @@ const TABS = [
 ] as const;
 
 function RouteComponent() {
-  const customer = Route.useLoaderData();
+  const { customerId } = Route.useParams();
+
+  // Reads the query cache, not loader data, so saves and archives show up even after a preload.
+  const { data: customer } = useSuspenseQuery(
+    orpc.customers.get.queryOptions({ input: { id: customerId } })
+  );
 
   return (
     <div className="flex flex-col">

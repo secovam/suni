@@ -1,10 +1,12 @@
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { SquareChartGantt } from "lucide-react";
 
 import { CustomerForm } from "@/components/customers/customer-form";
+import { orpc } from "@/utils/orpc";
 
 export const Route = createFileRoute("/_auth/customers/$customerId/edit")({
-  loader: ({ context: { orpc, queryClient }, params: { customerId } }) =>
+  loader: ({ context: { queryClient }, params: { customerId } }) =>
     queryClient.query(
       orpc.customers.get.queryOptions({ input: { id: customerId } })
     ),
@@ -17,7 +19,12 @@ export const Route = createFileRoute("/_auth/customers/$customerId/edit")({
 });
 
 function RouteComponent() {
-  const customer = Route.useLoaderData();
+  const { customerId } = Route.useParams();
+
+  // Reads the query cache, not loader data, so saves and archives show up even after a preload.
+  const { data: customer } = useSuspenseQuery(
+    orpc.customers.get.queryOptions({ input: { id: customerId } })
+  );
 
   return (
     <div className="flex flex-col gap-6 p-6">
