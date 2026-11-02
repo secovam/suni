@@ -23,8 +23,12 @@ See [package.json](package.json) for available scripts. From the repo root, run 
 
 - Import shared UI from `@suni/ui/components/*`; keep app-specific components in `src/components/`, grouped by feature (for example `src/components/users/`).
 - Put oRPC queries and mutations in `src/hooks/` and have mutations await query invalidation. Load a single record for a route in its `loader`.
-- Build forms with TanStack Form (`@tanstack/react-form`) and Zod.
+- Name hooks verb plus resource (`useListCustomers`, `useCreateCustomer`). Type data with `AppRouterInputs` and `AppRouterOutputs`, never by redeclaring shapes.
+- Build forms with TanStack Form (`@tanstack/react-form`) and the Zod schemas from `@suni/db/validation/*`. Do not use react-hook-form.
 - Use `Link` for buttons that only navigate.
+- Every page that fetches data renders loading, empty, and error states.
+- Hide navigation and actions the current user cannot use, matching the procedure each one calls (`useIsAdmin` for admin-only ones).
+- Keep a component's props type, constants, and labels in the same file as the component.
 
 ## Generated files
 

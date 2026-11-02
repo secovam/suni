@@ -12,6 +12,18 @@ This is a TypeScript monorepo with a React/Vite web app, a Hono/oRPC server, and
 - Build all workspaces: `pnpm run build`.
 - Check types across workspaces: `pnpm run check-types`.
 - Pull requests: write the body with the sections of [.github/pull_request_template.md](.github/pull_request_template.md), in Spanish. `gh pr create --body` does not apply the template on its own.
+- Dependencies: when a package already in `catalog:` of [pnpm-workspace.yaml](pnpm-workspace.yaml) is added to a workspace, use `catalog:` instead of a version.
+
+## New domain module
+
+The customers module is the reference implementation. Before building a new module, read it and copy its structure:
+
+- Table in `packages/db/src/schema/<module>.ts`, enums in their own file when shared.
+- Zod input rules in `packages/db/src/validation/<module>.ts`, used by both the API and the web form.
+- Router in `packages/api/src/routers/<module>/`, one file per procedure, with prefix and tag set once in `index.ts`.
+- Hooks in `apps/web/src/hooks/use-<module>.ts`, components in `apps/web/src/components/<module>/`, routes in `apps/web/src/routes/_auth/<module>/`.
+
+Before writing code for a new module or a change that touches several packages, describe the plan (tables, procedures and who may call them, routes) to the user and wait for approval. Access scoping is not obvious yet (see the role note above).
 
 When the user asks for tests (see [Verification by change](docs/agents/testing.md)):
 
