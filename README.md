@@ -47,13 +47,41 @@ Este proyecto usa PostgreSQL con Drizzle ORM.
 pnpm run db:push
 ```
 
-Levanta los contenedores de desarrollo local (Postgres y Mailpit, definidos en `docker-compose.dev.yml` y separados del stack de despliegue) con:
+Levanta los contenedores de desarrollo local (Postgres, Mailpit y Garage, definidos en `docker-compose.dev.yml` y separados del stack de despliegue) con:
 
 ```bash
 pnpm run services:up
 ```
 
 Los correos salientes se pueden revisar en http://localhost:8025. Configura el SMTP en `localhost:1025` (sin autenticación ni TLS). Para detenerlos, usa `pnpm run services:down`.
+
+### Almacenamiento de archivos (Garage)
+
+`pnpm run services:up` también levanta [Garage](https://garagehq.deuxfleurs.fr/), un servicio compatible con S3 que sustituye a Cloudflare R2 en local, y su visualizador web. Un contenedor `garage-init` crea una sola vez el layout, el bucket `suni-files`, la llave de acceso y el hosting web; es idempotente.
+
+| Qué | URL |
+| --- | --- |
+| API S3 | http://localhost:3900 |
+| Lectura pública anónima | `http://suni-files.web.garage.localhost:3902/<archivo>` |
+| Visualizador ([garage-ui](https://github.com/Noooste/garage-ui), como la consola de MinIO) | http://localhost:3909 (usuario `admin`, contraseña `admin`) |
+| API de administración | http://localhost:3903 |
+
+Las credenciales y el bucket locales son los valores por defecto de `STORAGE_*` en `.env.schema`: access key `GKa5d1a3c0e4b27f6d8c1b9e02`, región `garage` y bucket `suni-files`. Son públicas a propósito y solo sirven en local. Para probar con la CLI de AWS:
+
+```bash
+aws --endpoint-url http://localhost:3900 s3 cp archivo.txt s3://suni-files/archivo.txt
+```
+
+Pasar a R2 es cambiar solo variables, sin tocar código:
+
+| Variable | Garage (local) | R2 (producción) |
+| --- | --- | --- |
+| `STORAGE_ENDPOINT` | `http://localhost:3900` | `https://<account-id>.r2.cloudflarestorage.com` |
+| `STORAGE_REGION` | `garage` | `auto` |
+| `STORAGE_FORCE_PATH_STYLE` | `true` (`host/bucket/key`) | `false` (`bucket.host/key`) |
+| `STORAGE_PUBLIC_URL` | `http://suni-files.web.garage.localhost:3902` | `https://pub-xxxx.r2.dev` o tu dominio |
+
+`STORAGE_PUBLIC_URL` no incluye el bucket en ningún caso: en Garage el bucket va en el subdominio y en R2 lo define el dominio público. Garage no ofrece `mc anonymous set download`; la lectura pública sale por el puerto `3902` (hosting web), no por el de la API S3. Además, el local usa HTTP y R2 usa HTTPS. Todavía ningún módulo lee estas variables. Los datos viven en los volúmenes `suni_dev_garage_meta` y `suni_dev_garage_data`.
 
 Después, inicia el servidor de desarrollo:
 
@@ -139,7 +167,7 @@ suni/
 - `pnpm run db:generate`: genera el cliente y los tipos de la base de datos
 - `pnpm run db:migrate`: ejecuta las migraciones de la base de datos
 - `pnpm run db:studio`: abre la interfaz de Drizzle Studio
-- `pnpm run services:up`: inicia Postgres y Mailpit de desarrollo local (`docker-compose.dev.yml`)
+- `pnpm run services:up`: inicia Postgres, Mailpit y Garage de desarrollo local (`docker-compose.dev.yml`)
 - `pnpm run services:down`: los detiene
 - `pnpm run services:logs`: muestra sus logs en tiempo real
 - `pnpm run docker:build`: construye las imágenes de Docker Compose

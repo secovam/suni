@@ -29,5 +29,60 @@ services:
       timeout: 5s
       retries: 5
 
+  # S3 API :3900, public web hosting :3902, admin API :3903. Stands in for Cloudflare R2.
+  garage:
+    image: dxflrs/garage:v2.1.0
+    ports:
+      - "3900:3900"
+      - "3902:3902"
+      - "3903:3903"
+    volumes:
+      - ./docker/garage/garage.toml:/etc/garage.toml:ro
+      - suni_dev_garage_meta:/var/lib/garage/meta
+      - suni_dev_garage_data:/var/lib/garage/data
+    healthcheck:
+      test: ["CMD", "/garage", "status"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Runs once and exits: layout, bucket, access key and web hosting. Safe to re-run.
+  garage-init:
+    image: curlimages/curl:8.11.1
+    depends_on:
+      garage:
+        condition: service_healthy
+    environment:
+      GARAGE_ADMIN_TOKEN: af82aae6db044cb3a60d2700565cb69eaee2681fd754fd24d71d4dd083c84f87
+      STORAGE_BUCKET_NAME: suni-files
+      STORAGE_ACCESS_KEY_ID: GKa5d1a3c0e4b27f6d8c1b9e02
+      STORAGE_SECRET_ACCESS_KEY: 110d205bc858262b88c1880d3885f979fa084aaccf1d53a9c844875e567760a8
+    volumes:
+      - ./docker/garage/init.sh:/init.sh:ro
+    entrypoint: ["/bin/sh", "/init.sh"]
+    restart: "no"
+
+  # Web UI for browsing buckets, like the MinIO console, on :3909 (login admin / admin).
+  # garage-ui needs Garage 2.1.0 or newer and has no way to turn login off.
+  garage-webui:
+    image: noooste/garage-ui:v0.14.0
+    depends_on:
+      garage:
+        condition: service_healthy
+      garage-init:
+        condition: service_completed_successfully
+    environment:
+      GARAGE_UI_GARAGE_ENDPOINT: http://garage:3900
+      GARAGE_UI_GARAGE_ADMIN_ENDPOINT: http://garage:3903
+      GARAGE_UI_GARAGE_ADMIN_TOKEN: af82aae6db044cb3a60d2700565cb69eaee2681fd754fd24d71d4dd083c84f87
+      GARAGE_UI_GARAGE_REGION: garage
+      GARAGE_UI_AUTH_ADMIN_ENABLED: "true"
+      GARAGE_UI_AUTH_ADMIN_USERNAME: admin
+      GARAGE_UI_AUTH_ADMIN_PASSWORD: admin
+    ports:
+      - "3909:8080"
+
 volumes:
+  suni_dev_garage_meta:
+  suni_dev_garage_data:
   suni_dev_postgres_data:
