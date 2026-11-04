@@ -1,0 +1,24 @@
+# Local development only. These secrets are public on purpose; never reuse them outside docker-compose.dev.yml.
+metadata_dir = "/var/lib/garage/meta"
+data_dir = "/var/lib/garage/data"
+db_engine = "lmdb"
+replication_factor = 1
+
+rpc_bind_addr = "[::]:3901"
+rpc_public_addr = "127.0.0.1:3901"
+rpc_secret = "0cf1cd0757828ef92615926953ac168a6cc0e68c0ea28ef02efd30df639c0188"
+
+[s3_api]
+s3_region = "garage"
+api_bind_addr = "[::]:3900"
+root_domain = ".s3.garage.localhost"
+
+[s3_web]
+bind_addr = "[::]:3902"
+root_domain = ".web.garage.localhost"
+index = "index.html"
+
+[admin]
+api_bind_addr = "[::]:3903"
+admin_token = "af82aae6db044cb3a60d2700565cb69eaee2681fd754fd24d71d4dd083c84f87"
+metrics_token = "4772f927934bec0ba3994d399b09f3e70dc3d7c094f12e2db74d90556ca6786c"
