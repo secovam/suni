@@ -1,10 +1,7 @@
 import { z } from "zod";
 
 import { ACQUISITION_CHANNELS, CUSTOMER_TYPES } from "../schema/customer-enums";
-
-function required(message = "Campo requerido") {
-  return z.string().trim().min(1, message).max(255, "Máximo 255 caracteres");
-}
+import { emptyToNull, required } from "./shared";
 
 // Shared by the web form and the API, so it must stay free of drizzle imports.
 export const customerFormSchema = z.object({
@@ -24,10 +21,6 @@ export const customerFormSchema = z.object({
   }),
   type: z.enum(CUSTOMER_TYPES),
 });
-
-function emptyToNull(schema: z.ZodString) {
-  return schema.nullable().transform((value) => value || null);
-}
 
 // The form keeps "" for empty optional fields; the database stores null.
 export const customerInputSchema = customerFormSchema.extend({
