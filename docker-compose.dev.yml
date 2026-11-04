@@ -33,9 +33,9 @@ services:
   garage:
     image: dxflrs/garage:v2.1.0
     ports:
-      - "3900:3900"
-      - "3902:3902"
-      - "3903:3903"
+      - "127.0.0.1:3900:3900"
+      - "127.0.0.1:3902:3902"
+      - "127.0.0.1:3903:3903"
     volumes:
       - ./docker/garage/garage.toml:/etc/garage.toml:ro
       - suni_dev_garage_meta:/var/lib/garage/meta
@@ -80,7 +80,7 @@ services:
       GARAGE_UI_AUTH_ADMIN_USERNAME: admin
       GARAGE_UI_AUTH_ADMIN_PASSWORD: admin
     ports:
-      - "3909:8080"
+      - "127.0.0.1:3909:8080"
 
 volumes:
   suni_dev_garage_meta:

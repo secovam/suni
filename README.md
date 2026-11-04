@@ -66,11 +66,7 @@ Los correos salientes se pueden revisar en http://localhost:8025. Configura el S
 | Visualizador ([garage-ui](https://github.com/Noooste/garage-ui), como la consola de MinIO) | http://localhost:3909 (usuario `admin`, contraseña `admin`) |
 | API de administración | http://localhost:3903 |
 
-Las credenciales y el bucket locales son los valores por defecto de `STORAGE_*` en `.env.schema`: access key `GKa5d1a3c0e4b27f6d8c1b9e02`, región `garage` y bucket `suni-files`. Son públicas a propósito y solo sirven en local. Para probar con la CLI de AWS:
-
-```bash
-aws --endpoint-url http://localhost:3900 s3 cp archivo.txt s3://suni-files/archivo.txt
-```
+Las credenciales y el bucket locales son los valores por defecto de `STORAGE_*` en `.env.schema`: access key `GKa5d1a3c0e4b27f6d8c1b9e02`, región `garage` y bucket `suni-files`. Son públicas a propósito y solo sirven en local. Los puertos de Garage solo se publican en `127.0.0.1`.
 
 Pasar a R2 es cambiar solo variables, sin tocar código:
 
