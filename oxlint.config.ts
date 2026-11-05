@@ -42,20 +42,18 @@ export default defineConfig({
         "no-restricted-imports": [
           "error",
           {
-            paths: [
-              REACT_HOOK_FORM_BAN,
+            paths: [REACT_HOOK_FORM_BAN],
+            patterns: [
               {
-                name: "@suni/auth",
+                group: ["@suni/auth", "@suni/auth/**"],
                 message:
                   "@suni/auth is the server package. Use the client in @/lib/auth-client.",
               },
-            ],
-            patterns: [
               {
                 group: [
-                  "@suni/auth/**",
                   "@suni/db",
-                  "@suni/db/schema/*",
+                  "@suni/db/**",
+                  "!@suni/db/validation/*",
                   "!@suni/db/schema/*-enums",
                 ],
                 message:
