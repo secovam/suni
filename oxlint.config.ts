@@ -26,6 +26,7 @@ export default defineConfig({
     ...shadcn.jsPlugins!,
     { name: "anti-slop", specifier: "./tools/oxlint/anti-slop/index.ts" },
   ],
+  options: { reportUnusedDisableDirectives: "error" },
   settings: jsPluginSettings,
   overrides: [
     {
