@@ -12,9 +12,6 @@
     "apps/web": {
       "entry": ["src/routes/**/*.{ts,tsx}"],
       "ignoreUnresolved": ["./routeTree.gen"]
-    },
-    "apps/server": {
-      "ignoreDependencies": ["better-auth"]
     }
   }
 }
