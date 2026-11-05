@@ -7,13 +7,9 @@ import { createAuthMiddleware, isAPIError } from "better-auth/api";
 import { admin, magicLink } from "better-auth/plugins";
 import { eq } from "drizzle-orm";
 
-const SECONDS_PER_MINUTE = 60;
-
 const SECONDS_PER_DAY = 60 * 60 * 24;
 
 const SESSION_EXPIRES_IN_DAYS = 30;
-
-const COOKIE_CACHE_MINUTES = 5;
 
 const MAGIC_LINK_EXPIRES_IN_SECONDS = 900;
 
@@ -115,10 +111,6 @@ export function createAuth(
     },
     secret: env.BETTER_AUTH_SECRET,
     session: {
-      cookieCache: {
-        enabled: true,
-        maxAge: COOKIE_CACHE_MINUTES * SECONDS_PER_MINUTE,
-      },
       expiresIn: SECONDS_PER_DAY * SESSION_EXPIRES_IN_DAYS,
       updateAge: SECONDS_PER_DAY,
     },

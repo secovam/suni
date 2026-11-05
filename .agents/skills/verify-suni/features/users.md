@@ -40,6 +40,7 @@ Preconditions:
 ## Gotchas
 
 - `apps/web/src/routes/_auth/users/route.tsx` redirects a non-admin to `/dashboard` before any `/users` page loads, and the sidebar hides `Usuarios` with `useIsAdmin`. Every `users.*` procedure except `me` is admin-only on the API either way.
+- A role change or a suspension reaches an open session on its next request, because the session is not cached in a cookie. A suspended user gets HTTP 401 and is sent to `/`.
 - Search is debounced. Right after `fill`, the table still lists every user, and `find role button --name "Suspender"` clicks the first row's button. Wait until exactly one row is left before acting on a row.
 - The confirm buttons in the dialogs share their names with the row buttons (`Suspender`, `Activar`). The open modal makes the row inert, so the second `find role button` hits the dialog.
 - `Editar` and the status button are icon buttons. Their accessible names come from screen-reader-only text.
