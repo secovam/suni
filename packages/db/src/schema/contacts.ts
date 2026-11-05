@@ -1,5 +1,6 @@
 import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
 
+import { user } from "./auth";
 import { branch } from "./branches";
 import { customer } from "./customers";
 
@@ -17,6 +18,9 @@ export const contact = pgTable("contact", {
     .references(() => customer.id),
   branchId: text("branch_id").references(() => branch.id),
   archived: timestamp("archived"),
+  modifiedBy: text("modified_by")
+    .notNull()
+    .references(() => user.id),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()
