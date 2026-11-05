@@ -33,10 +33,9 @@
     "auth:generate": "cd apps/server && pnpm run auth:generate",
     "check": "ultracite check",
     "fix": "ultracite fix",
+    "knip": "knip",
+    "check:changed": "ultracite check && turbo run check-types --affected && knip",
     "prepare": "lefthook install"
-  },
-  "dependencies": {
-    "zod": "catalog:"
   },
   "devDependencies": {
     "@coderabbitai/config": "1.1.1",
@@ -46,8 +45,8 @@
     "@types/bun": "catalog:",
     "eslint-plugin-github": "6.1.2",
     "eslint-plugin-sonarjs": "^4.2.1",
+    "knip": "6.44.1",
     "lefthook": "^2.1.14",
-    "lint-staged": "^17.5.1",
     "oxfmt": "^0.70.0",
     "oxlint": "^1.85.0",
     "oxlint-plugin-react-doctor": "^0.9.14",

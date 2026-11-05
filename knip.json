@@ -1,0 +1,17 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "ignore": [".agents/**", "tools/oxlint/anti-slop/**"],
+  "ignoreIssues": {
+    "packages/api/src/index.ts": ["duplicates"],
+    "packages/ui/src/components/**": ["duplicates", "exports", "types"]
+  },
+  "workspaces": {
+    ".": {
+      "entry": [".coderabbit.config.ts"]
+    },
+    "apps/web": {
+      "entry": ["src/routes/**/*.{ts,tsx}"],
+      "ignoreUnresolved": ["./routeTree.gen"]
+    }
+  }
+}

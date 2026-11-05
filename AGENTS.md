@@ -45,6 +45,20 @@ Choose context by task:
 - Auth, sessions, or environment values: [server](apps/server/AGENTS.md), [auth](packages/auth/AGENTS.md), and [database](packages/db/AGENTS.md).
 - Shared components or styles: [UI package](packages/ui/AGENTS.md) and [React guidance](docs/agents/react-accessibility.md).
 
+## Hit every surface
+
+A change is not done until it reaches every surface it touches. Before calling work done, walk this list and state which entries applied.
+
+- Drizzle table and enums.
+- Zod validation in `@suni/db/validation/*`, shared by the API and the form.
+- oRPC procedure and its access scoping (`protectedProcedure` or `adminProcedure`, per the role note above).
+- Hook with query invalidation.
+- Route with loading, empty and error states.
+- Reverse actions: archive needs unarchive, and a way in needs a way out and a way to see it.
+- Nav items and actions hidden from users who cannot use them.
+- Migration or `.env.schema` change needed? The user generates migrations, never you.
+- Docs, only if existing guidance became inaccurate.
+
 ## Context files
 
 - [apps/web/AGENTS.md](apps/web/AGENTS.md) (web routes, client setup, and local commands)

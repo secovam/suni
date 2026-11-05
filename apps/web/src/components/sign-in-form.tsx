@@ -55,7 +55,13 @@ function EmailSignInForm({ onSent }: { onSent: () => void }) {
   });
 
   return (
-    <form className="space-y-6" onSubmit={form.handleSubmit}>
+    <form
+      className="space-y-6"
+      onSubmit={(event) => {
+        event.preventDefault();
+        form.handleSubmit();
+      }}
+    >
       <form.Field name="email">
         {(field) => {
           const [error] = field.state.meta.errors;

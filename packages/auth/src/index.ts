@@ -1,18 +1,15 @@
 import { drizzleAdapter } from "@better-auth/drizzle-adapter/relations-v2";
 import type { Database } from "@suni/db";
-// oxlint-disable-next-line sonarjs/no-wildcard-import
+// oxlint-disable-next-line sonarjs/no-wildcard-import -- the Drizzle adapter takes the whole schema object
 import * as schema from "@suni/db/schema/auth";
 import { betterAuth } from "better-auth";
+import { createAuthMiddleware, isAPIError } from "better-auth/api";
 import { admin, magicLink } from "better-auth/plugins";
 import { eq } from "drizzle-orm";
-
-const SECONDS_PER_MINUTE = 60;
 
 const SECONDS_PER_DAY = 60 * 60 * 24;
 
 const SESSION_EXPIRES_IN_DAYS = 30;
-
-const COOKIE_CACHE_MINUTES = 5;
 
 const MAGIC_LINK_EXPIRES_IN_SECONDS = 900;
 
@@ -58,6 +55,35 @@ export function createAuth(
       provider: "pg",
       schema,
     }),
+    hooks: {
+      // The admin plugin rejects banned users inside createSession, which the
+      // magic link verify endpoint does not catch, so it would answer with JSON.
+      // ctx.redirect would keep that error's 403 status, so return a 302 Response.
+      // oxlint-disable-next-line require-await -- createAuthMiddleware takes an async handler
+      after: createAuthMiddleware(async (ctx) => {
+        const { returned } = ctx.context;
+
+        if (
+          ctx.path === "/magic-link/verify" &&
+          isAPIError(returned) &&
+          returned.body?.code === "BANNED_USER"
+        ) {
+          const errorURL = new URL(
+            decodeURIComponent(
+              ctx.query?.errorCallbackURL ?? ctx.query?.callbackURL ?? "/"
+            ),
+            ctx.context.baseURL
+          );
+
+          errorURL.searchParams.set("error", "BANNED_USER");
+
+          return new Response(null, {
+            headers: { Location: errorURL.toString() },
+            status: 302,
+          });
+        }
+      }),
+    },
     plugins: [
       admin(),
       magicLink({
@@ -87,10 +113,6 @@ export function createAuth(
     },
     secret: env.BETTER_AUTH_SECRET,
     session: {
-      cookieCache: {
-        enabled: true,
-        maxAge: COOKIE_CACHE_MINUTES * SECONDS_PER_MINUTE,
-      },
       expiresIn: SECONDS_PER_DAY * SESSION_EXPIRES_IN_DAYS,
       updateAge: SECONDS_PER_DAY,
     },

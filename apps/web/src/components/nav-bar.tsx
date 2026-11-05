@@ -4,24 +4,29 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import type { LucideIcon } from "lucide-react";
 import { Home, Users } from "lucide-react";
 
+import { useIsAdmin } from "@/hooks/use-is-admin";
+
 interface NavItem {
   to: "/dashboard" | "/users" | "/customers";
   label: string;
   icon: LucideIcon;
+  adminOnly?: true;
 }
 
 const NAV_ITEMS: NavItem[] = [
   { to: "/dashboard", label: "Inicio", icon: Home },
-  { to: "/users", label: "Usuarios", icon: Users },
+  { to: "/users", label: "Usuarios", icon: Users, adminOnly: true },
   { to: "/customers", label: "Clientes", icon: Users },
 ];
 
 export function NavMain() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const isAdmin = useIsAdmin();
+  const items = NAV_ITEMS.filter((item) => isAdmin || !item.adminOnly);
 
   return (
     <SidebarMenu>
-      {NAV_ITEMS.map(({ to, label, icon: Icon }) => {
+      {items.map(({ to, label, icon: Icon }) => {
         const active = pathname.startsWith(to);
 
         return (

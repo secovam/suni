@@ -7,7 +7,9 @@
     "paths": {
       "@suni/ui/*": ["./src/*"]
     },
-    "strictNullChecks": true
+    "strictNullChecks": true,
+    // shadcn components forward possibly undefined props and are regenerated, not patched.
+    "exactOptionalPropertyTypes": false
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"],
   "exclude": ["node_modules"]

@@ -6,28 +6,64 @@ import shadcn from "ultracite/oxlint/shadcn";
 import tanstack from "ultracite/oxlint/tanstack";
 import tanstackJsPlugins from "ultracite/oxlint/tanstack/js-plugins";
 
+const REACT_HOOK_FORM_BAN = {
+  name: "react-hook-form",
+  message: "Use TanStack Form with the Zod schemas from @suni/db/validation/*.",
+};
+
 const jsPlugins = selectJsPlugins(["github", "sonarjs", "react-doctor"]);
 
 export default defineConfig({
   extends: [core, react, tanstack, tanstackJsPlugins, shadcn, jsPlugins],
   ignorePatterns: [
-    // oxlint-disable-next-line typescript/no-non-null-assertion
+    // oxlint-disable-next-line typescript/no-non-null-assertion -- the ultracite preset types it as optional but always sets it
     ...core.ignorePatterns!,
     "packages/ui/**",
     "packages/db/src/migrations/**",
     ".agents/skills/**",
     ".claude/skills/**",
     "tools/oxlint/anti-slop/**",
+    "tools/oxlint/suni/**",
   ],
   jsPlugins: [
-    // oxlint-disable-next-line typescript/no-non-null-assertion
+    // oxlint-disable-next-line typescript/no-non-null-assertion -- the ultracite preset types it as optional but always sets it
     ...jsPlugins.jsPlugins!,
-    // oxlint-disable-next-line typescript/no-non-null-assertion
+    // oxlint-disable-next-line typescript/no-non-null-assertion -- the shadcn preset types it as optional but always sets it
     ...shadcn.jsPlugins!,
     { name: "anti-slop", specifier: "./tools/oxlint/anti-slop/index.ts" },
+    { name: "suni", specifier: "./tools/oxlint/suni/index.ts" },
   ],
+  options: { reportUnusedDisableDirectives: "error" },
   settings: jsPluginSettings,
   overrides: [
+    {
+      files: ["apps/web/src/**/*.{ts,tsx}"],
+      rules: {
+        "no-restricted-imports": [
+          "error",
+          {
+            paths: [REACT_HOOK_FORM_BAN],
+            patterns: [
+              {
+                group: ["@suni/auth", "@suni/auth/**"],
+                message:
+                  "@suni/auth is the server package. Use the client in @/lib/auth-client.",
+              },
+              {
+                group: [
+                  "@suni/db",
+                  "@suni/db/**",
+                  "!@suni/db/validation/*",
+                  "!@suni/db/schema/*-enums",
+                ],
+                message:
+                  "The web app must not pull table definitions or the DB client. Import shared rules from @suni/db/validation/* or enums from @suni/db/schema/*-enums.",
+              },
+            ],
+          },
+        ],
+      },
+    },
     {
       files: ["packages/db/src/index.ts", "packages/db/src/schema/index.ts"],
       rules: {
@@ -42,6 +78,13 @@ export default defineConfig({
       },
     },
     {
+      // auth:generate writes `/* @__PURE__ */` annotations; keep its output byte-for-byte.
+      files: ["packages/db/src/schema/auth.ts"],
+      rules: {
+        "no-inline-comments": "off",
+      },
+    },
+    {
       files: ["apps/web/src/routes/**/*.{ts,tsx}"],
       rules: {
         "func-style": "off",
@@ -50,8 +93,8 @@ export default defineConfig({
       },
     },
     {
-      // CodeRabbit requires this exact filename.
-      files: [".coderabbit.config.ts"],
+      // CodeRabbit and pnpm require these exact filenames.
+      files: [".coderabbit.config.ts", ".pnpmfile.cjs"],
       rules: {
         "github/filenames-match-regex": "off",
       },
@@ -65,6 +108,8 @@ export default defineConfig({
   ],
   rules: {
     "oxc/no-accumulating-spread": "error",
+    "suni/require-suppression-reason": "error",
+    "no-restricted-imports": ["error", { paths: [REACT_HOOK_FORM_BAN] }],
     "anti-slop/no-array-filter-map": "error",
     "anti-slop/no-reduce-accumulator-copy": "error",
     "anti-slop/no-chained-type-assertions": "error",

@@ -16,3 +16,14 @@ For database schema changes, do not generate or apply migrations and do not run 
 There is no test script or test runner configured in the current workspace manifests. If one is added, use its script for behavior changes and record its scope here.
 
 Do not create or add tests unless the user explicitly asks for them.
+
+## E2E rules
+
+No E2E runner is installed yet. Playwright is the expected one. When it is added, these rules apply from the first test, and they will become lint rules once the runner exists.
+
+- Assert with auto-waiting locators and web-first assertions. Never use fixed sleeps or `waitForTimeout`.
+- No per-test timeouts and no `retries`. A flaky test is fixed, not retried.
+- `test.skip` and `test.fixme` need a tracking issue on the line above: `// quarantine: #123 <why>`.
+- Test at the lowest layer that can fail. Do not repeat a case at several layers.
+- Extend an existing test before adding a new one.
+- Every run produces a verifiable artifact (trace or report).

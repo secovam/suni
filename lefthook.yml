@@ -1,17 +1,7 @@
 pre-commit:
   jobs:
-    - run: pnpm dlx ultracite fix
-      glob:
-        - "**/*.js"
-        - "**/*.jsx"
-        - "**/*.ts"
-        - "**/*.tsx"
-        - "**/*.json"
-        - "**/*.jsonc"
-        - "**/*.css"
+    # Called directly so a commit whose staged files are all ignored (migrations, packages/ui) still passes.
+    - name: format and lint
+      run: pnpm exec oxfmt --no-error-on-unmatched-pattern {staged_files} && pnpm exec oxlint --fix --no-error-on-unmatched-pattern {staged_files}
+      glob: "*.{js,jsx,ts,tsx,json,jsonc,css}"
       stage_fixed: true
-    - name: check-types
-      run: pnpm run check-types
-      glob:
-        - "**/*.ts"
-        - "**/*.tsx"
