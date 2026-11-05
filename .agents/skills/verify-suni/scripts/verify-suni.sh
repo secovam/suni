@@ -63,8 +63,11 @@ cmd_up() {
   date +%Y%m%d-%H%M%S >"$STATE/run_id"
   mkdir -p "$(evidence_dir)"
 
+  # Own process group, so a group kill aimed at the caller's shell cannot orphan the tree that down walks.
+  set -m
   (cd "$ROOT" && exec pnpm run dev) >"$STATE/dev.log" 2>&1 &
   echo $! >"$STATE/pid"
+  set +m
 
   for _ in $(seq 1 90); do
     if ready; then
