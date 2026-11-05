@@ -36,5 +36,3 @@ export const authClient = createAuthClient({
   baseURL: new URL("/api/auth", getServerUrl(ENV.VITE_SERVER_URL)).toString(),
   plugins: [adminClient(), magicLinkClient()],
 });
-
-export type AuthUser = typeof authClient.$Infer.Session.user;

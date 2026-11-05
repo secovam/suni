@@ -13,7 +13,6 @@
   },
   "dependencies": {
     "@orpc/client": "catalog:",
-    "@orpc/server": "catalog:",
     "@orpc/tanstack-query": "^1.15.0",
     "@suni/api": "workspace:*",
     "@suni/db": "workspace:*",
@@ -33,16 +32,11 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@suni/config": "workspace:*",
-    "@tanstack/react-query-devtools": "^5.102.8",
-    "@tanstack/react-router-devtools": "^1.167.1",
     "@tanstack/router-plugin": "^1.168.35",
     "@types/node": "^26.4.1",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "^6.1.1",
-    "postcss": "^8.5.28",
-    "tailwindcss": "catalog:",
     "typescript": "catalog:",
     "vite": "^8.2.2"
   }

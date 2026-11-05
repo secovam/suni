@@ -7,7 +7,7 @@ import { toast } from "sonner";
 
 import { ENV } from "../env";
 
-export function createQueryClient() {
+function createQueryClient() {
   return new QueryClient({
     queryCache: new QueryCache({
       onError: (error, query) => {
@@ -43,7 +43,7 @@ function getServerUrl(url: string) {
   return url.endsWith("/") ? url.slice(0, -1) : url;
 }
 
-export const link = new RPCLink({
+const link = new RPCLink({
   url: `${getServerUrl(ENV.VITE_SERVER_URL)}/rpc`,
   fetch(url, options) {
     return fetch(url, {

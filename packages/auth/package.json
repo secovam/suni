@@ -11,7 +11,6 @@
   },
   "dependencies": {
     "@better-auth/drizzle-adapter": "1.7.5",
-    "@react-email/render": "^2.1.0",
     "@suni/db": "workspace:*",
     "better-auth": "catalog:",
     "drizzle-orm": "catalog:",
