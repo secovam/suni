@@ -6,6 +6,11 @@ import shadcn from "ultracite/oxlint/shadcn";
 import tanstack from "ultracite/oxlint/tanstack";
 import tanstackJsPlugins from "ultracite/oxlint/tanstack/js-plugins";
 
+const REACT_HOOK_FORM_BAN = {
+  name: "react-hook-form",
+  message: "Use TanStack Form with the Zod schemas from @suni/db/validation/*.",
+};
+
 const jsPlugins = selectJsPlugins(["github", "sonarjs", "react-doctor"]);
 
 export default defineConfig({
@@ -31,6 +36,36 @@ export default defineConfig({
   options: { reportUnusedDisableDirectives: "error" },
   settings: jsPluginSettings,
   overrides: [
+    {
+      files: ["apps/web/src/**/*.{ts,tsx}"],
+      rules: {
+        "no-restricted-imports": [
+          "error",
+          {
+            paths: [
+              REACT_HOOK_FORM_BAN,
+              {
+                name: "@suni/auth",
+                message:
+                  "@suni/auth is the server package. Use the client in @/lib/auth-client.",
+              },
+            ],
+            patterns: [
+              {
+                group: [
+                  "@suni/auth/**",
+                  "@suni/db",
+                  "@suni/db/schema/*",
+                  "!@suni/db/schema/*-enums",
+                ],
+                message:
+                  "The web app must not pull table definitions or the DB client. Import shared rules from @suni/db/validation/* or enums from @suni/db/schema/*-enums.",
+              },
+            ],
+          },
+        ],
+      },
+    },
     {
       files: ["packages/db/src/index.ts", "packages/db/src/schema/index.ts"],
       rules: {
@@ -69,6 +104,7 @@ export default defineConfig({
   rules: {
     "oxc/no-accumulating-spread": "error",
     "suni/require-suppression-reason": "error",
+    "no-restricted-imports": ["error", { paths: [REACT_HOOK_FORM_BAN] }],
     "anti-slop/no-array-filter-map": "error",
     "anti-slop/no-reduce-accumulator-copy": "error",
     "anti-slop/no-chained-type-assertions": "error",
