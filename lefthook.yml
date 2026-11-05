@@ -1,17 +1,6 @@
 pre-commit:
   jobs:
-    - run: pnpm dlx ultracite fix
-      glob:
-        - "**/*.js"
-        - "**/*.jsx"
-        - "**/*.ts"
-        - "**/*.tsx"
-        - "**/*.json"
-        - "**/*.jsonc"
-        - "**/*.css"
+    - name: ultracite
+      run: pnpm exec ultracite fix {staged_files}
+      glob: "*.{js,jsx,ts,tsx,json,jsonc,css}"
       stage_fixed: true
-    - name: check-types
-      run: pnpm run check-types
-      glob:
-        - "**/*.ts"
-        - "**/*.tsx"

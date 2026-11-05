@@ -7,8 +7,7 @@
   },
   "workspaces": {
     ".": {
-      "entry": [".coderabbit.config.ts"],
-      "ignoreDependencies": ["lint-staged"]
+      "entry": [".coderabbit.config.ts"]
     },
     "apps/web": {
       "entry": ["src/routes/**/*.{ts,tsx}"]
