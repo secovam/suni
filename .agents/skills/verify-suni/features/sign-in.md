@@ -9,6 +9,7 @@ There are no passwords. A user enters their email, gets a magic link by email, a
 - `signin-link` opens the link and lands on `/dashboard` with a session.
 - `signin-redirect` sends a signed-in user from `/` to `/dashboard`, and a signed-out user from any `_auth` page to `/`.
 - `signin-expired` shows the error page for an invalid, expired or already used link.
+- `signin-suspended` sends a suspended user's link to the error page with the suspension message.
 
 ## How to get to it (user POV)
 
@@ -30,11 +31,12 @@ Preconditions:
 - **Malformed email.** Fill `not-an-email` and submit. The `alert` `Correo inválido` appears.
 - **Redirect.** While signed in, run `$V ab open https://suni.localhost/` and `$V ab wait --url "**/dashboard"`.
 - **Used link.** Sign in with a link, keep it, and open it again with `$V ab open "<link>"`. The browser lands on `/auth-error?error=INVALID_TOKEN` with the heading `No pudimos iniciar tu sesión`, the text `Este enlace de acceso venció o ya no es válido`, and the button `Volver a iniciar sesión`. With a session still active, that button leads to `/dashboard`.
-- **Suspended user.** Suspend a test user from [Users](./users.md) and request their link. The email still arrives. Opening it shows the raw JSON `{"code":"BANNED_USER", ...}` on `https://api.suni.localhost`, not `/auth-error`.
+- **Suspended user.** Suspend a test user from [Users](./users.md) and request their link. The confirmation is the same as for any other email, and the email still arrives. Opening it lands on `/auth-error?error=BANNED_USER` with the heading `No pudimos iniciar tu sesión` and the text `Tu acceso a Suni está suspendido`, and no session cookie is set.
 
 ## Gotchas
 
 - `ADMIN_EMAIL` is a sensitive Varlock value, so the seed prints it masked. `$V up` reads the admin from the `user` table instead.
 - The link expires after 15 minutes, and a link can be used only once. Opening it a second time goes through the used-link path above. Expiry by time has not been driven.
 - Opening the link in another browser profile signs in that profile, not the `verify-suni` session.
-- A suspended user (`banned`) gets the email but no session, and the link shows the raw API error. Report it, it is a known gap, not a passing state. Reactivate the user from [Users](./users.md) to sign in.
+- A suspended user (`banned`) gets the email on purpose, so the link can tell them their access is suspended. Better Auth's admin plugin rejects them inside the verify endpoint, and the `hooks.after` in `packages/auth/src/index.ts` turns that error into the redirect to `/auth-error`. Reactivate the user from [Users](./users.md) to sign in.
+- `/sign-in/magic-link` allows 3 requests per minute per IP. A fourth request in that window never shows the confirmation, so wait about 20 seconds between requests in a script.

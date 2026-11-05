@@ -5,8 +5,16 @@ import { z } from "zod";
 const ERROR_MESSAGE =
   "No pudimos validar tu enlace de acceso. Solicita uno nuevo para iniciar sesión.";
 
-const EXPIRED_LINK_MESSAGE =
-  "Este enlace de acceso venció o ya no es válido. Solicita uno nuevo para iniciar sesión.";
+const ERROR_MESSAGES = new Map([
+  [
+    "INVALID_TOKEN",
+    "Este enlace de acceso venció o ya no es válido. Solicita uno nuevo para iniciar sesión.",
+  ],
+  [
+    "BANNED_USER",
+    "Tu acceso a Suni está suspendido. Si crees que es un error, contacta a un administrador.",
+  ],
+]);
 
 export const Route = createFileRoute("/auth-error")({
   component: AuthErrorPage,
@@ -16,8 +24,7 @@ export const Route = createFileRoute("/auth-error")({
 function AuthErrorPage() {
   const { error } = Route.useSearch();
 
-  const authError =
-    error === "INVALID_TOKEN" ? EXPIRED_LINK_MESSAGE : ERROR_MESSAGE;
+  const authError = ERROR_MESSAGES.get(error ?? "") ?? ERROR_MESSAGE;
 
   return (
     <main className="bg-background flex min-h-svh w-full items-center justify-center px-8">
