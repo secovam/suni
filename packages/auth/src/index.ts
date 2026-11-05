@@ -1,6 +1,6 @@
 import { drizzleAdapter } from "@better-auth/drizzle-adapter/relations-v2";
 import type { Database } from "@suni/db";
-// oxlint-disable-next-line sonarjs/no-wildcard-import
+// oxlint-disable-next-line sonarjs/no-wildcard-import -- the Drizzle adapter takes the whole schema object
 import * as schema from "@suni/db/schema/auth";
 import { betterAuth } from "better-auth";
 import { admin, magicLink } from "better-auth/plugins";

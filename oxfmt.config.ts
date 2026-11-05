@@ -4,7 +4,7 @@ import ultracite from "ultracite/oxfmt";
 export default defineConfig({
   ...ultracite,
   ignorePatterns: [
-    // oxlint-disable-next-line typescript/no-non-null-assertion
+    // oxlint-disable-next-line typescript/no-non-null-assertion -- the ultracite preset types it as optional but always sets it
     ...ultracite.ignorePatterns!,
     "packages/ui/**",
     "packages/db/src/migrations/**",

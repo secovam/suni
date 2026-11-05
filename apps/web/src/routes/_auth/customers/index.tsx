@@ -18,7 +18,7 @@ import CustomerList from "@/components/customers/customer-list";
 import { useListCustomers } from "@/hooks/use-customers";
 import { stripAccents } from "@/lib/string-utils";
 
-/* oxlint-disable promise/prefer-await-to-then, github/no-then */
+/* oxlint-disable promise/prefer-await-to-then, github/no-then -- zod `.catch()` is not Promise.catch */
 const searchSchema = z.object({
   name: z.string().default("").catch(""),
   type: z

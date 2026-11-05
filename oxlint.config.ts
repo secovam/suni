@@ -11,20 +11,22 @@ const jsPlugins = selectJsPlugins(["github", "sonarjs", "react-doctor"]);
 export default defineConfig({
   extends: [core, react, tanstack, tanstackJsPlugins, shadcn, jsPlugins],
   ignorePatterns: [
-    // oxlint-disable-next-line typescript/no-non-null-assertion
+    // oxlint-disable-next-line typescript/no-non-null-assertion -- the ultracite preset types it as optional but always sets it
     ...core.ignorePatterns!,
     "packages/ui/**",
     "packages/db/src/migrations/**",
     ".agents/skills/**",
     ".claude/skills/**",
     "tools/oxlint/anti-slop/**",
+    "tools/oxlint/suni/**",
   ],
   jsPlugins: [
-    // oxlint-disable-next-line typescript/no-non-null-assertion
+    // oxlint-disable-next-line typescript/no-non-null-assertion -- the ultracite preset types it as optional but always sets it
     ...jsPlugins.jsPlugins!,
-    // oxlint-disable-next-line typescript/no-non-null-assertion
+    // oxlint-disable-next-line typescript/no-non-null-assertion -- the shadcn preset types it as optional but always sets it
     ...shadcn.jsPlugins!,
     { name: "anti-slop", specifier: "./tools/oxlint/anti-slop/index.ts" },
+    { name: "suni", specifier: "./tools/oxlint/suni/index.ts" },
   ],
   options: { reportUnusedDisableDirectives: "error" },
   settings: jsPluginSettings,
@@ -66,6 +68,7 @@ export default defineConfig({
   ],
   rules: {
     "oxc/no-accumulating-spread": "error",
+    "suni/require-suppression-reason": "error",
     "anti-slop/no-array-filter-map": "error",
     "anti-slop/no-reduce-accumulator-copy": "error",
     "anti-slop/no-chained-type-assertions": "error",
