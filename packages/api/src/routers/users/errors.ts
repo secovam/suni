@@ -10,7 +10,8 @@ export function toORPCError(error: APIError) {
 
   return new ORPCError(String(error.status), {
     cause: error,
-    message: error.body?.message,
+    // ORPCError replaces an empty message with the code's default one.
+    message: error.body?.message ?? "",
     status: error.statusCode,
   });
 }

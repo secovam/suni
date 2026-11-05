@@ -34,9 +34,7 @@ function handleError<T>(error: T) {
 }
 
 app.use(
-  evlog({
-    drain: process.env.NODE_ENV === "production" ? undefined : createFsDrain(),
-  })
+  evlog(process.env.NODE_ENV === "production" ? {} : { drain: createFsDrain() })
 );
 
 app.use("*", async (c, next) => {

@@ -1,7 +1,8 @@
 interface MagicLinkEmailOptions {
   url: string;
-  expiresIn?: string;
-  logoUrl?: string;
+  // Callers forward optional config as-is; the destructuring defaults handle undefined.
+  expiresIn?: string | undefined;
+  logoUrl?: string | undefined;
 }
 
 export interface MagicLinkEmailResult {
