@@ -16,7 +16,7 @@ Customers (`Clientes`) is the reference domain module. A signed-in user lists cu
 - Sidebar link `Clientes` goes to `/customers`.
 - On the list, the button `Nuevo Cliente` goes to `/customers/new`.
 - A card's title link or `Ver detalles` goes to `/customers/<id>`.
-- The card menu `Abrir menú` offers `Editar` (`/customers/<id>/edit`) and `Archivar` or `Desarchivar`. The detail page has an `Editar` button.
+- The card menu `Abrir menú` offers `Editar` (`/customers/<id>/edit`) and `Archivar` or `Desarchivar`. The detail page has an `Editar` link.
 
 ## Driving it with agent-browser
 
@@ -34,8 +34,10 @@ Preconditions:
 - **Stored row.** `$V sql "select count(*), max(postal_code), max(suburb) from customer where name = '$N'"` returns `1 | 64000 | Monterrey Centro`.
 - **Filter.** Run `$V ab find role link click --name "Clientes"` and `$V ab find label "Buscar por nombre" fill "$N"`. The URL gains `?name=` and exactly one card has the heading `$N`. Run `$V shot customers list-after`.
 - **Archive.** Run `$V ab find role button click --name "Abrir menú"`, `$V ab find role menuitem click --name "Archivar"` and `$V ab wait --text "Esto archivará"`. Run `$V shot customers archive-dialog`, then `$V ab find role button click --name "Archivar"`. With the name filter still applied, `No se encontraron clientes` appears. `$V sql "select archived is not null from customer where name = '$N'"` returns `t`.
-- **Unarchive.** Open `Filtrar por estado` and choose `Clientes archivados`. On that card, `Abrir menú` offers `Desarchivar` and no `Editar`.
-- **Empty state.** Filter by a name that matches nothing. `No se encontraron clientes` and `Intenta con otros filtros de búsqueda` appear.
+- **Empty state.** Run `$V ab find role button click --name "Limpiar"` and `$V ab find label "Buscar por nombre" fill "zzz sin coincidencias"`. `No se encontraron clientes` and `Intenta con otros filtros de búsqueda` appear. Run `$V shot customers empty`.
+- **Unarchive.** Run `$V ab find role button click --name "Limpiar"`. Choose the status with `$V ab find label "Filtrar por estado" click`, `$V ab keyboard type "Clientes archivados"` and `$V ab press Enter`, and wait for `**status=archived*`. Run `$V ab find label "Buscar por nombre" fill "$N"` and `$V ab find role button click --name "Abrir menú"`. The menu has only `Desarchivar`, with no `Editar`. Run `$V ab find role menuitem click --name "Desarchivar"` and `$V ab wait --text "Esto restaurará"`, then `$V ab find role button click --name "Desarchivar"`. The archived list becomes `No se encontraron clientes`, and `$V sql "select archived is null from customer where name = '$N'"` returns `t`.
+- **Edit.** Run `$V ab find role button click --name "Limpiar"`, filter by `$N`, and open `Ver detalles`. Run `$V ab find role link click --name "Editar"` and `$V ab wait --url "**/edit"`. The form is prefilled. Run `$V ab find label "Teléfono" fill "8187654321"` and `$V ab find role button click --name "Guardar"`. The page returns to `/customers/<uuid>` and shows `8187654321`. The stored row has the new phone and keeps `suburb` and `acquisition`. Run `$V shot customers edit-done`.
+- **Restore.** Archive `$N` again as in the archive step, so the run leaves it archived.
 
 ## Gotchas
 
@@ -44,5 +46,6 @@ Preconditions:
 - `Tipo` only renders for admins. A user-role customer always gets `Cliente`, and the seller line on cards only appears for admins.
 - The RFC must match `^[A-ZÑ&]{3,4}\d{6}[A-Z0-9]{3}$` and is not unique, so reusing `VSU010101AB1` is fine.
 - Card menus are hidden until hover on pointer devices. `find role button --name "Abrir menú"` still reaches them. With several cards, filter by name first so only one menu matches.
+- The name search is bound to `?name=`. A second `fill` appends to the current value instead of replacing it. Click `Limpiar` first, which also resets the type and status filters.
+- On the detail page `Editar` is a `link`. In a card's menu it is a `menuitem`.
 - Archived customers stay in the shared database. Report the names you left.
-- The unarchive, edit and empty-state steps come from the code and have not been driven yet. Fix this file where they turn out wrong.

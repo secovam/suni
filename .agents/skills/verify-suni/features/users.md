@@ -24,17 +24,23 @@ Preconditions:
 - Signed in as the admin with `$V login`.
 - `E="verify-$(cat /tmp/verify-suni/state/run_id)@suni.localhost"` matches no user.
 
-- **Open list.** Run `$V ab find role link click --name "Usuarios"` and `$V ab wait --text "Administra los usuarios del sistema"`. The signed-in admin's row is marked `Tú`, and its status button is disabled. Run `$V shot users list`.
-- **Create.** Run `$V ab find role button click --name "Nuevo Usuario"`, `$V ab find label "Nombre" fill "Verify Suni"` and `$V ab find label "Correo" fill "$E"`. Then pick the role by keyboard with `$V ab find label "Rol del usuario" click`, `$V ab keyboard type "Usuario"` and `$V ab press Enter`, and run `$V ab find role button click --name "Crear"`. Back on the list, `$V ab find role textbox fill "$E" --name "Buscar por nombre o correo..."` shows one row with `Usuario` and `Activo`. Run `$V shot users created`.
-- **Stored row.** `$V sql "select role, banned from \"user\" where email = '$E'"` returns `user | f`.
-- **Suspend.** In that row, run `$V ab find role button click --name "Suspender"`. A dialog asks `¿Quieres suspender el usuario de Verify Suni?`. Confirm with the dialog's `Suspender`. The row shows the suspended status, and `banned` becomes `t`.
-- **Reactivate.** Run `$V ab find role button click --name "Activar"` and confirm. `banned` returns to `f`.
-- **Non-admin view.** Run `$V down`, `$V up` and `$V login "$E"`. Check what `Usuarios` shows to this user, and that `Clientes` hides `Tipo` and the seller line.
+- **Open list.** Run `$V ab find role link click --name "Usuarios"` and `$V ab wait --text "Administra los usuarios del sistema"`. The signed-in admin's row is marked `Tú`, and its `Suspender` button is disabled. Run `$V shot users list`.
+- **Create.** Run `$V ab find role button click --name "Nuevo Usuario"`, `$V ab find label "Nombre" fill "Verify Suni"` and `$V ab find label "Correo" fill "$E"`. Pick the role with `$V ab find label "Rol del usuario" click`, `$V ab keyboard type "Usuario"` and `$V ab press Enter`. Run `$V shot users create-filled`, then `$V ab find role button click --name "Crear"`. The page returns to `/users`.
+- **Stored row.** `$V sql "select name, role, banned from \"user\" where email = '$E'"` returns `Verify Suni | user | f`.
+- **Search.** Run `$V ab find role textbox fill "$E" --name "Buscar por nombre o correo..."` and `$V ab wait --fn "document.querySelectorAll('tbody tr').length === 1"`. The one row shows `$E`, `Usuario` and `Activo`. Run `$V shot users created`.
+- **Suspend.** Run `$V ab find role button click --name "Suspender"` and `$V ab wait --text "¿Quieres suspender el usuario de Verify Suni?"`. The dialog names `$E`. Run `$V shot users suspend-dialog`, then `$V ab find role button click --name "Suspender"` again to confirm. The row shows `Suspendido` and an `Activar` button, and `banned` becomes `t`. Run `$V shot users suspended`.
+- **Reactivate.** Run `$V ab find role button click --name "Activar"`, `$V ab wait --text "¿Quieres activar el usuario de Verify Suni?"` and `$V ab find role button click --name "Activar"`. The row shows `Activo`, and `banned` returns to `f`. Run `$V shot users reactivated`.
+- **Edit.** Run `$V ab find role button click --name "Editar"` and `$V ab wait --url "**/users/*/edit"`. The form is prefilled. Run `$V ab find label "Nombre" fill "Verify Suni Editado"` and `$V ab find role button click --name "Guardar"`. The page returns to `/users`, and the stored `name` is `Verify Suni Editado`.
+- **Non-admin view.** Sign in as `$E` in a second browser session, so the admin session survives. Define `B() { agent-browser --session verify-suni-user "$@"; }`, request the link from `https://suni.localhost/`, read it from Mailpit as `magic_link` in the helper does, and open it with `B open "<link>"`. Then check three things.
+  - `/users` still shows `Nuevo Usuario`. After about 7 seconds of `Cargando...`, the table shows `No se pudieron cargar los usuarios.` and a toast reads `Error: Forbidden`. Wait with `B wait --text "No se pudieron cargar los usuarios." --timeout 60000`.
+  - On `/customers`, cards have no `Vendedor` line.
+  - On `/customers/new`, the only combobox is `Medio de adquisición`, so there is no `Tipo`.
+  - Close that session with `B close` when done.
 
 ## Gotchas
 
-- The sidebar shows `Usuarios` to every signed-in user, while every `users.*` procedure except `me` is admin-only. From the code, a user-role account that opens `/users` should get `No se pudieron cargar los usuarios.` instead of a hidden link. This has not been driven yet. Report what you see. Access scoping is pending per `AGENTS.md`.
-- Search is debounced. Wait for the row text, not a fixed time.
+- The sidebar link and the `Nuevo Usuario` button are visible to every signed-in user, while every `users.*` procedure except `me` is admin-only. A user-role account gets HTTP 403 on `/rpc/users/list`, retried three times, before the error state. Access scoping is pending per `AGENTS.md`. Report it, do not work around it.
+- Search is debounced. Right after `fill`, the table still lists every user, and `find role button --name "Suspender"` clicks the first row's button. Wait until exactly one row is left before acting on a row.
+- The confirm buttons in the dialogs share their names with the row buttons (`Suspender`, `Activar`). The open modal makes the row inert, so the second `find role button` hits the dialog.
 - `Editar` and the status button are icon buttons. Their accessible names come from screen-reader-only text.
 - There is no delete. Suspend leftover test users and report their emails.
-- Only the list and the `/users/new` form handles have been driven so far. Run the create, status and non-admin steps once and fix this file where it is wrong.

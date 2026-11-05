@@ -1,6 +1,6 @@
 # Sign in
 
-There are no passwords. A user enters their email, gets a magic link by email, and opening it signs them in and lands on `/dashboard`. Sign-up is disabled, so only existing, active users receive an email. The page shows the same confirmation either way.
+There are no passwords. A user enters their email, gets a magic link by email, and opening it signs them in and lands on `/dashboard`. Sign-up is disabled, so only existing users receive an email, suspended ones included. The page shows the same confirmation either way.
 
 ## Sub-features
 
@@ -8,7 +8,7 @@ There are no passwords. A user enters their email, gets a magic link by email, a
 - `signin-invalid` rejects a malformed email inline.
 - `signin-link` opens the link and lands on `/dashboard` with a session.
 - `signin-redirect` sends a signed-in user from `/` to `/dashboard`, and a signed-out user from any `_auth` page to `/`.
-- `signin-expired` shows the error page for an invalid or expired link.
+- `signin-expired` shows the error page for an invalid, expired or already used link.
 
 ## How to get to it (user POV)
 
@@ -29,11 +29,12 @@ Preconditions:
 - **Unknown email.** Submit an address that has no user. The same confirmation appears, and the search above returns no message for it.
 - **Malformed email.** Fill `not-an-email` and submit. The `alert` `Correo inválido` appears.
 - **Redirect.** While signed in, run `$V ab open https://suni.localhost/` and `$V ab wait --url "**/dashboard"`.
-- **Expired link.** Run `$V ab open "https://suni.localhost/auth-error?error=INVALID_TOKEN"`. The heading `No pudimos iniciar tu sesión`, the text `Este enlace de acceso venció o ya no es válido`, and the button `Volver a iniciar sesión` appear.
+- **Used link.** Sign in with a link, keep it, and open it again with `$V ab open "<link>"`. The browser lands on `/auth-error?error=INVALID_TOKEN` with the heading `No pudimos iniciar tu sesión`, the text `Este enlace de acceso venció o ya no es válido`, and the button `Volver a iniciar sesión`. With a session still active, that button leads to `/dashboard`.
+- **Suspended user.** Suspend a test user from [Users](./users.md) and request their link. The email still arrives. Opening it shows the raw JSON `{"code":"BANNED_USER", ...}` on `https://api.suni.localhost`, not `/auth-error`.
 
 ## Gotchas
 
 - `ADMIN_EMAIL` is a sensitive Varlock value, so the seed prints it masked. `$V up` reads the admin from the `user` table instead.
-- The link expires after 15 minutes, and a link can be used only once. Opening it a second time goes through the expired path. Only the direct `/auth-error` URL has been driven so far.
+- The link expires after 15 minutes, and a link can be used only once. Opening it a second time goes through the used-link path above. Expiry by time has not been driven.
 - Opening the link in another browser profile signs in that profile, not the `verify-suni` session.
-- A suspended user (`banned`) gets no usable session. Reactivate them from [Users](./users.md) first.
+- A suspended user (`banned`) gets the email but no session, and the link shows the raw API error. Report it, it is a known gap, not a passing state. Reactivate the user from [Users](./users.md) to sign in.
