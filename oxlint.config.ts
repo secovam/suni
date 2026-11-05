@@ -86,8 +86,8 @@ export default defineConfig({
       },
     },
     {
-      // CodeRabbit requires this exact filename.
-      files: [".coderabbit.config.ts"],
+      // CodeRabbit and pnpm require these exact filenames.
+      files: [".coderabbit.config.ts", ".pnpmfile.cjs"],
       rules: {
         "github/filenames-match-regex": "off",
       },
