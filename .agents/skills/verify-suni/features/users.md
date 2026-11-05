@@ -1,6 +1,6 @@
 # Users
 
-User management (`Usuarios`) is admin-only on the API. An admin lists users, searches them by name or email, creates a user with a role (`Admin` or `Usuario`), edits them, and suspends or reactivates them. A new user signs in with the magic link from [Sign in](./sign-in.md).
+User management (`Usuarios`) is admin-only, on the API and in the web app. An admin lists users, searches them by name or email, creates a user with a role (`Admin` or `Usuario`), edits them, and suspends or reactivates them. A new user signs in with the magic link from [Sign in](./sign-in.md).
 
 ## Sub-features
 
@@ -32,14 +32,14 @@ Preconditions:
 - **Reactivate.** Run `$V ab find role button click --name "Activar"`, `$V ab wait --text "¿Quieres activar el usuario de Verify Suni?"` and `$V ab find role button click --name "Activar"`. The row shows `Activo`, and `banned` returns to `f`. Run `$V shot users reactivated`.
 - **Edit.** Run `$V ab find role button click --name "Editar"` and `$V ab wait --url "**/users/*/edit"`. The form is prefilled. Run `$V ab find label "Nombre" fill "Verify Suni Editado"` and `$V ab find role button click --name "Guardar"`. The page returns to `/users`, and the stored `name` is `Verify Suni Editado`.
 - **Non-admin view.** Sign in as `$E` in a second browser session, so the admin session survives. Define `B() { agent-browser --session verify-suni-user "$@"; }`, request the link from `https://suni.localhost/`, read it from Mailpit as `magic_link` in the helper does, and open it with `B open "<link>"`. Then check three things.
-  - `/users` still shows `Nuevo Usuario`. After about 7 seconds of `Cargando...`, the table shows `No se pudieron cargar los usuarios.` and a toast reads `Error: Forbidden`. Wait with `B wait --text "No se pudieron cargar los usuarios." --timeout 60000`.
+  - The sidebar has no `Usuarios` link. `B open https://suni.localhost/users`, `/users/new` and `/users/<id>/edit` each end on `/dashboard` (`B wait --url "**/dashboard"`).
   - On `/customers`, cards have no `Vendedor` line.
   - On `/customers/new`, the only combobox is `Medio de adquisición`, so there is no `Tipo`.
   - Close that session with `B close` when done.
 
 ## Gotchas
 
-- The sidebar link and the `Nuevo Usuario` button are visible to every signed-in user, while every `users.*` procedure except `me` is admin-only. A user-role account gets HTTP 403 on `/rpc/users/list`, retried three times, before the error state. Access scoping is pending per `AGENTS.md`. Report it, do not work around it.
+- `apps/web/src/routes/_auth/users/route.tsx` redirects a non-admin to `/dashboard` before any `/users` page loads, and the sidebar hides `Usuarios` with `useIsAdmin`. Every `users.*` procedure except `me` is admin-only on the API either way.
 - Search is debounced. Right after `fill`, the table still lists every user, and `find role button --name "Suspender"` clicks the first row's button. Wait until exactly one row is left before acting on a row.
 - The confirm buttons in the dialogs share their names with the row buttons (`Suspender`, `Activar`). The open modal makes the row inert, so the second `find role button` hits the dialog.
 - `Editar` and the status button are icon buttons. Their accessible names come from screen-reader-only text.
