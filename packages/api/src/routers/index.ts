@@ -5,6 +5,7 @@ import type {
 } from "@orpc/server";
 
 import { protectedProcedure, publicProcedure } from "../index";
+import { branchesRouter } from "./branches";
 import { customersRouter } from "./customers";
 import { usersRouter } from "./users";
 
@@ -16,6 +17,7 @@ export const appRouter = {
   })),
   users: usersRouter,
   customers: customersRouter,
+  branches: branchesRouter,
 };
 
 export type AppRouter = typeof appRouter;
