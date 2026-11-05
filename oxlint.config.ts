@@ -78,6 +78,13 @@ export default defineConfig({
       },
     },
     {
+      // auth:generate writes `/* @__PURE__ */` annotations; keep its output byte-for-byte.
+      files: ["packages/db/src/schema/auth.ts"],
+      rules: {
+        "no-inline-comments": "off",
+      },
+    },
+    {
       files: ["apps/web/src/routes/**/*.{ts,tsx}"],
       rules: {
         "func-style": "off",

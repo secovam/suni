@@ -9,7 +9,7 @@
     "dev": "portless api.suni bun run --hot src/index.ts",
     "start": "bun run dist/index.mjs",
     "env:generate": "varlock codegen",
-    "auth:generate": "varlock run -- pnpm dlx auth@latest generate --config src/services.ts --output ../../packages/db/src/schema/auth.ts --yes"
+    "auth:generate": "varlock run -- pnpm dlx auth@1.7.5 generate --config src/services.ts --output ../../packages/db/src/schema/auth.ts --yes"
   },
   "dependencies": {
     "@orpc/openapi": "catalog:",
