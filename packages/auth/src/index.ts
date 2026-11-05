@@ -69,7 +69,9 @@ export function createAuth(
           returned.body?.code === "BANNED_USER"
         ) {
           const errorURL = new URL(
-            decodeURIComponent(ctx.query?.errorCallbackURL ?? "/"),
+            decodeURIComponent(
+              ctx.query?.errorCallbackURL ?? ctx.query?.callbackURL ?? "/"
+            ),
             ctx.context.baseURL
           );
 
