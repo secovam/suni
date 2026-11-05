@@ -94,4 +94,5 @@ app.use("/*", async (c, next) => {
 
 app.get("/", (c) => c.text("OK"));
 
-export default app;
+// Portless passes HOST=127.0.0.1. Bun ignores it by default and listens on every interface, sharing the port with any other local app on 127.0.0.1.
+export default { fetch: app.fetch, hostname: process.env.HOST };
