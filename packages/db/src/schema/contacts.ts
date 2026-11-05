@@ -1,10 +1,7 @@
-import { pgEnum, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
 
 import { branch } from "./branches";
-import { CONTACT_TYPES } from "./contact-enums";
 import { customer } from "./customers";
-
-export const contactTypeEnum = pgEnum("contact_type", CONTACT_TYPES);
 
 export const contact = pgTable("contact", {
   id: text("id")
@@ -15,7 +12,6 @@ export const contact = pgTable("contact", {
   phone: text("phone").notNull(),
   phoneExtension: text("phone_extension"),
   position: text("position"),
-  type: contactTypeEnum("type").notNull(),
   customerId: text("customer_id")
     .notNull()
     .references(() => customer.id),
