@@ -7,6 +7,7 @@ import {
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { FileText, FolderOpen, HardHat, Info, Users } from "lucide-react";
+import type { ReactNode } from "react";
 import { useState } from "react";
 
 import { BranchFormDialog } from "@/components/customers/branches/branch-form-dialog";
@@ -63,6 +64,23 @@ function RouteComponent() {
   const placeholder = "/placeholder.webp";
   const branchImage = branch.frontImageUrl ?? placeholder;
 
+  const content: Record<(typeof TABS)[number]["value"], ReactNode> = {
+    info: (
+      <BranchInfoContent
+        branch={branch}
+        branchImage={branchImage}
+        // eslint-disable-next-line no-empty-function -- pendiente de implementar
+        onImagePreview={() => {}}
+        // eslint-disable-next-line no-empty-function -- pendiente de implementar
+        onImageUpload={() => {}}
+      />
+    ),
+    contacts: <ContactsGrid branchId={branchId} customerId={customer.id} />,
+    quotations: null,
+    files: null,
+    "technical-requirements": null,
+  };
+
   return (
     <div className="flex flex-col gap-6">
       <BranchHeader
@@ -81,22 +99,10 @@ function RouteComponent() {
           ))}
         </TabsList>
 
-        <TabsContent value="info">
-          <BranchInfoContent
-            branch={branch}
-            branchImage={branchImage}
-            // eslint-disable-next-line no-empty-function
-            onImagePreview={() => {}}
-            // eslint-disable-next-line no-empty-function
-            onImageUpload={() => {}}
-          />
-        </TabsContent>
-        <TabsContent value="contacts">
-          <ContactsGrid branchId={branchId} customerId={customer.id} />
-        </TabsContent>
-
         {TABS.map(({ value }) => (
-          <TabsContent key={value} value={value} />
+          <TabsContent key={value} value={value}>
+            {content[value]}
+          </TabsContent>
         ))}
       </Tabs>
 
