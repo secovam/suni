@@ -43,6 +43,7 @@ export function useUpdateBranch() {
       onSuccess: async () => {
         toast.success("Sucursal actualizada");
         await queryClient.invalidateQueries({ queryKey: orpc.branches.key() });
+        await queryClient.invalidateQueries({ queryKey: orpc.contacts.key() });
       },
       onError: (error) => toast.error(error.message),
     })
