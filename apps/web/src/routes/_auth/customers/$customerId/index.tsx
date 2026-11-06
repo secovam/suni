@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 
 import { BranchesGrid } from "@/components/customers/branches/grid";
+import { ContactsGrid } from "@/components/customers/contacts/contact-grid";
 import { CustomerData } from "@/components/customers/data";
 import { orpc } from "@/utils/orpc";
 
@@ -100,6 +101,9 @@ function RouteComponent() {
         </TabsList>
         <TabsContent value="branches">
           <BranchesGrid customerId={customerId} />
+        </TabsContent>
+        <TabsContent value="contacts">
+          <ContactsGrid customerId={customer.id} />
         </TabsContent>
       </Tabs>
     </div>
