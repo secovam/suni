@@ -12,6 +12,7 @@ import { useState } from "react";
 import { BranchFormDialog } from "@/components/customers/branches/branch-form-dialog";
 import { BranchHeader } from "@/components/customers/branches/branch-header";
 import { BranchInfoContent } from "@/components/customers/branches/branch-info";
+import { ContactsGrid } from "@/components/customers/contacts/contact-grid";
 import { orpc } from "@/utils/orpc";
 
 export const Route = createFileRoute(
@@ -89,6 +90,9 @@ function RouteComponent() {
             // eslint-disable-next-line no-empty-function
             onImageUpload={() => {}}
           />
+        </TabsContent>
+        <TabsContent value="contacts">
+          <ContactsGrid branchId={branchId} customerId={customer.id} />
         </TabsContent>
 
         {TABS.map(({ value }) => (
