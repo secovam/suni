@@ -1,5 +1,10 @@
 import { buttonVariants } from "@suni/ui/components/button";
-import { Tabs, TabsList, TabsTrigger } from "@suni/ui/components/tabs";
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+} from "@suni/ui/components/tabs";
 import { cn } from "@suni/ui/lib/utils";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
@@ -13,6 +18,7 @@ import {
   Users,
 } from "lucide-react";
 
+import { BranchesGrid } from "@/components/customers/branches/grid";
 import { CustomerData } from "@/components/customers/data";
 import { orpc } from "@/utils/orpc";
 
@@ -92,6 +98,9 @@ function RouteComponent() {
             </TabsTrigger>
           ))}
         </TabsList>
+        <TabsContent value="branches">
+          <BranchesGrid customerId={customerId} />
+        </TabsContent>
       </Tabs>
     </div>
   );
