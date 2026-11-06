@@ -14,6 +14,7 @@ export const list = protectedProcedure
         with: {
           customer: { columns: { id: true, name: true } },
           seller: { columns: { id: true, name: true } },
+          contacts: true,
         },
       });
     }
@@ -22,7 +23,7 @@ export const list = protectedProcedure
     const rows = await context.db.query.branch.findMany({
       where: { ...where, sellerId: context.session.user.id },
       columns: { sellerId: false, modifiedBy: false },
-      with: { customer: { columns: { id: true, name: true } } },
+      with: { customer: { columns: { id: true, name: true } }, contacts: true },
     });
 
     return rows.map((row) => ({ ...row, seller: null }));
