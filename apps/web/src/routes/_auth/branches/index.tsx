@@ -9,6 +9,7 @@ import { BranchesFilters } from "@/components/customers/branches/filters";
 import type { BranchFilters } from "@/components/customers/branches/filters";
 import { NewEntityButton } from "@/components/customers/select-entity-button";
 import { useListBranches } from "@/hooks/use-branches";
+import { useListCustomers } from "@/hooks/use-customers";
 import { stripAccents } from "@/lib/string-utils";
 
 /* oxlint-disable promise/prefer-await-to-then, github/no-then -- zod `.catch()` is not Promise.catch */
@@ -62,6 +63,8 @@ function RouteComponent() {
       .toSorted((a, b) => a.name.localeCompare(b.name, "es"));
   }, [branches, filters.name, filters.status]);
 
+  const { data: customers } = useListCustomers({});
+
   const hasFilters =
     filters.name.trim() !== "" ||
     filters.status !== defaultFilters.status ||
@@ -90,6 +93,7 @@ function RouteComponent() {
       </div>
 
       <BranchesFilters
+        customers={customers}
         filters={filters}
         onFiltersChange={handleFiltersChange}
       />
