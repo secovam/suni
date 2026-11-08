@@ -14,10 +14,14 @@ import { client, orpc } from "@/utils/orpc";
 
 type BranchRow = AppRouterOutputs["branches"]["list"][number];
 
-export function useListBranches(params: AppRouterInputs["branches"]["list"]) {
+export function useListBranches(
+  params: AppRouterInputs["branches"]["list"],
+  enabled = true
+) {
   return useQuery({
     ...orpc.branches.list.queryOptions({ input: params }),
     placeholderData: keepPreviousData,
+    enabled,
   });
 }
 

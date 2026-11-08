@@ -57,7 +57,8 @@ function BranchPicker({
   onValueChange,
 }: PickerProps & { customerId: string | null }) {
   const { data: branches = [], isPending } = useListBranches(
-    customerId ? { customerId } : {}
+    customerId ? { customerId } : {},
+    !!customerId
   );
 
   const options = useMemo(
