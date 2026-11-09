@@ -5,6 +5,7 @@ import { and, eq, isNull } from "drizzle-orm";
 import { z } from "zod";
 
 import { scopedProcedure } from "../../index";
+import { ownBranchesSql } from "../../util/scope";
 
 export const update = scopedProcedure
   .route({ method: "PATCH", path: "/{id}" })
@@ -12,7 +13,7 @@ export const update = scopedProcedure
   .handler(async ({ input, context }) => {
     const { id, ...fields } = input;
 
-    const { userId, admin } = context;
+    const { userId } = context;
 
     if (Object.values(fields).every((v) => v === undefined)) {
       throw new ORPCError("BAD_REQUEST", {
@@ -24,11 +25,7 @@ export const update = scopedProcedure
       .update(branch)
       .set({ ...fields, modifiedBy: userId })
       .where(
-        and(
-          eq(branch.id, id),
-          isNull(branch.archived),
-          admin ? undefined : eq(branch.sellerId, userId)
-        )
+        and(eq(branch.id, id), isNull(branch.archived), ownBranchesSql(context))
       )
       .returning({ id: branch.id });
 

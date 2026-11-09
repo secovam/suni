@@ -2,6 +2,7 @@ import { ORPCError } from "@orpc/server";
 import { z } from "zod";
 
 import { scopedProcedure } from "../../index";
+import { ownBranches } from "../../util/scope";
 
 export const get = scopedProcedure
   .route({ method: "GET", path: "/{id}" })
@@ -10,9 +11,7 @@ export const get = scopedProcedure
     const { admin } = context;
 
     const found = await context.db.query.branch.findFirst({
-      where: admin
-        ? { id: input.id }
-        : { id: input.id, sellerId: context.userId },
+      where: { id: input.id, ...ownBranches(context) },
       columns: admin ? undefined : { sellerId: false, modifiedBy: false },
       with: {
         customer: { columns: { id: true, name: true, archived: true } },

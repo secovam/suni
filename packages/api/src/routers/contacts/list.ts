@@ -2,6 +2,7 @@ import { CUSTOMER_STATUSES } from "@suni/db/schema/customer-enums";
 import { z } from "zod";
 
 import { scopedProcedure } from "../../index";
+import { ownContacts } from "../../util/scope";
 import { statusWhere } from "../../util/status";
 
 export const list = scopedProcedure
@@ -13,21 +14,19 @@ export const list = scopedProcedure
       status: z.enum(CUSTOMER_STATUSES).default("active"),
     })
   )
-  .handler(({ input, context }) => {
-    const { userId, admin } = context;
-
-    return context.db.query.contact.findMany({
+  .handler(({ input, context }) =>
+    context.db.query.contact.findMany({
       where: {
         AND: [
           statusWhere("contact", input.status),
           { customerId: input.customerId, branchId: input.branchId },
-          ...(admin ? [] : [{ branch: { sellerId: userId } }]),
+          ownContacts(context),
         ],
       },
-      columns: admin ? undefined : { modifiedBy: false },
+      columns: context.admin ? undefined : { modifiedBy: false },
       with: {
         branch: { columns: { id: true, name: true, archived: true } },
         customer: { columns: { id: true, name: true, archived: true } },
       },
-    });
-  });
+    })
+  );

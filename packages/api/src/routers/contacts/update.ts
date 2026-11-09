@@ -1,11 +1,11 @@
 import { ORPCError } from "@orpc/server";
-import { branch } from "@suni/db/schema/branches";
 import { contact } from "@suni/db/schema/contacts";
 import { updateContactSchema } from "@suni/db/validation/contacts";
-import { and, eq, inArray, isNull } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { z } from "zod";
 
 import { scopedProcedure } from "../../index";
+import { ownContactsSql } from "../../util/scope";
 
 export const update = scopedProcedure
   .route({ method: "PATCH", path: "/{id}" })
@@ -16,7 +16,7 @@ export const update = scopedProcedure
   )
   .handler(async ({ input, context }) => {
     const { id, ...fields } = input;
-    const { userId, admin } = context;
+    const { userId } = context;
 
     if (Object.values(fields).every((v) => v === undefined)) {
       throw new ORPCError("BAD_REQUEST", {
@@ -31,15 +31,7 @@ export const update = scopedProcedure
         and(
           eq(contact.id, id),
           isNull(contact.archived),
-          admin
-            ? undefined
-            : inArray(
-                contact.branchId,
-                context.db
-                  .select({ id: branch.id })
-                  .from(branch)
-                  .where(eq(branch.sellerId, userId))
-              )
+          ownContactsSql(context)
         )
       )
       .returning({ id: contact.id });
