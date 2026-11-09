@@ -46,5 +46,3 @@ export const customerSchema = z.object({
 });
 
 export const createCustomerSchema = customerSchema;
-
-export const updateCustomerSchema = customerSchema.partial();

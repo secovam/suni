@@ -16,8 +16,3 @@ export const createContactSchema = contactSchema.extend({
   customerId: z.string().min(1, "El cliente es requerido"),
   branchId: z.string().min(1, "La sucursal es requerida"),
 });
-
-export const updateContactSchema = contactSchema.partial().extend({
-  customerId: z.string().min(1, "El cliente es requerido").optional(),
-  archived: z.coerce.date().nullable().optional(),
-});

@@ -1,6 +1,5 @@
-import { ORPCError } from "@orpc/server";
 import { customer } from "@suni/db/schema/customers";
-import { updateCustomerSchema } from "@suni/db/validation/customers";
+import { customerSchema } from "@suni/db/validation/customers";
 import { and, eq, isNull } from "drizzle-orm";
 import { z } from "zod";
 
@@ -9,19 +8,13 @@ import { ownCustomersSql } from "../../util/scope";
 
 export const update = scopedProcedure
   .route({ method: "PATCH", path: "/{id}" })
-  .input(updateCustomerSchema.extend({ id: z.string() }))
+  .input(customerSchema.extend({ id: z.string() }))
   .handler(async ({ input, context, errors }) => {
     const { id, type, ...fields } = input;
 
     const { userId } = context;
 
     const data = context.admin ? { ...fields, type } : fields;
-
-    if (Object.values(data).every((v) => v === undefined)) {
-      throw new ORPCError("BAD_REQUEST", {
-        message: "No hay campos para actualizar",
-      });
-    }
 
     const [updated] = await context.db
       .update(customer)

@@ -11,26 +11,15 @@ export const update = adminProcedure
   .input(
     z.object({
       id: z.string(),
-      name: z.string().min(2).optional(),
-      email: z.email().toLowerCase().optional(),
-      image: z.url().nullable().optional(),
-      role: role.optional(),
+      name: z.string().min(2),
+      email: z.email().toLowerCase(),
+      role,
     })
   )
   .handler(async ({ input, context }) => {
     const { id, ...data } = input;
 
-    if (Object.values(data).every((v) => v === undefined)) {
-      throw new ORPCError("BAD_REQUEST", {
-        message: "No hay campos para actualizar",
-      });
-    }
-
-    if (
-      id === context.session.user.id &&
-      data.role !== undefined &&
-      data.role !== "admin"
-    ) {
+    if (id === context.session.user.id && data.role !== "admin") {
       throw new ORPCError("FORBIDDEN", {
         message: "No puedes quitarte el rol de administrador",
       });

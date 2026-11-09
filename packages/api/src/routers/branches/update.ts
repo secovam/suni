@@ -1,6 +1,5 @@
-import { ORPCError } from "@orpc/server";
 import { branch } from "@suni/db/schema/branches";
-import { updateBranchSchema } from "@suni/db/validation/branches";
+import { branchSchema } from "@suni/db/validation/branches";
 import { and, eq, isNull } from "drizzle-orm";
 import { z } from "zod";
 
@@ -9,17 +8,11 @@ import { ownBranchesSql } from "../../util/scope";
 
 export const update = scopedProcedure
   .route({ method: "PATCH", path: "/{id}" })
-  .input(updateBranchSchema.omit({ archived: true }).extend({ id: z.string() }))
+  .input(branchSchema.extend({ id: z.string() }))
   .handler(async ({ input, context, errors }) => {
     const { id, ...fields } = input;
 
     const { userId } = context;
-
-    if (Object.values(fields).every((v) => v === undefined)) {
-      throw new ORPCError("BAD_REQUEST", {
-        message: "No hay campos para actualizar",
-      });
-    }
 
     const [updated] = await context.db
       .update(branch)

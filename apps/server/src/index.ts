@@ -1,6 +1,6 @@
 import { OpenAPIHandler } from "@orpc/openapi/fetch";
 import { OpenAPIReferencePlugin } from "@orpc/openapi/plugins";
-import { onError } from "@orpc/server";
+import { ORPCError, onError, ValidationError } from "@orpc/server";
 import { RPCHandler } from "@orpc/server/fetch";
 import { ZodToJsonSchemaConverter } from "@orpc/zod/zod4";
 import { appRouter } from "@suni/api/routers/index";
@@ -12,6 +12,7 @@ import { evlog } from "evlog/hono";
 import type { EvlogVariables } from "evlog/hono";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { z } from "zod";
 
 import { createContext } from "./context";
 import { ENV } from "./env.server";
@@ -31,6 +32,30 @@ const app = new Hono<EvlogVariables>();
 
 function handleError<T>(error: T) {
   console.error(error);
+}
+
+// Default Zod messages (e.g. a missing field) in Spanish; schemas keep their own messages.
+z.config(z.locales.es());
+
+// oRPC answers failed input validation with a generic English message; send the schema's own message instead.
+async function schemaErrorMessage<T>({ next }: { next: () => Promise<T> }) {
+  try {
+    return await next();
+  } catch (error) {
+    if (
+      error instanceof ORPCError &&
+      error.code === "BAD_REQUEST" &&
+      error.cause instanceof ValidationError
+    ) {
+      throw new ORPCError("BAD_REQUEST", {
+        message: error.cause.issues[0]?.message ?? error.message,
+        data: error.data,
+        cause: error.cause,
+      });
+    }
+
+    throw error;
+  }
 }
 
 app.use(
@@ -62,10 +87,12 @@ export const apiHandler = new OpenAPIHandler(appRouter, {
     }),
   ],
   interceptors: [onError(handleError)],
+  clientInterceptors: [schemaErrorMessage],
 });
 
 export const rpcHandler = new RPCHandler(appRouter, {
   interceptors: [onError(handleError)],
+  clientInterceptors: [schemaErrorMessage],
 });
 
 app.use("/*", async (c, next) => {

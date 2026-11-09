@@ -42,7 +42,3 @@ export const branchSchema = z.object({
 export const createBranchSchema = branchSchema.extend({
   customerId: z.string().min(1, "El cliente es requerido"),
 });
-
-export const updateBranchSchema = branchSchema.partial().extend({
-  archived: z.coerce.date().nullable().optional(),
-});
