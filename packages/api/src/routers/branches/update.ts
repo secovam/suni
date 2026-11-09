@@ -10,7 +10,7 @@ import { ownBranchesSql } from "../../util/scope";
 export const update = scopedProcedure
   .route({ method: "PATCH", path: "/{id}" })
   .input(updateBranchSchema.omit({ archived: true }).extend({ id: z.string() }))
-  .handler(async ({ input, context }) => {
+  .handler(async ({ input, context, errors }) => {
     const { id, ...fields } = input;
 
     const { userId } = context;
@@ -30,7 +30,7 @@ export const update = scopedProcedure
       .returning({ id: branch.id });
 
     if (!updated) {
-      throw new ORPCError("NOT_FOUND", {
+      throw errors.NOT_FOUND({
         message: "La sucursal no existe o está archivada",
       });
     }

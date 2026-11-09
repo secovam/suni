@@ -1,4 +1,3 @@
-import { ORPCError } from "@orpc/server";
 import { z } from "zod";
 
 import { scopedProcedure } from "../../index";
@@ -7,7 +6,7 @@ import { ownBranches } from "../../util/scope";
 export const get = scopedProcedure
   .route({ method: "GET", path: "/{id}" })
   .input(z.object({ id: z.string() }))
-  .handler(async ({ input, context }) => {
+  .handler(async ({ input, context, errors }) => {
     const { admin } = context;
 
     const found = await context.db.query.branch.findFirst({
@@ -21,7 +20,7 @@ export const get = scopedProcedure
     });
 
     if (!found) {
-      throw new ORPCError("NOT_FOUND", { message: "Branch not found" });
+      throw errors.NOT_FOUND({ message: "La sucursal no existe" });
     }
 
     return admin ? found : { ...found, seller: null };

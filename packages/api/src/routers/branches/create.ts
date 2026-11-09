@@ -1,4 +1,3 @@
-import { ORPCError } from "@orpc/server";
 import { branch } from "@suni/db/schema/branches";
 import { createBranchSchema } from "@suni/db/validation/branches";
 
@@ -8,7 +7,7 @@ import { ownCustomers } from "../../util/scope";
 export const create = scopedProcedure
   .route({ method: "POST", path: "/" })
   .input(createBranchSchema)
-  .handler(async ({ input, context }) => {
+  .handler(async ({ input, context, errors }) => {
     const { userId } = context;
 
     const parent = await context.db.query.customer.findFirst({
@@ -21,7 +20,7 @@ export const create = scopedProcedure
     });
 
     if (!parent) {
-      throw new ORPCError("NOT_FOUND", {
+      throw errors.NOT_FOUND({
         message: "El cliente no existe o está archivado",
       });
     }

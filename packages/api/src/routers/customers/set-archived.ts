@@ -1,4 +1,3 @@
-import { ORPCError } from "@orpc/server";
 import { customer } from "@suni/db/schema/customers";
 import { and, eq, sql } from "drizzle-orm";
 import { z } from "zod";
@@ -9,7 +8,7 @@ import { ownCustomersSql } from "../../util/scope";
 export const setArchived = scopedProcedure
   .route({ method: "POST", path: "/{id}/archived" })
   .input(z.object({ id: z.string(), archived: z.boolean() }))
-  .handler(async ({ input, context }) => {
+  .handler(async ({ input, context, errors }) => {
     // Set the target state instead of toggling, so a repeated request is a no-op.
     // COALESCE keeps the original archive date when it is already archived.
     const [updated] = await context.db
@@ -24,7 +23,7 @@ export const setArchived = scopedProcedure
       .returning({ id: customer.id });
 
     if (!updated) {
-      throw new ORPCError("NOT_FOUND", { message: "Customer not found" });
+      throw errors.NOT_FOUND({ message: "El cliente no existe" });
     }
 
     return updated;

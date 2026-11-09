@@ -14,7 +14,7 @@ export const update = scopedProcedure
       .omit({ archived: true, customerId: true })
       .extend({ id: z.string() })
   )
-  .handler(async ({ input, context }) => {
+  .handler(async ({ input, context, errors }) => {
     const { id, ...fields } = input;
     const { userId } = context;
 
@@ -37,7 +37,7 @@ export const update = scopedProcedure
       .returning({ id: contact.id });
 
     if (!updated) {
-      throw new ORPCError("NOT_FOUND", {
+      throw errors.NOT_FOUND({
         message: "El contacto no existe o está archivado",
       });
     }

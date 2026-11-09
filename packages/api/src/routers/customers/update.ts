@@ -10,7 +10,7 @@ import { ownCustomersSql } from "../../util/scope";
 export const update = scopedProcedure
   .route({ method: "PATCH", path: "/{id}" })
   .input(updateCustomerSchema.extend({ id: z.string() }))
-  .handler(async ({ input, context }) => {
+  .handler(async ({ input, context, errors }) => {
     const { id, type, ...fields } = input;
 
     const { userId } = context;
@@ -37,7 +37,7 @@ export const update = scopedProcedure
       .returning({ id: customer.id });
 
     if (!updated) {
-      throw new ORPCError("NOT_FOUND", {
+      throw errors.NOT_FOUND({
         message: "El cliente no existe o está archivado",
       });
     }

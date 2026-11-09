@@ -1,4 +1,3 @@
-import { ORPCError } from "@orpc/server";
 import { contact } from "@suni/db/schema/contacts";
 import { createContactSchema } from "@suni/db/validation/contacts";
 
@@ -8,7 +7,7 @@ import { ownBranches } from "../../util/scope";
 export const create = scopedProcedure
   .route({ method: "POST", path: "/" })
   .input(createContactSchema)
-  .handler(async ({ input, context }) => {
+  .handler(async ({ input, context, errors }) => {
     const { userId } = context;
 
     const parent = await context.db.query.branch.findFirst({
@@ -22,7 +21,7 @@ export const create = scopedProcedure
     });
 
     if (!parent) {
-      throw new ORPCError("NOT_FOUND", {
+      throw errors.NOT_FOUND({
         message:
           "La sucursal no existe, está archivada o no pertenece al cliente",
       });

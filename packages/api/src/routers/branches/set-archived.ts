@@ -1,4 +1,3 @@
-import { ORPCError } from "@orpc/server";
 import { branch } from "@suni/db/schema/branches";
 import { and, eq, sql } from "drizzle-orm";
 import { z } from "zod";
@@ -9,7 +8,7 @@ import { ownBranchesSql } from "../../util/scope";
 export const setArchived = scopedProcedure
   .route({ method: "POST", path: "/{id}/archived" })
   .input(z.object({ id: z.string(), archived: z.boolean() }))
-  .handler(async ({ input, context }) => {
+  .handler(async ({ input, context, errors }) => {
     const { userId } = context;
 
     const [updated] = await context.db
@@ -24,7 +23,7 @@ export const setArchived = scopedProcedure
       .returning({ id: branch.id });
 
     if (!updated) {
-      throw new ORPCError("NOT_FOUND", { message: "Branch not found" });
+      throw errors.NOT_FOUND({ message: "La sucursal no existe" });
     }
 
     return updated;

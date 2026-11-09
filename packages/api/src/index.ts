@@ -4,13 +4,17 @@ import { eq } from "drizzle-orm";
 
 import type { Context } from "./context";
 
-export const o = os.$context<Context>();
+export const o = os.$context<Context>().errors({
+  NOT_FOUND: { message: "El registro no existe" },
+});
 
 export const publicProcedure = o;
 
 const requireAuth = o.middleware(({ context, next }) => {
   if (!context.session?.user) {
-    throw new ORPCError("UNAUTHORIZED");
+    throw new ORPCError("UNAUTHORIZED", {
+      message: "Inicia sesión para continuar",
+    });
   }
 
   return next({
@@ -45,7 +49,9 @@ export const scopedProcedure = protectedProcedure.use(
 
 export const adminProcedure = scopedProcedure.use(({ context, next }) => {
   if (!context.admin) {
-    throw new ORPCError("FORBIDDEN");
+    throw new ORPCError("FORBIDDEN", {
+      message: "No tienes permiso para esta acción",
+    });
   }
 
   return next();
