@@ -9,14 +9,14 @@ export const branch = pgTable("customer_branches", {
     .$defaultFn(() => crypto.randomUUID()),
   name: text("name").notNull(),
   street: text("street").notNull(),
-  intNumber: text("int_number"),
+  intNumber: text("int_number").notNull().default(""),
   extNumber: text("ext_number").notNull(),
   city: text("city").notNull(),
   suburb: text("suburb").notNull(),
   state: text("state").notNull(),
   postalCode: text("postal_code").notNull(),
-  phone: text("phone"),
-  frontImageUrl: text("front_image_url"),
+  phone: text("phone").notNull().default(""),
+  frontImageUrl: text("front_image_url").notNull().default(""),
   customerId: text("customer_id")
     .notNull()
     .references(() => customer.id),

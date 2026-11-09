@@ -1,11 +1,11 @@
 import { customer } from "@suni/db/schema/customers";
-import { customerInputSchema } from "@suni/db/validation/customers";
+import { createCustomerSchema } from "@suni/db/validation/customers";
 
 import { isAdmin, protectedProcedure } from "../../index";
 
 export const create = protectedProcedure
   .route({ method: "POST", path: "/" })
-  .input(customerInputSchema)
+  .input(createCustomerSchema)
   .handler(async ({ input, context }) => {
     const userId = context.session.user.id;
 

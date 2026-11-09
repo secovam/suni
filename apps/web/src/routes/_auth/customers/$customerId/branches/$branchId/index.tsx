@@ -62,7 +62,7 @@ function RouteComponent() {
   );
 
   const placeholder = "/placeholder.webp";
-  const branchImage = branch.frontImageUrl ?? placeholder;
+  const branchImage = branch.frontImageUrl || placeholder;
 
   const content: Record<(typeof TABS)[number]["value"], ReactNode> = {
     info: (

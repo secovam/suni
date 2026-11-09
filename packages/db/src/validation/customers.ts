@@ -1,18 +1,41 @@
 import { z } from "zod";
 
 import { ACQUISITION_CHANNELS, CUSTOMER_TYPES } from "../schema/customer-enums";
-import { emptyToNull, required } from "./shared";
 
 // Shared by the web form and the API, so it must stay free of drizzle imports.
-export const customerFormSchema = z.object({
-  name: required("La razón social es requerida"),
+export const customerSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(1, "La razón social es requerida")
+    .max(254, "Máximo 254 caracteres"),
   rfc: z.string().regex(/^[A-ZÑ&]{3,4}\d{6}[A-Z0-9]{3}$/u, "RFC inválido"),
-  street: required("La calle es requerida"),
+  street: z
+    .string()
+    .trim()
+    .min(1, "La calle es requerida")
+    .max(150, "Máximo 150 caracteres"),
   intNumber: z.string().trim().max(20, "Máximo 20 caracteres"),
-  extNumber: required("El número exterior es requerido"),
-  city: required("El municipio es requerido"),
-  suburb: required("La colonia es requerida"),
-  state: required("El estado es requerido"),
+  extNumber: z
+    .string()
+    .trim()
+    .min(1, "El número exterior es requerido")
+    .max(20, "Máximo 20 caracteres"),
+  city: z
+    .string()
+    .trim()
+    .min(1, "El municipio es requerido")
+    .max(100, "Máximo 100 caracteres"),
+  suburb: z
+    .string()
+    .trim()
+    .min(1, "La colonia es requerida")
+    .max(100, "Máximo 100 caracteres"),
+  state: z
+    .string()
+    .trim()
+    .min(1, "El estado es requerido")
+    .max(50, "Máximo 50 caracteres"),
   postalCode: z.string().regex(/^\d{5}$/u, "Debe tener 5 dígitos"),
   phone: z.string().regex(/^\d{10}$/u, "Debe tener 10 dígitos"),
   phoneExtension: z.string().regex(/^\d{0,10}$/u, "Solo dígitos"),
@@ -22,8 +45,6 @@ export const customerFormSchema = z.object({
   type: z.enum(CUSTOMER_TYPES),
 });
 
-// The form keeps "" for empty optional fields; the database stores null.
-export const customerInputSchema = customerFormSchema.extend({
-  intNumber: emptyToNull(customerFormSchema.shape.intNumber),
-  phoneExtension: emptyToNull(customerFormSchema.shape.phoneExtension),
-});
+export const createCustomerSchema = customerSchema;
+
+export const updateCustomerSchema = customerSchema.partial();

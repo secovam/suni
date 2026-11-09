@@ -11,8 +11,8 @@ export const contact = pgTable("contact", {
   name: text("name").notNull(),
   email: text("email").notNull(),
   phone: text("phone").notNull(),
-  phoneExtension: text("phone_extension"),
-  position: text("position"),
+  phoneExtension: text("phone_extension").notNull().default(""),
+  position: text("position").notNull().default(""),
   customerId: text("customer_id")
     .notNull()
     .references(() => customer.id),

@@ -3,7 +3,7 @@ import {
   ACQUISITION_CHANNELS,
   CUSTOMER_TYPES,
 } from "@suni/db/schema/customer-enums";
-import { customerFormSchema } from "@suni/db/validation/customers";
+import { customerSchema } from "@suni/db/validation/customers";
 import { Button } from "@suni/ui/components/button";
 import { revalidateLogic, useSelector } from "@tanstack/react-form";
 import { useQueryClient } from "@tanstack/react-query";
@@ -18,7 +18,7 @@ import { useIsAdmin } from "@/hooks/use-is-admin";
 import { postalCodeQueryOptions, usePostalCode } from "@/hooks/use-postal-code";
 import type { Settlement } from "@/hooks/use-postal-code";
 
-type FormValues = Omit<z.input<typeof customerFormSchema>, "acquisition"> & {
+type FormValues = Omit<z.input<typeof customerSchema>, "acquisition"> & {
   acquisition: (typeof ACQUISITION_CHANNELS)[number] | "";
 };
 
@@ -59,7 +59,7 @@ function toFormValues(customer?: CustomerFormProps["customer"]): FormValues {
     name: customer.name,
     rfc: customer.rfc,
     phone: customer.phone,
-    phoneExtension: customer.phoneExtension ?? "",
+    phoneExtension: customer.phoneExtension,
     acquisition: customer.acquisition,
     type: customer.type,
     postalCode: customer.postalCode,
@@ -68,7 +68,7 @@ function toFormValues(customer?: CustomerFormProps["customer"]): FormValues {
     state: customer.state,
     street: customer.street,
     extNumber: customer.extNumber,
-    intNumber: customer.intNumber ?? "",
+    intNumber: customer.intNumber,
   };
 }
 
@@ -114,9 +114,9 @@ export function CustomerForm({ customer }: CustomerFormProps) {
     defaultValues: toFormValues(customer),
     // Valida al enviar y, después del primer envío, en cada cambio.
     validationLogic: revalidateLogic(),
-    validators: { onDynamic: customerFormSchema },
+    validators: { onDynamic: customerSchema },
     onSubmit: ({ value }) => {
-      const parsed = customerFormSchema.parse(value);
+      const parsed = customerSchema.parse(value);
 
       if (customer) {
         updateCustomer.mutate(

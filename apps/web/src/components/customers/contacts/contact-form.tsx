@@ -1,8 +1,5 @@
 import type { AppRouterOutputs } from "@suni/api/routers/index";
-import {
-  contactFormSchema,
-  contactInputSchema,
-} from "@suni/db/validation/contacts";
+import { contactSchema } from "@suni/db/validation/contacts";
 import { Button } from "@suni/ui/components/button";
 import { revalidateLogic } from "@tanstack/react-form";
 import { Loader2 } from "lucide-react";
@@ -13,7 +10,7 @@ import { useCreateContact, useUpdateContact } from "@/hooks/use-contacts";
 
 type Contact = AppRouterOutputs["contacts"]["list"][number];
 
-type FormValues = z.input<typeof contactFormSchema>;
+type FormValues = z.input<typeof contactSchema>;
 
 interface ContactFormProps {
   customerId?: string | null;
@@ -44,8 +41,8 @@ function toFormValues(contact?: Contact): FormValues {
     name: contact.name,
     email: contact.email,
     phone: contact.phone,
-    phoneExtension: contact.phoneExtension ?? "",
-    position: contact.position ?? "",
+    phoneExtension: contact.phoneExtension,
+    position: contact.position,
   };
 }
 
@@ -64,18 +61,16 @@ export function ContactForm({
   const form = useAppForm({
     defaultValues: toFormValues(contact),
     validationLogic: revalidateLogic(),
-    validators: { onDynamic: contactFormSchema },
+    validators: { onDynamic: contactSchema },
     onSubmit: ({ value }) => {
-      const parsed = contactInputSchema.parse(value);
-
       if (contact) {
         updateContact.mutate(
-          { id: contact.id, ...parsed },
+          { id: contact.id, ...value },
           { onSuccess: () => onSuccess?.() }
         );
       } else if (customerId && branchId) {
         createContact.mutate(
-          { customerId, branchId, ...parsed },
+          { customerId, branchId, ...value },
           { onSuccess: () => onSuccess?.() }
         );
       }

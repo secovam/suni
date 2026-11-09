@@ -1,6 +1,6 @@
 import { ORPCError } from "@orpc/server";
 import { customer } from "@suni/db/schema/customers";
-import { customerInputSchema } from "@suni/db/validation/customers";
+import { updateCustomerSchema } from "@suni/db/validation/customers";
 import { and, eq, isNull } from "drizzle-orm";
 import { z } from "zod";
 
@@ -8,7 +8,7 @@ import { isAdmin, protectedProcedure } from "../../index";
 
 export const update = protectedProcedure
   .route({ method: "PATCH", path: "/{id}" })
-  .input(customerInputSchema.partial().extend({ id: z.string() }))
+  .input(updateCustomerSchema.extend({ id: z.string() }))
   .handler(async ({ input, context }) => {
     const { id, type, ...fields } = input;
 

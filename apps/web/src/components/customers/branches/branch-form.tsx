@@ -1,8 +1,5 @@
 import type { AppRouterOutputs } from "@suni/api/routers/index";
-import {
-  branchFormSchema,
-  branchInputSchema,
-} from "@suni/db/validation/branches";
+import { branchSchema } from "@suni/db/validation/branches";
 import { Button } from "@suni/ui/components/button";
 import { revalidateLogic, useSelector } from "@tanstack/react-form";
 import { useQueryClient } from "@tanstack/react-query";
@@ -17,7 +14,7 @@ import type { Settlement } from "@/hooks/use-postal-code";
 
 type Branch = AppRouterOutputs["branches"]["list"][number];
 
-type FormValues = z.input<typeof branchFormSchema>;
+type FormValues = z.input<typeof branchSchema>;
 
 interface BranchFormProps {
   customerId: string;
@@ -54,13 +51,13 @@ function toFormValues(branch?: Branch): FormValues {
     name: branch.name,
     street: branch.street,
     extNumber: branch.extNumber,
-    intNumber: branch.intNumber ?? "",
+    intNumber: branch.intNumber,
     postalCode: branch.postalCode,
     suburb: branch.suburb,
     city: branch.city,
     state: branch.state,
-    phone: branch.phone ?? "",
-    frontImageUrl: branch.frontImageUrl ?? "",
+    phone: branch.phone,
+    frontImageUrl: branch.frontImageUrl,
   };
 }
 
@@ -98,18 +95,16 @@ export function BranchForm({
   const form = useAppForm({
     defaultValues: toFormValues(branch),
     validationLogic: revalidateLogic(),
-    validators: { onDynamic: branchFormSchema },
+    validators: { onDynamic: branchSchema },
     onSubmit: ({ value }) => {
-      const parsed = branchInputSchema.parse(value);
-
       if (branch) {
         updateBranch.mutate(
-          { id: branch.id, ...parsed },
+          { id: branch.id, ...value },
           { onSuccess: () => onSuccess?.() }
         );
       } else {
         createBranch.mutate(
-          { customerId, ...parsed },
+          { customerId, ...value },
           { onSuccess: () => onSuccess?.() }
         );
       }
