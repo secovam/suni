@@ -17,8 +17,8 @@ export const get = protectedProcedure
       },
       columns: admin ? undefined : { modifiedBy: false },
       with: {
-        branch: { columns: { id: true, name: true } },
-        customer: { columns: { id: true, name: true } },
+        branch: { columns: { id: true, name: true, archived: true } },
+        customer: { columns: { id: true, name: true, archived: true } },
       },
     });
 
