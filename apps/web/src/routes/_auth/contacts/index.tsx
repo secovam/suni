@@ -35,29 +35,18 @@ function RouteComponent() {
     isError,
     isPending,
     isPlaceholderData,
-  } = useListContacts({});
+  } = useListContacts({ status: filters.status });
 
   const visibleContacts = useMemo(() => {
     const term = stripAccents(filters.name.trim()).toLowerCase();
 
     return contacts
-      .filter((contact) => {
-        if (term && !stripAccents(contact.name).toLowerCase().includes(term)) {
-          return false;
-        }
-
-        if (filters.status === "active") {
-          return !contact.archived;
-        }
-
-        if (filters.status === "archived") {
-          return !!contact.archived;
-        }
-
-        return true;
-      })
+      .filter(
+        (contact) =>
+          !term || stripAccents(contact.name).toLowerCase().includes(term)
+      )
       .toSorted((a, b) => a.name.localeCompare(b.name, "es"));
-  }, [contacts, filters.name, filters.status]);
+  }, [contacts, filters.name]);
 
   const hasFilters =
     filters.name.trim() !== "" || filters.status !== defaultFilters.status;

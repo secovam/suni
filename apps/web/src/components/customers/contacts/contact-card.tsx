@@ -35,12 +35,141 @@ interface ContactCardProps {
   readOnly?: boolean;
 }
 
+function getArchiveState(contact: Contact) {
+  const isOwn = !!contact.archived;
+  const isCustomer = !!contact.customer?.archived;
+  const isBranch = !!contact.branch?.archived;
+  const isParent = isCustomer || isBranch;
+
+  let label = "Archivado";
+
+  if (isCustomer) {
+    label = "Cliente archivado";
+  } else if (isBranch) {
+    label = "Sucursal archivada";
+  }
+
+  return { isOwn, isParent, isArchived: isOwn || isParent, label };
+}
+
+interface ContactMenuProps {
+  isArchived: boolean;
+  isOwnArchived: boolean;
+  isParentArchived: boolean;
+  onEdit: () => void;
+  onToggleStatus: () => void;
+}
+
+function ContactMenu({
+  isArchived,
+  isOwnArchived,
+  isParentArchived,
+  onEdit,
+  onToggleStatus,
+}: ContactMenuProps) {
+  return (
+    <span className="shrink-0 transition-opacity pointer-fine:opacity-0 pointer-fine:group-hover:opacity-100 pointer-fine:focus-within:opacity-100">
+      <DropdownMenu>
+        <DropdownMenuTrigger render={<Button size="icon-sm" variant="ghost" />}>
+          <span className="sr-only">Abrir menú</span>
+          <MoreVertical className="size-4" />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuGroup>
+            <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+            {!isArchived && (
+              <DropdownMenuItem className="cursor-pointer" onClick={onEdit}>
+                <Pencil className="mr-2 size-4" />
+                Editar
+              </DropdownMenuItem>
+            )}
+
+            {/* Si un padre lo archiva, desarchivarlo no tendría efecto */}
+            {!isParentArchived && (
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onClick={onToggleStatus}
+              >
+                {isOwnArchived ? (
+                  <ArchiveRestore className="mr-2 size-4" />
+                ) : (
+                  <Archive className="mr-2 size-4" />
+                )}
+                {isOwnArchived ? "Desarchivar" : "Archivar"}
+              </DropdownMenuItem>
+            )}
+          </DropdownMenuGroup>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </span>
+  );
+}
+
+interface ContactParentsProps {
+  contact: Contact;
+  customer?: { id: string; name: string };
+}
+
+function ContactParents({ contact, customer }: ContactParentsProps) {
+  return (
+    <>
+      {customer && (
+        <div className="mt-2 flex items-center gap-1.5">
+          <Building2 className="text-muted-foreground/70 size-3.5 shrink-0" />
+          <Link
+            className="text-success line-clamp-1 text-sm font-medium hover:underline"
+            params={{ customerId: customer.id }}
+            title={customer.name}
+            to="/customers/$customerId"
+          >
+            {customer.name}
+          </Link>
+        </div>
+      )}
+
+      {contact.branch && (
+        <div className="mt-2 flex items-center gap-1.5">
+          <MapPin className="text-muted-foreground/70 size-3.5 shrink-0" />
+          <Link
+            className="text-success line-clamp-1 text-sm font-medium hover:underline"
+            params={{
+              customerId: contact.customerId,
+              branchId: contact.branch.id,
+            }}
+            title={contact.branch.name}
+            to="/customers/$customerId/branches/$branchId"
+          >
+            {contact.branch.name}
+          </Link>
+        </div>
+      )}
+    </>
+  );
+}
+
+function ContactPhone({ contact }: { contact: Contact }) {
+  if (!contact.phone) {
+    return null;
+  }
+
+  return (
+    <div className="text-muted-foreground flex items-center gap-2 text-sm">
+      <Phone className="text-muted-foreground/70 size-4 shrink-0" />
+      <span>
+        {contact.phone}
+        {contact.phoneExtension && ` ext. ${contact.phoneExtension}`}
+      </span>
+    </div>
+  );
+}
+
 export default function ContactCard({
   contact,
   customer,
   readOnly = false,
 }: ContactCardProps) {
-  const isArchived = !!contact.archived;
+  const { isOwn, isParent, isArchived, label } = getArchiveState(contact);
+
   const [isUpdateFormOpen, setIsUpdateFormOpen] = useState(false);
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
 
@@ -80,74 +209,17 @@ export default function ContactCard({
                 </p>
               )}
 
-              {customer && (
-                <div className="mt-2 flex items-center gap-1.5">
-                  <Building2 className="text-muted-foreground/70 size-3.5 shrink-0" />
-                  <Link
-                    className="text-success line-clamp-1 text-sm font-medium hover:underline"
-                    params={{ customerId: customer.id }}
-                    title={customer.name}
-                    to="/customers/$customerId"
-                  >
-                    {customer.name}
-                  </Link>
-                </div>
-              )}
-
-              {contact.branch && (
-                <div className="mt-2 flex items-center gap-1.5">
-                  <MapPin className="text-muted-foreground/70 size-3.5 shrink-0" />
-                  <Link
-                    className="text-success line-clamp-1 text-sm font-medium hover:underline"
-                    params={{
-                      customerId: contact.customerId,
-                      branchId: contact.branch.id,
-                    }}
-                    title={contact.branch.name}
-                    to="/customers/$customerId/branches/$branchId"
-                  >
-                    {contact.branch.name}
-                  </Link>
-                </div>
-              )}
+              <ContactParents contact={contact} customer={customer} />
             </div>
 
             {!readOnly && (
-              <span className="shrink-0 transition-opacity pointer-fine:opacity-0 pointer-fine:group-hover:opacity-100 pointer-fine:focus-within:opacity-100">
-                <DropdownMenu>
-                  <DropdownMenuTrigger
-                    render={<Button size="icon-sm" variant="ghost" />}
-                  >
-                    <span className="sr-only">Abrir menú</span>
-                    <MoreVertical className="size-4" />
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuGroup>
-                      <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-                      {!isArchived && (
-                        <DropdownMenuItem
-                          className="cursor-pointer"
-                          onClick={() => setIsUpdateFormOpen(true)}
-                        >
-                          <Pencil className="mr-2 size-4" />
-                          Editar
-                        </DropdownMenuItem>
-                      )}
-                      <DropdownMenuItem
-                        className="cursor-pointer"
-                        onClick={() => setIsStatusDialogOpen(true)}
-                      >
-                        {isArchived ? (
-                          <ArchiveRestore className="mr-2 size-4" />
-                        ) : (
-                          <Archive className="mr-2 size-4" />
-                        )}
-                        {isArchived ? "Desarchivar" : "Archivar"}
-                      </DropdownMenuItem>
-                    </DropdownMenuGroup>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </span>
+              <ContactMenu
+                isArchived={isArchived}
+                isOwnArchived={isOwn}
+                isParentArchived={isParent}
+                onEdit={() => setIsUpdateFormOpen(true)}
+                onToggleStatus={() => setIsStatusDialogOpen(true)}
+              />
             )}
           </div>
         </div>
@@ -167,15 +239,7 @@ export default function ContactCard({
             <span className="truncate">{contact.email}</span>
           </a>
 
-          {contact.phone && (
-            <div className="text-muted-foreground flex items-center gap-2 text-sm">
-              <Phone className="text-muted-foreground/70 size-4 shrink-0" />
-              <span>
-                {contact.phone}
-                {contact.phoneExtension && ` ext. ${contact.phoneExtension}`}
-              </span>
-            </div>
-          )}
+          <ContactPhone contact={contact} />
         </div>
 
         {/* Archived badge */}
@@ -183,7 +247,7 @@ export default function ContactCard({
           <div className="px-5 pb-4">
             <Badge variant="secondary">
               <Archive className="size-3" />
-              Archivado
+              {label}
             </Badge>
           </div>
         )}

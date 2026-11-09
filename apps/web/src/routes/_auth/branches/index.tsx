@@ -37,31 +37,23 @@ function RouteComponent() {
     isError,
     isPending,
     isPlaceholderData,
-  } = useListBranches(
-    filters.customerId === "all" ? {} : { customerId: filters.customerId }
-  );
+  } = useListBranches({
+    status: filters.status,
+    ...(filters.customerId === "all"
+      ? undefined
+      : { customerId: filters.customerId }),
+  });
 
   const visibleBranches = useMemo(() => {
     const term = stripAccents(filters.name.trim()).toLowerCase();
 
     return branches
-      .filter((branch) => {
-        if (term && !stripAccents(branch.name).toLowerCase().includes(term)) {
-          return false;
-        }
-
-        if (filters.status === "active") {
-          return !branch.archived;
-        }
-
-        if (filters.status === "archived") {
-          return !!branch.archived;
-        }
-
-        return true;
-      })
+      .filter(
+        (branch) =>
+          !term || stripAccents(branch.name).toLowerCase().includes(term)
+      )
       .toSorted((a, b) => a.name.localeCompare(b.name, "es"));
-  }, [branches, filters.name, filters.status]);
+  }, [branches, filters.name]);
 
   const { data: customers } = useListCustomers({});
 

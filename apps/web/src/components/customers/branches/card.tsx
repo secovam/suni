@@ -1,3 +1,4 @@
+import type { AppRouterOutputs } from "@suni/api/routers/index";
 import { Badge } from "@suni/ui/components/badge";
 import { Button } from "@suni/ui/components/button";
 import {
@@ -26,8 +27,9 @@ import { useState } from "react";
 
 import { BranchFormDialog } from "./branch-form-dialog";
 import { ChangeBranchStatusDialog } from "./change-branch-status-dialog";
-import type { Branch } from "./util/branch-address";
 import { formatAddress } from "./util/branch-address";
+
+type Branch = AppRouterOutputs["branches"]["list"][number];
 
 interface BranchCardProps {
   branch: Branch;
@@ -94,7 +96,10 @@ function BranchImage({
 }
 
 export default function BranchCard({ branch, customer }: BranchCardProps) {
-  const isArchived = !!branch.archived;
+  const isOwnArchived = !!branch.archived;
+  const isCustomerArchived = !!branch.customer?.archived;
+  const isArchived = isOwnArchived || isCustomerArchived;
+
   const [isUpdateFormOpen, setIsUpdateFormOpen] = useState(false);
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
   const placeholder = "/placeholder.webp";
@@ -175,17 +180,20 @@ export default function BranchCard({ branch, customer }: BranchCardProps) {
                         Editar
                       </DropdownMenuItem>
                     )}
-                    <DropdownMenuItem
-                      className="cursor-pointer"
-                      onClick={() => setIsStatusDialogOpen(true)}
-                    >
-                      {isArchived ? (
-                        <ArchiveRestore className="mr-2 size-4" />
-                      ) : (
-                        <Archive className="mr-2 size-4" />
-                      )}
-                      {isArchived ? "Desarchivar" : "Archivar"}
-                    </DropdownMenuItem>
+                    {/* Si el cliente es quien la archiva, desarchivarla no tendría efecto */}
+                    {!isCustomerArchived && (
+                      <DropdownMenuItem
+                        className="cursor-pointer"
+                        onClick={() => setIsStatusDialogOpen(true)}
+                      >
+                        {isOwnArchived ? (
+                          <ArchiveRestore className="mr-2 size-4" />
+                        ) : (
+                          <Archive className="mr-2 size-4" />
+                        )}
+                        {isOwnArchived ? "Desarchivar" : "Archivar"}
+                      </DropdownMenuItem>
+                    )}
                   </DropdownMenuGroup>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -217,7 +225,7 @@ export default function BranchCard({ branch, customer }: BranchCardProps) {
             <div className="mt-1">
               <Badge variant="secondary">
                 <Archive className="size-3" />
-                Archivada
+                {isCustomerArchived ? "Cliente archivado" : "Archivada"}
               </Badge>
             </div>
           )}
