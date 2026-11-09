@@ -1,10 +1,10 @@
 import { CUSTOMER_STATUSES } from "@suni/db/schema/customer-enums";
 import { z } from "zod";
 
-import { isAdmin, protectedProcedure } from "../../index";
+import { scopedProcedure } from "../../index";
 import { statusWhere } from "../../util/status";
 
-export const list = protectedProcedure
+export const list = scopedProcedure
   .route({ method: "GET", path: "/" })
   .input(
     z.object({
@@ -13,9 +13,8 @@ export const list = protectedProcedure
       status: z.enum(CUSTOMER_STATUSES).default("active"),
     })
   )
-  .handler(async ({ input, context }) => {
-    const userId = context.session.user.id;
-    const admin = await isAdmin(context, userId);
+  .handler(({ input, context }) => {
+    const { userId, admin } = context;
 
     return context.db.query.contact.findMany({
       where: {

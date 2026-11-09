@@ -1,18 +1,18 @@
 import { ORPCError } from "@orpc/server";
 import { z } from "zod";
 
-import { isAdmin, protectedProcedure } from "../../index";
+import { scopedProcedure } from "../../index";
 
-export const get = protectedProcedure
+export const get = scopedProcedure
   .route({ method: "GET", path: "/{id}" })
   .input(z.object({ id: z.string() }))
   .handler(async ({ input, context }) => {
-    const admin = await isAdmin(context, context.session.user.id);
+    const { admin } = context;
 
     const found = await context.db.query.branch.findFirst({
       where: admin
         ? { id: input.id }
-        : { id: input.id, sellerId: context.session.user.id },
+        : { id: input.id, sellerId: context.userId },
       columns: admin ? undefined : { sellerId: false, modifiedBy: false },
       with: {
         customer: { columns: { id: true, name: true, archived: true } },

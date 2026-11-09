@@ -2,14 +2,13 @@ import { ORPCError } from "@orpc/server";
 import { contact } from "@suni/db/schema/contacts";
 import { createContactSchema } from "@suni/db/validation/contacts";
 
-import { isAdmin, protectedProcedure } from "../../index";
+import { scopedProcedure } from "../../index";
 
-export const create = protectedProcedure
+export const create = scopedProcedure
   .route({ method: "POST", path: "/" })
   .input(createContactSchema)
   .handler(async ({ input, context }) => {
-    const userId = context.session.user.id;
-    const admin = await isAdmin(context, userId);
+    const { userId, admin } = context;
 
     const parent = await context.db.query.branch.findFirst({
       where: {

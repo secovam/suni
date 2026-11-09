@@ -1,14 +1,13 @@
 import { ORPCError } from "@orpc/server";
 import { z } from "zod";
 
-import { isAdmin, protectedProcedure } from "../../index";
+import { scopedProcedure } from "../../index";
 
-export const get = protectedProcedure
+export const get = scopedProcedure
   .route({ method: "GET", path: "/{id}" })
   .input(z.object({ id: z.string() }))
   .handler(async ({ input, context }) => {
-    const userId = context.session.user.id;
-    const admin = await isAdmin(context, userId);
+    const { userId, admin } = context;
 
     const found = await context.db.query.contact.findFirst({
       where: {

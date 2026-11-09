@@ -4,23 +4,21 @@ import { updateBranchSchema } from "@suni/db/validation/branches";
 import { and, eq, isNull } from "drizzle-orm";
 import { z } from "zod";
 
-import { isAdmin, protectedProcedure } from "../../index";
+import { scopedProcedure } from "../../index";
 
-export const update = protectedProcedure
+export const update = scopedProcedure
   .route({ method: "PATCH", path: "/{id}" })
   .input(updateBranchSchema.omit({ archived: true }).extend({ id: z.string() }))
   .handler(async ({ input, context }) => {
     const { id, ...fields } = input;
 
-    const userId = context.session.user.id;
+    const { userId, admin } = context;
 
     if (Object.values(fields).every((v) => v === undefined)) {
       throw new ORPCError("BAD_REQUEST", {
         message: "No hay campos para actualizar",
       });
     }
-
-    const admin = await isAdmin(context, userId);
 
     const [updated] = await context.db
       .update(branch)

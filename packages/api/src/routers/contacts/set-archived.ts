@@ -4,14 +4,13 @@ import { contact } from "@suni/db/schema/contacts";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
 
-import { isAdmin, protectedProcedure } from "../../index";
+import { scopedProcedure } from "../../index";
 
-export const setArchived = protectedProcedure
+export const setArchived = scopedProcedure
   .route({ method: "POST", path: "/{id}/archived" })
   .input(z.object({ id: z.string(), archived: z.boolean() }))
   .handler(async ({ input, context }) => {
-    const userId = context.session.user.id;
-    const admin = await isAdmin(context, userId);
+    const { userId, admin } = context;
 
     const [updated] = await context.db
       .update(contact)

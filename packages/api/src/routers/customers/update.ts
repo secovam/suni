@@ -4,19 +4,17 @@ import { updateCustomerSchema } from "@suni/db/validation/customers";
 import { and, eq, isNull } from "drizzle-orm";
 import { z } from "zod";
 
-import { isAdmin, protectedProcedure } from "../../index";
+import { scopedProcedure } from "../../index";
 
-export const update = protectedProcedure
+export const update = scopedProcedure
   .route({ method: "PATCH", path: "/{id}" })
   .input(updateCustomerSchema.extend({ id: z.string() }))
   .handler(async ({ input, context }) => {
     const { id, type, ...fields } = input;
 
-    const userId = context.session.user.id;
+    const { userId } = context;
 
-    const data = (await isAdmin(context, userId))
-      ? { ...fields, type }
-      : fields;
+    const data = context.admin ? { ...fields, type } : fields;
 
     if (Object.values(data).every((v) => v === undefined)) {
       throw new ORPCError("BAD_REQUEST", {

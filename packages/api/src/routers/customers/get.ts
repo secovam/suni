@@ -1,19 +1,19 @@
 import { ORPCError } from "@orpc/server";
 import { z } from "zod";
 
-import { isAdmin, protectedProcedure } from "../../index";
+import { scopedProcedure } from "../../index";
 
 function notFound() {
   return new ORPCError("NOT_FOUND", { message: "Customer not found" });
 }
 
-export const get = protectedProcedure
+export const get = scopedProcedure
   .route({ method: "GET", path: "/{id}" })
   .input(z.object({ id: z.string() }))
   .handler(async ({ input, context }) => {
     const where = { id: input.id };
 
-    if (await isAdmin(context, context.session.user.id)) {
+    if (context.admin) {
       const found = await context.db.query.customer.findFirst({
         where,
         with: { seller: { columns: { id: true, name: true } } },

@@ -1,15 +1,15 @@
 import { customer } from "@suni/db/schema/customers";
 import { createCustomerSchema } from "@suni/db/validation/customers";
 
-import { isAdmin, protectedProcedure } from "../../index";
+import { scopedProcedure } from "../../index";
 
-export const create = protectedProcedure
+export const create = scopedProcedure
   .route({ method: "POST", path: "/" })
   .input(createCustomerSchema)
   .handler(async ({ input, context }) => {
-    const userId = context.session.user.id;
+    const { userId } = context;
 
-    const type = (await isAdmin(context, userId)) ? input.type : "Cliente";
+    const type = context.admin ? input.type : "Cliente";
 
     const [created] = await context.db
       .insert(customer)
