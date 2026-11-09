@@ -5,6 +5,7 @@ import { and, eq, isNull } from "drizzle-orm";
 import { z } from "zod";
 
 import { scopedProcedure } from "../../index";
+import { ownCustomersSql } from "../../util/scope";
 
 export const update = scopedProcedure
   .route({ method: "PATCH", path: "/{id}" })
@@ -26,7 +27,13 @@ export const update = scopedProcedure
       .update(customer)
       .set({ ...data, modifiedBy: userId })
       // Archived customers are read-only until restored.
-      .where(and(eq(customer.id, id), isNull(customer.archived)))
+      .where(
+        and(
+          eq(customer.id, id),
+          isNull(customer.archived),
+          ownCustomersSql(context)
+        )
+      )
       .returning({ id: customer.id });
 
     if (!updated) {

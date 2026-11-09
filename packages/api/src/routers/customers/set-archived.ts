@@ -1,11 +1,12 @@
 import { ORPCError } from "@orpc/server";
 import { customer } from "@suni/db/schema/customers";
-import { eq, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 
-import { protectedProcedure } from "../../index";
+import { scopedProcedure } from "../../index";
+import { ownCustomersSql } from "../../util/scope";
 
-export const setArchived = protectedProcedure
+export const setArchived = scopedProcedure
   .route({ method: "POST", path: "/{id}/archived" })
   .input(z.object({ id: z.string(), archived: z.boolean() }))
   .handler(async ({ input, context }) => {
@@ -17,9 +18,9 @@ export const setArchived = protectedProcedure
         archived: input.archived
           ? sql`COALESCE(${customer.archived}, now())`
           : null,
-        modifiedBy: context.session.user.id,
+        modifiedBy: context.userId,
       })
-      .where(eq(customer.id, input.id))
+      .where(and(eq(customer.id, input.id), ownCustomersSql(context)))
       .returning({ id: customer.id });
 
     if (!updated) {

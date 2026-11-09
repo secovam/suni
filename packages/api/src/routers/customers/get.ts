@@ -2,6 +2,7 @@ import { ORPCError } from "@orpc/server";
 import { z } from "zod";
 
 import { scopedProcedure } from "../../index";
+import { ownCustomers } from "../../util/scope";
 
 function notFound() {
   return new ORPCError("NOT_FOUND", { message: "Customer not found" });
@@ -11,7 +12,7 @@ export const get = scopedProcedure
   .route({ method: "GET", path: "/{id}" })
   .input(z.object({ id: z.string() }))
   .handler(async ({ input, context }) => {
-    const where = { id: input.id };
+    const where = { id: input.id, ...ownCustomers(context) };
 
     if (context.admin) {
       const found = await context.db.query.customer.findFirst({

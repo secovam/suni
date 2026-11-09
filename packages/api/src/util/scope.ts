@@ -1,5 +1,6 @@
 import { branch } from "@suni/db/schema/branches";
 import { contact } from "@suni/db/schema/contacts";
+import { customer } from "@suni/db/schema/customers";
 import { eq, inArray } from "drizzle-orm";
 
 import type { Context } from "../context";
@@ -9,8 +10,16 @@ interface Scope extends Pick<Context, "db"> {
   userId: string;
 }
 
-// Non-admins only reach the branches they sell and the contacts under them.
+// Non-admins only reach the customers and branches they sell and the contacts under them.
 // Each rule has a relational-query form and a SQL form for update/delete builders.
+
+export function ownCustomers({ admin, userId }: Scope) {
+  return admin ? {} : { sellerId: userId };
+}
+
+export function ownCustomersSql({ admin, userId }: Scope) {
+  return admin ? undefined : eq(customer.sellerId, userId);
+}
 
 export function ownBranches({ admin, userId }: Scope) {
   return admin ? {} : { sellerId: userId };
