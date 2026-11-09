@@ -1,9 +1,10 @@
 import type { AppRouterOutputs } from "@suni/api/routers/index";
+import { userSchema } from "@suni/db/validation/users";
 import { Button } from "@suni/ui/components/button";
 import { revalidateLogic } from "@tanstack/react-form";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
-import { z } from "zod";
+import type { z } from "zod";
 
 import { useAppForm } from "@/components/form/use-app-form";
 import { useCreateUser, useUpdateUser } from "@/hooks/use-users";
@@ -12,12 +13,6 @@ const ROLE_OPTIONS = [
   { value: "admin", label: "Admin" },
   { value: "user", label: "Usuario" },
 ] as const;
-
-const userSchema = z.object({
-  name: z.string().min(1, { message: "El nombre es requerido" }),
-  email: z.email({ message: "El correo no es válido" }),
-  role: z.enum(["admin", "user"]),
-});
 
 interface UserFormProps {
   user?: AppRouterOutputs["users"]["get"];
@@ -32,7 +27,7 @@ export function UserForm({ user }: UserFormProps) {
 
   const goToUsers = () => navigate({ to: "/users" });
 
-  const defaultValues: z.infer<typeof userSchema> = {
+  const defaultValues: z.input<typeof userSchema> = {
     name: user?.name ?? "",
     email: user?.email ?? "",
     role: user?.role === "admin" ? "admin" : "user",

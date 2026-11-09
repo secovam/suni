@@ -1,21 +1,14 @@
 import { ORPCError } from "@orpc/server";
 import { APIError } from "@suni/auth";
+import { userSchema } from "@suni/db/validation/users";
 import { z } from "zod";
 
 import { adminProcedure } from "../../index";
 import { toORPCError } from "./errors";
-import { role } from "./role";
 
 export const update = adminProcedure
   .route({ method: "PATCH", path: "/{id}" })
-  .input(
-    z.object({
-      id: z.string(),
-      name: z.string().min(2),
-      email: z.email().toLowerCase(),
-      role,
-    })
-  )
+  .input(userSchema.extend({ id: z.string() }))
   .handler(async ({ input, context }) => {
     const { id, ...data } = input;
 
