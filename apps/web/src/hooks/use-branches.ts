@@ -67,7 +67,11 @@ export function useArchiveBranch() {
     }: Pick<BranchRow, "id" | "name"> & { archived: boolean }) =>
       client.branches.setArchived({ id, archived }),
     onSuccess: async (_data, { archived, name }) => {
-      await queryClient.invalidateQueries({ queryKey: orpc.branches.key() });
+      // Contacts embed `branch.archived` to show the archived-branch label.
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: orpc.branches.key() }),
+        queryClient.invalidateQueries({ queryKey: orpc.contacts.key() }),
+      ]);
       toast.success(archived ? "Sucursal archivada" : "Sucursal desarchivada", {
         description: `Se ${archived ? "archivó" : "desarchivó"} ${name} con éxito.`,
       });
