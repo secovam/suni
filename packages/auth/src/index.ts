@@ -1,4 +1,5 @@
 import { drizzleAdapter } from "@better-auth/drizzle-adapter/relations-v2";
+import { createId } from "@paralleldrive/cuid2";
 import type { Database } from "@suni/db";
 // oxlint-disable-next-line sonarjs/no-wildcard-import -- the Drizzle adapter takes the whole schema object
 import * as schema from "@suni/db/schema/auth";
@@ -44,6 +45,9 @@ export function createAuth(
 
   return betterAuth({
     advanced: {
+      database: {
+        generateId: () => createId(),
+      },
       defaultCookieAttributes: {
         httpOnly: true,
         sameSite: isProduction ? "none" : "lax",

@@ -1,3 +1,4 @@
+import { createId } from "@paralleldrive/cuid2";
 import { eq } from "drizzle-orm";
 
 import { ENV } from "../env";
@@ -35,7 +36,7 @@ export async function createAdminUser() {
 
   console.log("👤 Creating admin user...");
 
-  const userId = crypto.randomUUID();
+  const userId = createId();
 
   await db.insert(user).values({
     email,

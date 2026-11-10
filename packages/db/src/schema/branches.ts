@@ -1,3 +1,4 @@
+import { createId } from "@paralleldrive/cuid2";
 import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
 
 import { user } from "./auth";
@@ -6,7 +7,7 @@ import { customer } from "./customers";
 export const branch = pgTable("customer_branches", {
   id: text("id")
     .primaryKey()
-    .$defaultFn(() => crypto.randomUUID()),
+    .$defaultFn(() => createId()),
   name: text("name").notNull(),
   street: text("street").notNull(),
   intNumber: text("int_number").notNull().default(""),

@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@better-auth/drizzle-adapter": "1.7.5",
+    "@paralleldrive/cuid2": "catalog:",
     "@suni/db": "workspace:*",
     "better-auth": "catalog:",
     "drizzle-orm": "catalog:",

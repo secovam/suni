@@ -1,3 +1,4 @@
+import { createId } from "@paralleldrive/cuid2";
 import { pgEnum, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 
 import { user } from "./auth";
@@ -10,7 +11,7 @@ export const customerTypeEnum = pgEnum("customer_type", CUSTOMER_TYPES);
 export const customer = pgTable("customer", {
   id: text("id")
     .primaryKey()
-    .$defaultFn(() => crypto.randomUUID()),
+    .$defaultFn(() => createId()),
   name: text("name").notNull(),
   rfc: text("rfc").notNull(),
   street: text("street").notNull(),
