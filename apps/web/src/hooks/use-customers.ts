@@ -15,10 +15,12 @@ import { client, orpc } from "@/utils/orpc";
 type CustomerRow = AppRouterOutputs["customers"]["list"][number];
 
 export function useListCustomers(params: AppRouterInputs["customers"]["list"]) {
-  return useQuery({
-    ...orpc.customers.list.queryOptions({ input: params }),
-    placeholderData: keepPreviousData,
-  });
+  return useQuery(
+    orpc.customers.list.queryOptions({
+      input: params,
+      placeholderData: keepPreviousData,
+    })
+  );
 }
 
 export function useCreateCustomer() {

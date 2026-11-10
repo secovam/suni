@@ -8,6 +8,7 @@ import {
   DialogTitle,
 } from "@suni/ui/components/dialog";
 import { ReactSelect } from "@suni/ui/components/react-select";
+import { skipToken } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
 import { useMemo, useState } from "react";
 
@@ -57,8 +58,7 @@ function BranchPicker({
   onValueChange,
 }: PickerProps & { customerId: string | null }) {
   const { data: branches = [], isPending } = useListBranches(
-    customerId ? { customerId } : {},
-    !!customerId
+    customerId ? { customerId } : skipToken
   );
 
   const options = useMemo(

@@ -1,9 +1,8 @@
 import { Button } from "@suni/ui/components/button";
-import { useQuery } from "@tanstack/react-query";
 import { Building2, Plus, SearchX } from "lucide-react";
 import { useMemo, useState } from "react";
 
-import { orpc } from "@/utils/orpc";
+import { useListBranches } from "@/hooks/use-branches";
 
 import { BranchFormDialog } from "./branch-form-dialog";
 import BranchCard from "./card";
@@ -28,7 +27,7 @@ export function BranchesGrid({ customerId }: BranchesGridProps) {
     data: branches = [],
     isPending,
     isError,
-  } = useQuery(orpc.branches.list.queryOptions({ input: { customerId } }));
+  } = useListBranches({ customerId });
 
   const filtered = useMemo(() => {
     const term = filters.name.trim().toLowerCase();

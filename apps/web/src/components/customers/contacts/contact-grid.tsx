@@ -1,9 +1,8 @@
-import { useQuery } from "@tanstack/react-query";
 import { SearchX, Users } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { NewEntityButton } from "@/components/customers/select-entity-button";
-import { orpc } from "@/utils/orpc";
+import { useListContacts } from "@/hooks/use-contacts";
 
 import ContactCard from "./contact-card";
 import { ContactsFilters } from "./contact-filters";
@@ -28,9 +27,7 @@ export function ContactsGrid({ customerId, branchId }: ContactsGridProps) {
     data: contacts = [],
     isPending,
     isError,
-  } = useQuery(
-    orpc.contacts.list.queryOptions({ input: { customerId, branchId } })
-  );
+  } = useListContacts({ customerId, branchId });
 
   const filtered = useMemo(() => {
     const term = filters.name.trim().toLowerCase();
