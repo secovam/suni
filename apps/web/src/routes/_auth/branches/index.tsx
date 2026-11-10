@@ -137,7 +137,11 @@ function RouteComponent() {
           )}
         >
           {visibleBranches.map((branch) => (
-            <BranchCard branch={branch} key={branch.id} />
+            <BranchCard
+              branch={branch}
+              customer={branch.customer}
+              key={branch.id}
+            />
           ))}
         </div>
       ) : null}

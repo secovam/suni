@@ -69,6 +69,12 @@ function BranchImage({
         src={src}
       />
       <div className="absolute inset-0 bg-linear-to-t from-black/40 via-transparent to-transparent" />
+      {isArchived && (
+        <Badge className="absolute top-2 right-2" variant="secondary">
+          <Archive className="size-3" />
+          Archivada
+        </Badge>
+      )}
 
       {hasImage && onExpandClick && (
         <button
@@ -146,10 +152,19 @@ export default function BranchCard({ branch, customer }: BranchCardProps) {
               </Link>
 
               {customer && (
-                <div className="mt-2 flex items-center gap-1.5">
-                  <Building2 className="text-muted-foreground/70 size-3.5 shrink-0" />
+                <div className="mt-2 flex items-center gap-2">
+                  {isCustomerArchived ? (
+                    <Archive className="text-muted-foreground/70 size-4 shrink-0" />
+                  ) : (
+                    <Building2 className="text-muted-foreground/70 size-4 shrink-0" />
+                  )}
                   <Link
-                    className="text-success line-clamp-1 text-sm font-medium hover:underline"
+                    className={cn(
+                      "line-clamp-1 text-sm font-medium hover:underline",
+                      isCustomerArchived
+                        ? "text-muted-foreground"
+                        : "text-success"
+                    )}
                     params={{ customerId: customer.id }}
                     title={customer.name}
                     to="/customers/$customerId"
@@ -168,7 +183,10 @@ export default function BranchCard({ branch, customer }: BranchCardProps) {
                   <span className="sr-only">Abrir menú</span>
                   <MoreVertical className="size-4" />
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent
+                  align="end"
+                  className={cn(isCustomerArchived && "min-w-56")}
+                >
                   <DropdownMenuGroup>
                     <DropdownMenuLabel>Acciones</DropdownMenuLabel>
                     {!isArchived && (
@@ -180,8 +198,20 @@ export default function BranchCard({ branch, customer }: BranchCardProps) {
                         Editar
                       </DropdownMenuItem>
                     )}
-                    {/* Si el cliente es quien la archiva, desarchivarla no tendría efecto */}
-                    {!isCustomerArchived && (
+                    {/* An archived customer wins: unarchiving the branch alone would have no effect */}
+                    {isCustomerArchived ? (
+                      <DropdownMenuItem disabled>
+                        <span className="flex flex-col">
+                          <span className="flex items-center gap-1.5">
+                            <ArchiveRestore className="mr-2 size-4" />
+                            Desarchivar
+                          </span>
+                          <span className="pl-7.5 text-xs">
+                            Desarchiva primero el cliente
+                          </span>
+                        </span>
+                      </DropdownMenuItem>
+                    ) : (
                       <DropdownMenuItem
                         className="cursor-pointer"
                         onClick={() => setIsStatusDialogOpen(true)}
@@ -202,7 +232,7 @@ export default function BranchCard({ branch, customer }: BranchCardProps) {
         </div>
 
         {/* Body */}
-        <div className="flex grow flex-col gap-2 p-5">
+        <div className="flex grow flex-col gap-2 px-4 py-5">
           {/* Address */}
           <div className="flex items-start gap-2">
             <MapPin className="text-muted-foreground/70 mt-0.5 size-4 shrink-0" />
@@ -217,16 +247,6 @@ export default function BranchCard({ branch, customer }: BranchCardProps) {
             <div className="text-muted-foreground flex items-center gap-2 text-sm">
               <Phone className="text-muted-foreground/70 size-4 shrink-0" />
               <span>{branch.phone}</span>
-            </div>
-          )}
-
-          {/* Archived badge */}
-          {isArchived && (
-            <div className="mt-1">
-              <Badge variant="secondary">
-                <Archive className="size-3" />
-                {isCustomerArchived ? "Cliente archivado" : "Archivada"}
-              </Badge>
             </div>
           )}
         </div>
