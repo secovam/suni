@@ -108,6 +108,7 @@ export default defineConfig({
   ],
   rules: {
     "oxc/no-accumulating-spread": "error",
+    "suni/require-seller-scope": "error",
     "suni/require-suppression-reason": "error",
     "no-restricted-imports": ["error", { paths: [REACT_HOOK_FORM_BAN] }],
     "anti-slop/no-array-filter-map": "error",
