@@ -21,7 +21,7 @@ export function CustomerData({ customer }: CustomerDataProps) {
             <dt className="font-bold">Vendedor:</dt>
             <dd>
               <Link
-                className="text-success hover:underline"
+                className="text-primary underline underline-offset-4 hover:decoration-2"
                 params={{ userId: customer.seller.id }}
                 to="/users/$userId/edit"
               >

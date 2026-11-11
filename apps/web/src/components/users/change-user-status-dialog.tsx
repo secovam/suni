@@ -31,7 +31,7 @@ const ACTIONS = {
   activate: {
     label: "Activar",
     Icon: CircleCheckBig,
-    triggerVariant: "outline-green",
+    triggerVariant: "outline",
     confirmVariant: "default",
     emailClassName: "text-success",
     description: "Esto reactivará",

@@ -95,7 +95,7 @@ export function BranchesGrid({ customerId, canCreate }: BranchesGridProps) {
   return (
     <div className="flex min-w-full flex-col gap-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-brand text-lg font-semibold">Sucursales</h2>
+        <h2 className="text-foreground text-lg font-semibold">Sucursales</h2>
         {canCreate ? (
           <NewEntityButton customerId={customerId} entity="branch" />
         ) : null}

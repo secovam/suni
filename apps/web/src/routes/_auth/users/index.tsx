@@ -23,7 +23,6 @@ function RouteComponent() {
             className="w-full sm:w-auto"
             nativeButton={false}
             render={<Link to="/users/new" />}
-            variant="green"
           >
             <Plus className="mr-2 h-4 w-4" />
             Nuevo Usuario

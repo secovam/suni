@@ -44,11 +44,11 @@ function RouteComponent() {
           {shortcuts.map(({ to, label, icon: Icon, section }) => (
             <li key={to}>
               <Link
-                className="bg-card hover:border-brand/40 focus-visible:ring-ring group flex items-center gap-4 rounded-xl border p-4 shadow-xs transition-colors outline-none focus-visible:ring-2"
+                className="bg-card hover:border-primary/40 focus-visible:ring-ring group flex items-center gap-4 rounded-xl border p-4 shadow-xs transition-colors outline-none focus-visible:ring-2"
                 to={to}
               >
-                <div className="bg-brand/10 flex size-10 shrink-0 items-center justify-center rounded-lg">
-                  <Icon aria-hidden className="text-brand size-5" />
+                <div className="bg-primary/10 flex size-10 shrink-0 items-center justify-center rounded-lg">
+                  <Icon aria-hidden className="text-primary size-5" />
                 </div>
                 <div className="flex min-w-0 flex-1 flex-col">
                   <span className="font-medium">{label}</span>
@@ -60,7 +60,7 @@ function RouteComponent() {
                 </div>
                 <ChevronRight
                   aria-hidden
-                  className="text-muted-foreground group-hover:text-brand size-4 transition-colors"
+                  className="text-muted-foreground group-hover:text-primary size-4 transition-colors"
                 />
               </Link>
             </li>

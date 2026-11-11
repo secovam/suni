@@ -94,16 +94,11 @@ export function UserForm({ user }: UserFormProps) {
             disabled={submitting}
             nativeButton={false}
             render={<Link to="/users" />}
-            variant="outline-destructive"
+            variant="outline"
           >
             Cancelar
           </Button>
-          <Button
-            className="w-full"
-            disabled={submitting}
-            type="submit"
-            variant="green"
-          >
+          <Button className="w-full" disabled={submitting} type="submit">
             {submitting ? <Loader2 className="animate-spin" /> : null}
             {user?.id ? "Guardar" : "Crear"}
           </Button>

@@ -90,7 +90,7 @@ export function ContactForm({
       }}
     >
       <fieldset className="space-y-4">
-        <legend className="text-brand mb-4 text-lg font-semibold">
+        <legend className="text-foreground mb-4 text-lg font-semibold">
           Datos generales
         </legend>
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -118,7 +118,7 @@ export function ContactForm({
       </fieldset>
 
       <fieldset className="space-y-4">
-        <legend className="text-brand mb-4 text-lg font-semibold">
+        <legend className="text-foreground mb-4 text-lg font-semibold">
           Contacto
         </legend>
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -162,7 +162,7 @@ export function ContactForm({
           disabled={submitting}
           onClick={onCancel}
           type="button"
-          variant="outline-destructive"
+          variant="outline"
         >
           Cancelar
         </Button>
@@ -170,7 +170,6 @@ export function ContactForm({
           className="w-full sm:w-auto"
           disabled={submitting}
           type="submit"
-          variant="green"
         >
           {submitting ? <Loader2 className="animate-spin" /> : null}
           {contact ? "Guardar" : "Crear"}

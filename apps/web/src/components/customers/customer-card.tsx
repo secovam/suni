@@ -39,7 +39,7 @@ export default function CustomerCard({ customer }: CustomerCardProps) {
           "group bg-card relative flex h-full flex-col overflow-hidden rounded-xl border transition-colors duration-200",
           isArchived
             ? "border-border/60 bg-archived-pattern shadow-sm"
-            : "border-border hover:border-success/30 hover:shadow-md"
+            : "border-border hover:border-primary/30 hover:shadow-md"
         )}
       >
         <div className="border-muted border-b p-4">
@@ -52,7 +52,7 @@ export default function CustomerCard({ customer }: CustomerCardProps) {
               <h2
                 className={cn(
                   "line-clamp-2 text-lg leading-tight font-semibold transition-colors hover:underline",
-                  isArchived ? "text-muted-foreground" : "text-success"
+                  isArchived ? "text-muted-foreground" : "text-primary"
                 )}
               >
                 {customer.name}
@@ -152,7 +152,7 @@ export default function CustomerCard({ customer }: CustomerCardProps) {
             <span className="text-muted-foreground text-sm font-medium">
               Ver detalles
             </span>
-            <ChevronRight className="text-muted-foreground/70 group-hover:text-success size-4 transition-colors" />
+            <ChevronRight className="text-muted-foreground/70 group-hover:text-primary size-4 transition-colors" />
           </div>
         </Link>
       </div>

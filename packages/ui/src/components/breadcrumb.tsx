@@ -39,7 +39,7 @@ function BreadcrumbLink({
   return useRender({
     defaultTagName: 'a',
     props: mergeProps<'a'>(
-      { className: cn('transition-colors  hover:text-foreground text-brand', className) },
+      { className: cn('transition-colors  hover:text-foreground text-primary', className) },
       props
     ),
     render,
@@ -55,7 +55,7 @@ function BreadcrumbPage({
     <span
       aria-current="page"
       aria-disabled="true"
-      className={cn('font-semibold text-foreground text-brand', className)}
+      className={cn('font-semibold text-foreground', className)}
       data-slot="breadcrumb-page"
       role="link"
       {...props}
@@ -76,7 +76,7 @@ function BreadcrumbSeparator({
       role="presentation"
       {...props}
     >
-      {children ?? <ChevronRight  className="size-4 text-success" />}
+      {children ?? <ChevronRight  className="size-4 text-muted-foreground" />}
     </li>
   );
 }

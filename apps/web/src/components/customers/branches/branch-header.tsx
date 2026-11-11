@@ -37,13 +37,13 @@ export function BranchHeader({ branch, onEdit }: BranchHeaderProps) {
             <div
               className={cn(
                 "flex size-9 shrink-0 items-center justify-center rounded-lg",
-                isArchived ? "bg-muted" : "bg-brand/10"
+                isArchived ? "bg-muted" : "bg-primary/10"
               )}
             >
               <Building2
                 className={cn(
                   "size-4.5",
-                  isArchived ? "text-muted-foreground" : "text-brand"
+                  isArchived ? "text-muted-foreground" : "text-primary"
                 )}
               />
             </div>
@@ -51,7 +51,7 @@ export function BranchHeader({ branch, onEdit }: BranchHeaderProps) {
               <h1
                 className={cn(
                   "truncate text-xl font-bold",
-                  isArchived ? "text-muted-foreground" : "text-brand"
+                  isArchived ? "text-muted-foreground" : "text-primary"
                 )}
               >
                 {branch.name}
@@ -80,7 +80,7 @@ export function BranchHeader({ branch, onEdit }: BranchHeaderProps) {
         {onEdit && !isCustomerArchived ? (
           <div className="flex shrink-0 items-center gap-2">
             {isArchived ? null : (
-              <Button onClick={onEdit} size="sm" variant="green">
+              <Button onClick={onEdit} size="sm">
                 <Pencil className="size-3.5" />
                 Editar
               </Button>

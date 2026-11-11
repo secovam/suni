@@ -74,13 +74,13 @@ function RouteComponent() {
             <div
               className={cn(
                 "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
-                isArchived ? "bg-muted" : "bg-brand/10"
+                isArchived ? "bg-muted" : "bg-primary/10"
               )}
             >
               <ContactRound
                 className={cn(
                   "h-4.5 w-4.5",
-                  isArchived ? "text-muted-foreground" : "text-brand"
+                  isArchived ? "text-muted-foreground" : "text-primary"
                 )}
               />
             </div>
@@ -88,7 +88,7 @@ function RouteComponent() {
               <h1
                 className={cn(
                   "truncate text-xl font-bold",
-                  isArchived ? "text-muted-foreground" : "text-brand"
+                  isArchived ? "text-muted-foreground" : "text-primary"
                 )}
               >
                 {customer.name}
@@ -108,7 +108,7 @@ function RouteComponent() {
                 "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
                 customer.type === "Asesor"
                   ? "bg-muted text-foreground"
-                  : "bg-brand/10 text-brand"
+                  : "bg-primary/10 text-primary"
               )}
             >
               {customer.type}
@@ -118,7 +118,7 @@ function RouteComponent() {
         <div className="flex shrink-0 items-center gap-2">
           {isArchived ? null : (
             <Link
-              className={buttonVariants({ variant: "green" })}
+              className={buttonVariants()}
               params={{ customerId: customer.id }}
               to="/customers/$customerId/edit"
             >

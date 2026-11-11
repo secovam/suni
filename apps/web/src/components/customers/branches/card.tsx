@@ -78,7 +78,7 @@ export default function BranchCard({ branch, customer }: BranchCardProps) {
           "group bg-card relative flex h-full flex-col overflow-hidden rounded-xl border transition-colors duration-200",
           isArchived
             ? "border-border/60 bg-archived-pattern shadow-sm"
-            : "border-border hover:border-success/30 hover:shadow-md"
+            : "border-border hover:border-primary/30 hover:shadow-md"
         )}
       >
         <BranchImage
@@ -98,7 +98,7 @@ export default function BranchCard({ branch, customer }: BranchCardProps) {
                 <h2
                   className={cn(
                     "line-clamp-2 text-lg leading-tight font-semibold transition-colors hover:underline",
-                    isArchived ? "text-muted-foreground" : "text-success"
+                    isArchived ? "text-muted-foreground" : "text-primary"
                   )}
                 >
                   {branch.name}
@@ -117,7 +117,7 @@ export default function BranchCard({ branch, customer }: BranchCardProps) {
                       "line-clamp-1 text-sm font-medium hover:underline",
                       isCustomerArchived
                         ? "text-muted-foreground"
-                        : "text-success"
+                        : "text-primary"
                     )}
                     params={{ customerId: customer.id }}
                     title={customer.name}
@@ -189,7 +189,7 @@ export default function BranchCard({ branch, customer }: BranchCardProps) {
             <span className="text-muted-foreground text-sm font-medium">
               Ver detalles
             </span>
-            <ChevronRight className="text-muted-foreground/70 group-hover:text-success size-4 transition-colors" />
+            <ChevronRight className="text-muted-foreground/70 group-hover:text-primary size-4 transition-colors" />
           </div>
         </Link>
       </div>

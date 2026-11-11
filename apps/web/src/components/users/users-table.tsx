@@ -33,7 +33,7 @@ const columnHelper = createColumnHelper<UserRow>();
 function RoleBadge({ role }: { role: string | null }) {
   if (role === "admin") {
     return (
-      <Badge variant="blue">
+      <Badge>
         <Shield className="size-3.5" /> Admin
       </Badge>
     );
@@ -70,9 +70,7 @@ function createColumns(currentUserId: string) {
         <span className="flex items-center">
           {info.getValue()}
           {info.row.original.id === currentUserId && (
-            <Badge className="ml-2" variant="blue">
-              Tú
-            </Badge>
+            <Badge className="ml-2">Tú</Badge>
           )}
         </span>
       ),

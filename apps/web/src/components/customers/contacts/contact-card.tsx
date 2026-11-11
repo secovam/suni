@@ -92,7 +92,7 @@ interface ContactParentsProps {
 const PARENT_LINK = "line-clamp-1 text-sm font-medium hover:underline";
 
 function nameColor(isArchived: boolean) {
-  return isArchived ? "text-muted-foreground" : "text-success";
+  return isArchived ? "text-muted-foreground" : "text-primary";
 }
 
 function ContactParents({
@@ -175,7 +175,7 @@ export default function ContactCard({ contact, customer }: ContactCardProps) {
           "group bg-card relative flex h-full flex-col overflow-hidden rounded-xl border transition-colors duration-200",
           isArchived
             ? "border-border/60 bg-archived-pattern shadow-sm"
-            : "border-border hover:border-success/30 hover:shadow-md"
+            : "border-border hover:border-primary/30 hover:shadow-md"
         )}
       >
         <div className="border-muted border-b p-4">
@@ -223,10 +223,10 @@ export default function ContactCard({ contact, customer }: ContactCardProps) {
 
         <div className="flex grow flex-col gap-2 px-4 py-5">
           <a
-            className="group/mail text-muted-foreground hover:text-success flex items-center gap-2 text-sm transition-colors"
+            className="group/mail text-muted-foreground hover:text-primary flex items-center gap-2 text-sm transition-colors"
             href={`mailto:${contact.email}`}
           >
-            <Mail className="text-muted-foreground/70 group-hover/mail:text-success size-4 shrink-0 transition-colors" />
+            <Mail className="text-muted-foreground/70 group-hover/mail:text-primary size-4 shrink-0 transition-colors" />
             <span className="truncate">{contact.email}</span>
           </a>
 

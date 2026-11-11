@@ -44,7 +44,7 @@ export function AppSidebar(props: ComponentProps<typeof Sidebar>) {
               />
             </SidebarMenuButton>
             <SidebarMenuButton
-              className="bg-brand hover:bg-brand hidden justify-center font-bold text-white group-data-[collapsible=icon]:flex hover:text-white"
+              className="bg-primary hover:bg-primary hover:text-primary-foreground text-primary-foreground hidden justify-center font-bold group-data-[collapsible=icon]:flex"
               render={<Link aria-label="Suni, ir al inicio" to="/dashboard" />}
               tooltip="Suni"
             >
