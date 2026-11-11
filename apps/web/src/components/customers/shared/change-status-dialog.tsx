@@ -8,6 +8,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@suni/ui/components/alert-dialog";
+import { useState } from "react";
 
 const ACTIONS = {
   archive: {
@@ -48,7 +49,19 @@ export function ChangeStatusDialog({
   open,
   onOpenChange,
 }: ChangeStatusDialogProps) {
-  const action = entity.archived ? ACTIONS.unarchive : ACTIONS.archive;
+  // Freeze the status seen on open: the refetch after saving lands before the close animation ends.
+  const [archivedOnOpen, setArchivedOnOpen] = useState(!!entity.archived);
+  const [wasOpen, setWasOpen] = useState(open);
+
+  if (open !== wasOpen) {
+    setWasOpen(open);
+
+    if (open) {
+      setArchivedOnOpen(!!entity.archived);
+    }
+  }
+
+  const action = archivedOnOpen ? ACTIONS.unarchive : ACTIONS.archive;
 
   return (
     <AlertDialog
@@ -79,7 +92,7 @@ export function ChangeStatusDialog({
                 {
                   id: entity.id,
                   name: entity.name,
-                  archived: !entity.archived,
+                  archived: !archivedOnOpen,
                 },
                 { onSuccess: () => onOpenChange(false) }
               )
