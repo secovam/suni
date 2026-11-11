@@ -44,5 +44,3 @@ export const customerSchema = z.object({
   }),
   type: z.enum(CUSTOMER_TYPES),
 });
-
-export const createCustomerSchema = customerSchema;
