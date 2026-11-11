@@ -42,20 +42,24 @@ function getArchiveState(contact: Contact) {
   const isParent = isCustomer || isBranch;
 
   let label = "Archivado";
+  let parentHint: string | undefined;
 
   if (isCustomer) {
     label = "Cliente archivado";
+    parentHint = "Desarchiva primero el cliente";
   } else if (isBranch) {
     label = "Sucursal archivada";
+    parentHint = "Desarchiva primero la sucursal";
   }
 
-  return { isOwn, isParent, isArchived: isOwn || isParent, label };
+  return { isOwn, parentHint, isArchived: isOwn || isParent, label };
 }
 
 interface ContactMenuProps {
   isArchived: boolean;
   isOwnArchived: boolean;
-  isParentArchived: boolean;
+  /** Set when an archived parent blocks unarchiving the contact. */
+  parentHint?: string;
   onEdit: () => void;
   onToggleStatus: () => void;
 }
@@ -63,7 +67,7 @@ interface ContactMenuProps {
 function ContactMenu({
   isArchived,
   isOwnArchived,
-  isParentArchived,
+  parentHint,
   onEdit,
   onToggleStatus,
 }: ContactMenuProps) {
@@ -84,8 +88,18 @@ function ContactMenu({
               </DropdownMenuItem>
             )}
 
-            {/* Si un padre lo archiva, desarchivarlo no tendría efecto */}
-            {!isParentArchived && (
+            {/* An archived parent wins: unarchiving the contact alone would have no effect */}
+            {parentHint ? (
+              <DropdownMenuItem disabled>
+                <span className="flex flex-col">
+                  <span className="flex items-center gap-1.5">
+                    <ArchiveRestore className="mr-2 size-4" />
+                    Desarchivar
+                  </span>
+                  <span className="pl-7.5 text-xs">{parentHint}</span>
+                </span>
+              </DropdownMenuItem>
+            ) : (
               <DropdownMenuItem
                 className="cursor-pointer"
                 onClick={onToggleStatus}
@@ -168,7 +182,7 @@ export default function ContactCard({
   customer,
   readOnly = false,
 }: ContactCardProps) {
-  const { isOwn, isParent, isArchived, label } = getArchiveState(contact);
+  const { isOwn, parentHint, isArchived, label } = getArchiveState(contact);
 
   const [isUpdateFormOpen, setIsUpdateFormOpen] = useState(false);
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
@@ -216,7 +230,7 @@ export default function ContactCard({
               <ContactMenu
                 isArchived={isArchived}
                 isOwnArchived={isOwn}
-                isParentArchived={isParent}
+                parentHint={parentHint}
                 onEdit={() => setIsUpdateFormOpen(true)}
                 onToggleStatus={() => setIsStatusDialogOpen(true)}
               />
