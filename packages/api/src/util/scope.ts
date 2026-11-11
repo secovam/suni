@@ -44,3 +44,23 @@ export function ownContactsSql({ admin, userId, db }: Scope) {
           .where(eq(branch.sellerId, userId))
       );
 }
+
+// Seller identity is admin-only. Spread `sellerColumns` and `sellerRelation`
+// into a customer or branch query, then pass the result through `withSeller`.
+
+export function sellerColumns({ admin }: Pick<Scope, "admin">) {
+  return admin ? undefined : ({ sellerId: false, modifiedBy: false } as const);
+}
+
+export function sellerRelation({ admin }: Pick<Scope, "admin">) {
+  return admin
+    ? ({ seller: { columns: { id: true, name: true } } } as const)
+    : {};
+}
+
+export function withSeller<T extends { seller?: unknown }>(
+  { admin }: Pick<Scope, "admin">,
+  row: T
+) {
+  return admin ? row : { ...row, seller: null };
+}

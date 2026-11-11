@@ -1,20 +1,23 @@
 import { z } from "zod";
 
 import { scopedProcedure } from "../../index";
-import { ownBranches } from "../../util/scope";
+import {
+  ownBranches,
+  sellerColumns,
+  sellerRelation,
+  withSeller,
+} from "../../util/scope";
 
 export const get = scopedProcedure
   .route({ method: "GET", path: "/{id}" })
   .input(z.object({ id: z.string() }))
   .handler(async ({ input, context, errors }) => {
-    const { admin } = context;
-
     const found = await context.db.query.branch.findFirst({
       where: { id: input.id, ...ownBranches(context) },
-      columns: admin ? undefined : { sellerId: false, modifiedBy: false },
+      columns: sellerColumns(context),
       with: {
         customer: { columns: { id: true, name: true, archived: true } },
-        ...(admin && { seller: { columns: { id: true, name: true } } }),
+        ...sellerRelation(context),
       },
     });
 
@@ -22,5 +25,5 @@ export const get = scopedProcedure
       throw errors.NOT_FOUND({ message: "La sucursal no existe" });
     }
 
-    return admin ? found : { ...found, seller: null };
+    return withSeller(context, found);
   });
