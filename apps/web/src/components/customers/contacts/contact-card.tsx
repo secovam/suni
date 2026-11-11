@@ -30,9 +30,8 @@ type Contact = AppRouterOutputs["contacts"]["list"][number];
 
 interface ContactCardProps {
   contact: Contact;
-  /** Si viene definido, muestra el cliente (útil en listados de varios clientes). */
+  /** Shown in lists that span several customers. */
   customer?: { id: string; name: string };
-  readOnly?: boolean;
 }
 
 function getArchiveState(contact: Contact) {
@@ -199,11 +198,7 @@ function ContactPhone({ contact }: { contact: Contact }) {
   );
 }
 
-export default function ContactCard({
-  contact,
-  customer,
-  readOnly = false,
-}: ContactCardProps) {
+export default function ContactCard({ contact, customer }: ContactCardProps) {
   const {
     isOwn,
     isCustomerArchived,
@@ -225,7 +220,6 @@ export default function ContactCard({
             : "border-border hover:border-success/30 hover:shadow-md"
         )}
       >
-        {/* Header */}
         <div className="border-muted border-b p-4">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0 flex-1">
@@ -259,19 +253,16 @@ export default function ContactCard({
               />
             </div>
 
-            {!readOnly && (
-              <ContactMenu
-                isArchived={isArchived}
-                isOwnArchived={isOwn}
-                parentHint={parentHint}
-                onEdit={() => setIsUpdateFormOpen(true)}
-                onToggleStatus={() => setIsStatusDialogOpen(true)}
-              />
-            )}
+            <ContactMenu
+              isArchived={isArchived}
+              isOwnArchived={isOwn}
+              onEdit={() => setIsUpdateFormOpen(true)}
+              onToggleStatus={() => setIsStatusDialogOpen(true)}
+              parentHint={parentHint}
+            />
           </div>
         </div>
 
-        {/* Body */}
         <div className="flex grow flex-col gap-2 px-4 py-5">
           <a
             className="group/mail text-muted-foreground hover:text-success flex items-center gap-2 text-sm transition-colors"
@@ -284,7 +275,6 @@ export default function ContactCard({
           <ContactPhone contact={contact} />
         </div>
 
-        {/* Archived badge */}
         {isArchived && (
           <div className="px-4 pb-4">
             <Badge variant="secondary">
@@ -295,20 +285,16 @@ export default function ContactCard({
         )}
       </div>
 
-      {!readOnly && (
-        <>
-          <ContactFormDialog
-            contact={contact}
-            onOpenChange={setIsUpdateFormOpen}
-            open={isUpdateFormOpen}
-          />
-          <ChangeContactStatusDialog
-            contact={contact}
-            onOpenChange={setIsStatusDialogOpen}
-            open={isStatusDialogOpen}
-          />
-        </>
-      )}
+      <ContactFormDialog
+        contact={contact}
+        onOpenChange={setIsUpdateFormOpen}
+        open={isUpdateFormOpen}
+      />
+      <ChangeContactStatusDialog
+        contact={contact}
+        onOpenChange={setIsStatusDialogOpen}
+        open={isStatusDialogOpen}
+      />
     </>
   );
 }

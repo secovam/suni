@@ -1,4 +1,3 @@
-import type { AppRouterOutputs } from "@suni/api/routers/index";
 import { Badge } from "@suni/ui/components/badge";
 import { Button } from "@suni/ui/components/button";
 import {
@@ -15,21 +14,18 @@ import {
   Archive,
   ArchiveRestore,
   Building2,
-  Camera,
   ChevronRight,
   MapPin,
   MoreVertical,
   Pencil,
   Phone,
-  ZoomIn,
 } from "lucide-react";
 import { useState } from "react";
 
 import { BranchFormDialog } from "./branch-form-dialog";
 import { ChangeBranchStatusDialog } from "./change-branch-status-dialog";
 import { branchImageSrc, formatAddress } from "./util/branch-address";
-
-type Branch = AppRouterOutputs["branches"]["list"][number];
+import type { Branch } from "./util/branch-address";
 
 interface BranchCardProps {
   branch: Branch;
@@ -39,23 +35,10 @@ interface BranchCardProps {
 interface BranchImageProps {
   name: string;
   src: string;
-  hasImage: boolean;
   isArchived: boolean;
-  onUploadClick?: () => void;
-  onExpandClick?: () => void;
 }
 
-function BranchImage({
-  name,
-  src,
-  hasImage,
-  isArchived,
-  onUploadClick,
-  onExpandClick,
-}: BranchImageProps) {
-  const overlayButton =
-    "flex size-8 items-center justify-center rounded-full bg-black/50 text-white transition-opacity hover:bg-black/70 pointer-fine:opacity-0 pointer-fine:group-hover/image:opacity-100 pointer-fine:focus-visible:opacity-100";
-
+function BranchImage({ name, src, isArchived }: BranchImageProps) {
   return (
     <div
       className={cn(
@@ -74,28 +57,6 @@ function BranchImage({
           <Archive className="size-3" />
           Archivada
         </Badge>
-      )}
-
-      {hasImage && onExpandClick && (
-        <button
-          className={cn(overlayButton, "absolute bottom-2 left-2")}
-          onClick={onExpandClick}
-          type="button"
-        >
-          <ZoomIn className="size-4" />
-          <span className="sr-only">Ver imagen completa</span>
-        </button>
-      )}
-
-      {!isArchived && onUploadClick && (
-        <button
-          className={cn(overlayButton, "absolute right-2 bottom-2")}
-          onClick={onUploadClick}
-          type="button"
-        >
-          <Camera className="size-4" />
-          <span className="sr-only">Cambiar foto</span>
-        </button>
       )}
     </div>
   );
@@ -121,13 +82,11 @@ export default function BranchCard({ branch, customer }: BranchCardProps) {
         )}
       >
         <BranchImage
-          hasImage={!!branch.frontImageUrl}
           isArchived={isArchived}
           name={branch.name}
           src={branchImageSrc(branch)}
         />
 
-        {/* Header */}
         <div className="border-muted border-b p-4">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0 flex-1">
@@ -226,9 +185,7 @@ export default function BranchCard({ branch, customer }: BranchCardProps) {
           </div>
         </div>
 
-        {/* Body */}
         <div className="flex grow flex-col gap-2 px-4 py-5">
-          {/* Address */}
           <div className="flex items-start gap-2">
             <MapPin className="text-muted-foreground/70 mt-0.5 size-4 shrink-0" />
             <div className="text-muted-foreground flex flex-col text-sm leading-relaxed">
@@ -237,7 +194,6 @@ export default function BranchCard({ branch, customer }: BranchCardProps) {
             </div>
           </div>
 
-          {/* Phone */}
           {branch.phone && (
             <div className="text-muted-foreground flex items-center gap-2 text-sm">
               <Phone className="text-muted-foreground/70 size-4 shrink-0" />
@@ -246,7 +202,6 @@ export default function BranchCard({ branch, customer }: BranchCardProps) {
           )}
         </div>
 
-        {/* View details footer */}
         <Link
           params={{ customerId: branch.customerId, branchId: branch.id }}
           to="/customers/$customerId/branches/$branchId"

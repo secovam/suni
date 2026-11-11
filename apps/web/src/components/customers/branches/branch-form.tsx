@@ -1,4 +1,3 @@
-import type { AppRouterOutputs } from "@suni/api/routers/index";
 import { branchSchema } from "@suni/db/validation/branches";
 import { Button } from "@suni/ui/components/button";
 import { revalidateLogic, useSelector } from "@tanstack/react-form";
@@ -12,7 +11,7 @@ import { useCreateBranch, useUpdateBranch } from "@/hooks/use-branches";
 import { postalCodeQueryOptions, usePostalCode } from "@/hooks/use-postal-code";
 import type { Settlement } from "@/hooks/use-postal-code";
 
-type Branch = AppRouterOutputs["branches"]["list"][number];
+import type { Branch } from "./util/branch-address";
 
 type FormValues = z.input<typeof branchSchema>;
 
