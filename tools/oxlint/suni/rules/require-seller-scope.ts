@@ -34,6 +34,7 @@ function isSafeAllowlist(node: ESTree.Node) {
     node.properties.every(
       (property) =>
         property.type === "Property" &&
+        !property.computed &&
         property.value.type === "Literal" &&
         property.value.value === true &&
         !ADMIN_ONLY_COLUMNS.has(propertyName(property.key) ?? "")
