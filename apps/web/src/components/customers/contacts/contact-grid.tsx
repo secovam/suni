@@ -3,10 +3,12 @@ import { useMemo, useState } from "react";
 
 import { NewEntityButton } from "@/components/customers/new-entity-button";
 import { EntityGrid } from "@/components/customers/shared/entity-grid";
-import { DEFAULT_CONTACT_FILTERS } from "@/components/customers/shared/filters";
+import {
+  DEFAULT_CONTACT_FILTERS,
+  matchingName,
+} from "@/components/customers/shared/filters";
 import type { ContactFilters } from "@/components/customers/shared/filters";
 import { useListContacts } from "@/hooks/use-contacts";
-import { stripAccents } from "@/lib/string-utils";
 
 import ContactCard from "./contact-card";
 import { ContactsFilters } from "./contact-filters";
@@ -31,16 +33,10 @@ export function ContactsList({
     branchId,
   });
 
-  const visibleContacts = useMemo(() => {
-    const term = stripAccents(filters.name.trim()).toLowerCase();
-
-    return (query.data ?? [])
-      .filter(
-        (contact) =>
-          !term || stripAccents(contact.name).toLowerCase().includes(term)
-      )
-      .toSorted((a, b) => a.name.localeCompare(b.name, "es"));
-  }, [query.data, filters.name]);
+  const visibleContacts = useMemo(
+    () => matchingName(query.data ?? [], filters.name),
+    [query.data, filters.name]
+  );
 
   const hasFilters =
     filters.name.trim() !== "" ||
@@ -48,7 +44,11 @@ export function ContactsList({
 
   return (
     <>
-      <ContactsFilters filters={filters} onFiltersChange={onFiltersChange} />
+      <ContactsFilters
+        filters={filters}
+        hasFilters={hasFilters}
+        onFiltersChange={onFiltersChange}
+      />
 
       <EntityGrid
         copy={{

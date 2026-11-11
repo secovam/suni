@@ -4,11 +4,13 @@ import { useMemo, useState } from "react";
 
 import { NewEntityButton } from "@/components/customers/new-entity-button";
 import { EntityGrid } from "@/components/customers/shared/entity-grid";
-import { DEFAULT_BRANCH_FILTERS } from "@/components/customers/shared/filters";
+import {
+  DEFAULT_BRANCH_FILTERS,
+  matchingName,
+} from "@/components/customers/shared/filters";
 import type { BranchFilters } from "@/components/customers/shared/filters";
 import { useListBranches } from "@/hooks/use-branches";
 import { useListCustomers } from "@/hooks/use-customers";
-import { stripAccents } from "@/lib/string-utils";
 
 import BranchCard from "./card";
 import { BranchesFilters } from "./filters";
@@ -38,16 +40,10 @@ export function BranchesList({
     customerId ? skipToken : { status: "all" }
   );
 
-  const visibleBranches = useMemo(() => {
-    const term = stripAccents(filters.name.trim()).toLowerCase();
-
-    return (query.data ?? [])
-      .filter(
-        (branch) =>
-          !term || stripAccents(branch.name).toLowerCase().includes(term)
-      )
-      .toSorted((a, b) => a.name.localeCompare(b.name, "es"));
-  }, [query.data, filters.name]);
+  const visibleBranches = useMemo(
+    () => matchingName(query.data ?? [], filters.name),
+    [query.data, filters.name]
+  );
 
   const hasFilters =
     filters.name.trim() !== "" ||
@@ -59,6 +55,7 @@ export function BranchesList({
       <BranchesFilters
         customers={customerId ? undefined : customers}
         filters={filters}
+        hasFilters={hasFilters}
         onFiltersChange={onFiltersChange}
       />
 

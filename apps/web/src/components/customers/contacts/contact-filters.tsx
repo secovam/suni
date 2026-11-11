@@ -23,16 +23,17 @@ const STATUS_OPTIONS: Option<StatusFilter>[] = [
 
 interface ContactsFiltersProps {
   filters: ContactFilters;
+  hasFilters: boolean;
   onFiltersChange: (filters: ContactFilters) => void;
 }
 
 export function ContactsFilters({
   filters,
+  hasFilters,
   onFiltersChange,
 }: ContactsFiltersProps) {
   const hasName = filters.name.trim() !== "";
   const hasStatus = filters.status !== "all";
-  const hasActiveFilters = hasName || hasStatus;
 
   const statusLabel = STATUS_OPTIONS.find(
     (option) => option.value === filters.status
@@ -62,7 +63,7 @@ export function ContactsFilters({
         />
       </div>
 
-      {hasActiveFilters && (
+      {hasFilters && (
         <div className="flex flex-wrap items-center gap-2 border-t pt-2">
           <span className="text-muted-foreground mr-1 text-xs">
             Filtros activos:

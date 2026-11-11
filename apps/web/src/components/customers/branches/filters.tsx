@@ -25,12 +25,14 @@ const MAX_CUSTOMER_BADGE_LENGTH = 20;
 
 interface BranchesFiltersProps {
   filters: BranchFilters;
+  hasFilters: boolean;
   onFiltersChange: (filters: BranchFilters) => void;
   customers?: { id: string; name: string }[];
 }
 
 export function BranchesFilters({
   filters,
+  hasFilters,
   onFiltersChange,
   customers,
 }: BranchesFiltersProps) {
@@ -45,11 +47,6 @@ export function BranchesFilters({
     filters.customerId === "all"
       ? null
       : (customers?.find((c) => c.id === filters.customerId)?.name ?? null);
-
-  const hasActiveFilters =
-    filters.name.trim() !== "" ||
-    filters.status !== "all" ||
-    (showCustomerFilter && filters.customerId !== "all");
 
   const update = (patch: Partial<BranchFilters>) =>
     onFiltersChange({ ...filters, ...patch });
@@ -92,7 +89,7 @@ export function BranchesFilters({
         </div>
       )}
 
-      {hasActiveFilters && (
+      {hasFilters && (
         <div className="flex flex-wrap items-center gap-2 border-t pt-2">
           <span className="text-muted-foreground mr-1 text-xs">
             Filtros activos:

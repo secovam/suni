@@ -14,6 +14,7 @@ import { useMemo, useState } from "react";
 
 import { BranchFormDialog } from "@/components/customers/branches/branch-form-dialog";
 import { ContactFormDialog } from "@/components/customers/contacts/contact-form-dialog";
+import { byName } from "@/components/customers/shared/filters";
 import { useListBranches } from "@/hooks/use-branches";
 import { useListCustomers } from "@/hooks/use-customers";
 
@@ -30,7 +31,7 @@ function CustomerPicker({ value, onValueChange }: PickerProps) {
   const options = useMemo(
     () =>
       customers
-        .toSorted((a, b) => a.name.localeCompare(b.name, "es"))
+        .toSorted(byName)
         .map((customer) => ({ value: customer.id, label: customer.name })),
     [customers]
   );
@@ -64,7 +65,7 @@ function BranchPicker({
   const options = useMemo(
     () =>
       branches
-        .toSorted((a, b) => a.name.localeCompare(b.name, "es"))
+        .toSorted(byName)
         .map((branch) => ({ value: branch.id, label: branch.name })),
     [branches]
   );
