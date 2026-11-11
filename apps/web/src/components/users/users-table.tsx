@@ -191,14 +191,8 @@ export function UsersDataTable({ currentUserId }: UsersDataTableProps) {
   }
 
   return (
-    <div className="mt-6 mb-8 w-full">
+    <div className="flex w-full flex-col gap-6">
       <div className="flex items-center">
-        <h2 className="text-lg font-semibold">Usuarios</h2>
-        <span className="bg-muted text-muted-foreground ml-2 rounded-full px-2 py-1 text-sm">
-          {total}
-        </span>
-      </div>
-      <div className="flex items-center py-4">
         <Input
           className="max-w-sm"
           onChange={(event) => {
@@ -261,9 +255,10 @@ export function UsersDataTable({ currentUserId }: UsersDataTableProps) {
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-between py-4">
+      <div className="-mt-2 flex items-center justify-between">
         <span className="text-muted-foreground text-sm">
-          Página {pagination.pageIndex + 1} de {pageCount}
+          Página {pagination.pageIndex + 1} de {pageCount} ·{" "}
+          {total === 1 ? "1 usuario" : `${total} usuarios`}
         </span>
         <div className="flex items-center space-x-2">
           <Button
