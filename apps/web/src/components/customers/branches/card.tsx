@@ -12,7 +12,6 @@ import { cn } from "@suni/ui/lib/utils";
 import { Link } from "@tanstack/react-router";
 import {
   Archive,
-  ArchiveRestore,
   Building2,
   ChevronRight,
   MapPin,
@@ -22,6 +21,8 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
+import { ArchiveMenuItem } from "../shared/archive-menu-item";
+import { archiveState } from "../shared/archive-state";
 import { BranchFormDialog } from "./branch-form-dialog";
 import { ChangeBranchStatusDialog } from "./change-branch-status-dialog";
 import { branchImageSrc, formatAddress } from "./util/branch-address";
@@ -63,9 +64,8 @@ function BranchImage({ name, src, isArchived }: BranchImageProps) {
 }
 
 export default function BranchCard({ branch, customer }: BranchCardProps) {
-  const isOwnArchived = !!branch.archived;
-  const isCustomerArchived = !!branch.customer?.archived;
-  const isArchived = isOwnArchived || isCustomerArchived;
+  const { isOwnArchived, isCustomerArchived, isArchived, parentHint } =
+    archiveState(branch);
 
   const [isUpdateFormOpen, setIsUpdateFormOpen] = useState(false);
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
@@ -139,7 +139,7 @@ export default function BranchCard({ branch, customer }: BranchCardProps) {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                   align="end"
-                  className={cn(isCustomerArchived && "min-w-56")}
+                  className={cn(parentHint && "min-w-56")}
                 >
                   <DropdownMenuGroup>
                     <DropdownMenuLabel>Acciones</DropdownMenuLabel>
@@ -152,32 +152,11 @@ export default function BranchCard({ branch, customer }: BranchCardProps) {
                         Editar
                       </DropdownMenuItem>
                     )}
-                    {/* An archived customer wins: unarchiving the branch alone would have no effect */}
-                    {isCustomerArchived ? (
-                      <DropdownMenuItem disabled>
-                        <span className="flex flex-col">
-                          <span className="flex items-center gap-1.5">
-                            <ArchiveRestore className="mr-2 size-4" />
-                            Desarchivar
-                          </span>
-                          <span className="pl-7.5 text-xs">
-                            Desarchiva primero el cliente
-                          </span>
-                        </span>
-                      </DropdownMenuItem>
-                    ) : (
-                      <DropdownMenuItem
-                        className="cursor-pointer"
-                        onClick={() => setIsStatusDialogOpen(true)}
-                      >
-                        {isOwnArchived ? (
-                          <ArchiveRestore className="mr-2 size-4" />
-                        ) : (
-                          <Archive className="mr-2 size-4" />
-                        )}
-                        {isOwnArchived ? "Desarchivar" : "Archivar"}
-                      </DropdownMenuItem>
-                    )}
+                    <ArchiveMenuItem
+                      isOwnArchived={isOwnArchived}
+                      onClick={() => setIsStatusDialogOpen(true)}
+                      parentHint={parentHint}
+                    />
                   </DropdownMenuGroup>
                 </DropdownMenuContent>
               </DropdownMenu>

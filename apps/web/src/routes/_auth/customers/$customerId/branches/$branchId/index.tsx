@@ -15,6 +15,7 @@ import { BranchHeader } from "@/components/customers/branches/branch-header";
 import { BranchInfoContent } from "@/components/customers/branches/branch-info";
 import { branchImageSrc } from "@/components/customers/branches/util/branch-address";
 import { ContactsGrid } from "@/components/customers/contacts/contact-grid";
+import { archiveState } from "@/components/customers/shared/archive-state";
 import { orpc } from "@/utils/orpc";
 
 export const Route = createFileRoute(
@@ -61,12 +62,12 @@ function RouteComponent() {
   const { branchId } = Route.useParams();
   const [isUpdateFormOpen, setIsUpdateFormOpen] = useState(false);
 
-  // Lee el caché de queries (no el loader) para que ediciones y archivados se reflejen.
+  // Reads the query cache, not loader data, so saves and archives show up even after a preload.
   const { data: branch } = useSuspenseQuery(
     orpc.branches.get.queryOptions({ input: { id: branchId } })
   );
 
-  const isArchived = !!branch.archived || !!branch.customer?.archived;
+  const { isArchived } = archiveState(branch);
 
   const content: Record<(typeof TABS)[number]["value"], ReactNode> = {
     info: (

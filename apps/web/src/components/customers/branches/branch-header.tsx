@@ -6,6 +6,7 @@ import { Link } from "@tanstack/react-router";
 import { Archive, ArchiveRestore, Building2, Pencil } from "lucide-react";
 import { useState } from "react";
 
+import { archiveState } from "../shared/archive-state";
 import { ChangeBranchStatusDialog } from "./change-branch-status-dialog";
 
 type Branch = AppRouterOutputs["branches"]["get"];
@@ -16,9 +17,9 @@ interface BranchHeaderProps {
 }
 
 export function BranchHeader({ branch, onEdit }: BranchHeaderProps) {
-  const isOwnArchived = !!branch.archived;
-  const isCustomerArchived = !!branch.customer?.archived;
-  const isArchived = isOwnArchived || isCustomerArchived;
+  const { isOwnArchived, isCustomerArchived, isArchived } =
+    archiveState(branch);
+
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
 
   return (
@@ -70,7 +71,7 @@ export function BranchHeader({ branch, onEdit }: BranchHeaderProps) {
               params={{ customerId: branch.customerId }}
               to="/customers/$customerId"
             >
-              {branch.customer?.name}
+              {branch.customer.name}
             </Link>
           </p>
         </div>
