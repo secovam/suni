@@ -6,8 +6,6 @@ import {
 import { customerSchema } from "@suni/db/validation/customers";
 import { Button } from "@suni/ui/components/button";
 import { revalidateLogic, useSelector } from "@tanstack/react-form";
-import { useQueryClient } from "@tanstack/react-query";
-import type { UseQueryResult } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
 import type { z } from "zod";
@@ -15,8 +13,7 @@ import type { z } from "zod";
 import { useAppForm } from "@/components/form/use-app-form";
 import { useCreateCustomer, useUpdateCustomer } from "@/hooks/use-customers";
 import { useIsAdmin } from "@/hooks/use-is-admin";
-import { postalCodeQueryOptions, usePostalCode } from "@/hooks/use-postal-code";
-import type { Settlement } from "@/hooks/use-postal-code";
+import { POSTAL_CODE_LENGTH, useAddressLookup } from "@/hooks/use-postal-code";
 
 type FormValues = Omit<z.input<typeof customerSchema>, "acquisition"> & {
   acquisition: (typeof ACQUISITION_CHANNELS)[number] | "";
@@ -25,8 +22,6 @@ type FormValues = Omit<z.input<typeof customerSchema>, "acquisition"> & {
 interface CustomerFormProps {
   customer?: AppRouterOutputs["customers"]["get"];
 }
-
-const POSTAL_CODE_LENGTH = 5;
 
 const RFC_MAX_LENGTH = 13;
 
@@ -72,25 +67,6 @@ function toFormValues(customer?: CustomerFormProps["customer"]): FormValues {
   };
 }
 
-function postalCodeStatus(
-  query: UseQueryResult<Settlement[]>,
-  settlements: Settlement[]
-): string | null {
-  if (query.isFetching) {
-    return "Buscando código postal…";
-  }
-
-  if (query.isError) {
-    return "No se pudo consultar el código postal. Captura la dirección a mano.";
-  }
-
-  if (query.isSuccess && settlements.length === 0) {
-    return "No encontramos ese código postal. Captura la dirección a mano.";
-  }
-
-  return null;
-}
-
 const ACQUISITION_OPTIONS = ACQUISITION_CHANNELS.map((value) => ({
   value,
   label: value,
@@ -100,7 +76,6 @@ const TYPE_OPTIONS = CUSTOMER_TYPES.map((value) => ({ value, label: value }));
 
 export function CustomerForm({ customer }: CustomerFormProps) {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const isAdmin = useIsAdmin();
   const createCustomer = useCreateCustomer();
   const updateCustomer = useUpdateCustomer();
@@ -133,58 +108,7 @@ export function CustomerForm({ customer }: CustomerFormProps) {
   });
 
   const zip = useSelector(form.store, (state) => state.values.postalCode);
-  const postalCode = usePostalCode(zip);
-  const settlements = postalCode.data ?? [];
-
-  // SEPOMEX owns municipio and estado; only a miss or an error unlocks them so the address can be typed by hand.
-  const regionLocked = !(
-    postalCode.isError ||
-    (postalCode.isSuccess && settlements.length === 0)
-  );
-
-  // Colonia only waits for the lookup; it stays open afterwards so a colonia SEPOMEX lacks can be typed.
-  const suburbLocked = !(postalCode.isSuccess || postalCode.isError);
-
-  const suburbOptions = [...new Set(settlements.map((s) => s.d_asenta))].map(
-    (value) => ({ value, label: value })
-  );
-
-  const fillAddress = async (value: string) => {
-    form.setFieldValue("suburb", "");
-    form.setFieldValue("city", "");
-    form.setFieldValue("state", "");
-
-    if (value.length !== POSTAL_CODE_LENGTH) {
-      return;
-    }
-
-    let found: Settlement[];
-
-    try {
-      found = await queryClient.query(postalCodeQueryOptions(value));
-    } catch {
-      // usePostalCode surfaces the error under the field.
-      return;
-    }
-
-    // The user kept typing while the request was in flight.
-    if (form.getFieldValue("postalCode") !== value) {
-      return;
-    }
-
-    const [first] = found;
-
-    if (!first) {
-      return;
-    }
-
-    form.setFieldValue("city", first.d_mnpio);
-    form.setFieldValue("state", first.d_estado);
-
-    if (found.length === 1) {
-      form.setFieldValue("suburb", first.d_asenta);
-    }
-  };
+  const address = useAddressLookup(zip);
 
   return (
     <form
@@ -262,13 +186,20 @@ export function CustomerForm({ customer }: CustomerFormProps) {
         </legend>
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           <form.AppField
-            listeners={{ onChange: ({ value }) => fillAddress(value) }}
+            listeners={{
+              onChange: ({ value }) =>
+                address.fill(value, {
+                  getPostalCode: () => form.getFieldValue("postalCode"),
+                  set: (field, fieldValue) =>
+                    form.setFieldValue(field, fieldValue),
+                }),
+            }}
             name="postalCode"
           >
             {(field) => (
               <field.DigitsField
                 autoComplete="postal-code"
-                hint={postalCodeStatus(postalCode, settlements)}
+                hint={address.hint}
                 label="Código postal"
                 maxLength={POSTAL_CODE_LENGTH}
                 required
@@ -280,13 +211,13 @@ export function CustomerForm({ customer }: CustomerFormProps) {
               <field.SelectField
                 creatable
                 label="Colonia"
-                options={suburbOptions}
+                options={address.suburbOptions}
                 placeholder={
-                  suburbLocked
+                  address.suburbLocked
                     ? FILLED_BY_POSTAL_CODE
                     : "Selecciona o escribe la colonia..."
                 }
-                readOnly={suburbLocked}
+                readOnly={address.suburbLocked}
                 required
               />
             )}
@@ -296,8 +227,8 @@ export function CustomerForm({ customer }: CustomerFormProps) {
               <field.TextField
                 autoComplete="address-level2"
                 label="Municipio"
-                placeholder={regionLocked ? FILLED_BY_POSTAL_CODE : ""}
-                readOnly={regionLocked}
+                placeholder={address.regionLocked ? FILLED_BY_POSTAL_CODE : ""}
+                readOnly={address.regionLocked}
                 required
               />
             )}
@@ -307,8 +238,8 @@ export function CustomerForm({ customer }: CustomerFormProps) {
               <field.TextField
                 autoComplete="address-level1"
                 label="Estado"
-                placeholder={regionLocked ? FILLED_BY_POSTAL_CODE : ""}
-                readOnly={regionLocked}
+                placeholder={address.regionLocked ? FILLED_BY_POSTAL_CODE : ""}
+                readOnly={address.regionLocked}
                 required
               />
             )}
