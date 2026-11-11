@@ -1,0 +1,1 @@
+ALTER TABLE "contact" ALTER COLUMN "branch_id" SET NOT NULL;
