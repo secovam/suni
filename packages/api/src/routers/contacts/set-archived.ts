@@ -1,10 +1,10 @@
 import { contact } from "@suni/db/schema/contacts";
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { z } from "zod";
 
 import { scopedProcedure } from "../../index";
 import { ownContactsSql } from "../../util/scope";
-import { activeBranchIdsSql } from "../../util/status";
+import { activeBranchIdsSql, archivedValue } from "../../util/status";
 
 export const setArchived = scopedProcedure
   .route({ method: "POST", path: "/{id}/archived" })
@@ -15,9 +15,7 @@ export const setArchived = scopedProcedure
     const [updated] = await context.db
       .update(contact)
       .set({
-        archived: input.archived
-          ? sql`COALESCE(${contact.archived}, now())`
-          : null,
+        archived: archivedValue(contact.archived, input.archived),
         modifiedBy: userId,
       })
       // An archived branch or customer wins: the contact status cannot change under it.

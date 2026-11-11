@@ -3,6 +3,7 @@ import { createContactSchema } from "@suni/db/validation/contacts";
 
 import { scopedProcedure } from "../../index";
 import { ownBranches } from "../../util/scope";
+import { statusWhere } from "../../util/status";
 
 export const create = scopedProcedure
   .route({ method: "POST", path: "/" })
@@ -12,11 +13,11 @@ export const create = scopedProcedure
 
     const parent = await context.db.query.branch.findFirst({
       where: {
-        id: input.branchId,
-        customerId: input.customerId,
-        archived: { isNull: true },
-        customer: { archived: { isNull: true } },
-        ...ownBranches(context),
+        AND: [
+          { id: input.branchId, customerId: input.customerId },
+          statusWhere("branch", "active"),
+          ownBranches(context),
+        ],
       },
       columns: { id: true },
     });

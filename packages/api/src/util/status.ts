@@ -1,6 +1,7 @@
 import { branch } from "@suni/db/schema/branches";
 import { customer } from "@suni/db/schema/customers";
-import { and, eq, isNull as isNullSql } from "drizzle-orm";
+import { and, eq, isNull as isNullSql, sql } from "drizzle-orm";
+import type { AnyPgColumn } from "drizzle-orm/pg-core";
 
 import type { Context } from "../context";
 
@@ -63,4 +64,10 @@ export function activeBranchIdsSql(db: Context["db"]) {
     .from(branch)
     .innerJoin(customer, eq(branch.customerId, customer.id))
     .where(and(isNullSql(branch.archived), isNullSql(customer.archived)));
+}
+
+// Set the target state instead of toggling, so a repeated request is a no-op.
+// COALESCE keeps the original archive date when it is already archived.
+export function archivedValue(column: AnyPgColumn, isArchived: boolean) {
+  return isArchived ? sql`COALESCE(${column}, now())` : null;
 }
