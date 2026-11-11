@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { UserPen } from "lucide-react";
 
 import { PageHeader } from "@/components/page-header";
@@ -15,6 +15,8 @@ export const Route = createFileRoute("/_auth/users/$userId/edit")({
 
 function RouteComponent() {
   const user = Route.useLoaderData();
+  const navigate = useNavigate();
+  const goToUsers = () => navigate({ to: "/users" });
 
   return (
     <div className="flex flex-col gap-6">
@@ -24,7 +26,7 @@ function RouteComponent() {
         title="Editar Usuario"
       />
 
-      <UserForm user={user} />
+      <UserForm onCancel={goToUsers} onSuccess={goToUsers} user={user} />
     </div>
   );
 }

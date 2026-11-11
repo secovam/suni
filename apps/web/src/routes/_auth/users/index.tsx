@@ -1,8 +1,8 @@
-import { Button } from "@suni/ui/components/button";
-import { Link, createFileRoute } from "@tanstack/react-router";
-import { Plus, Users } from "lucide-react";
+import { createFileRoute } from "@tanstack/react-router";
+import { Users } from "lucide-react";
 
 import { PageHeader } from "@/components/page-header";
+import { CreateUserDialog } from "@/components/users/create-user-dialog";
 import { UsersDataTable } from "@/components/users/users-table";
 
 export const Route = createFileRoute("/_auth/users/")({
@@ -18,16 +18,7 @@ function RouteComponent() {
         description="Administra los usuarios del sistema"
         icon={Users}
         title="Usuarios"
-        actions={
-          <Button
-            className="w-full sm:w-auto"
-            nativeButton={false}
-            render={<Link to="/users/new" />}
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Nuevo Usuario
-          </Button>
-        }
+        actions={<CreateUserDialog />}
       />
       <UsersDataTable currentUserId={session.user.id} />
     </div>
