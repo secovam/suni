@@ -40,9 +40,7 @@ export const Route = createFileRoute(
   },
   component: RouteComponent,
   errorComponent: () => (
-    <p className="text-destructive p-6 text-sm">
-      No se pudo cargar la sucursal.
-    </p>
+    <p className="text-destructive text-sm">No se pudo cargar la sucursal.</p>
   ),
 });
 

@@ -1,53 +1,145 @@
-import { SidebarMenu, SidebarMenuItem } from "@suni/ui/components/sidebar";
-import { cn } from "@suni/ui/lib/utils";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@suni/ui/components/collapsible";
+import {
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
+  useSidebar,
+} from "@suni/ui/components/sidebar";
 import { Link, useRouterState } from "@tanstack/react-router";
-import type { LinkProps } from "@tanstack/react-router";
-import type { LucideIcon } from "lucide-react";
-import { Building2, Contact, ContactRound, Home, Users } from "lucide-react";
+import { ChevronRight } from "lucide-react";
+import { useState } from "react";
 
+import { NAV_ENTRIES, isSection } from "@/components/nav-items";
+import type { NavLink, NavSection } from "@/components/nav-items";
 import { useIsAdmin } from "@/hooks/use-is-admin";
 
-interface NavItem {
-  to: NonNullable<LinkProps["to"]>;
-  label: string;
-  icon: LucideIcon;
-  adminOnly?: true;
+function isActive(pathname: string, to: string) {
+  return pathname === to || pathname.startsWith(`${to}/`);
 }
 
-const NAV_ITEMS = [
-  { to: "/dashboard", label: "Inicio", icon: Home },
-  { to: "/users", label: "Usuarios", icon: Users, adminOnly: true },
-  { to: "/customers", label: "Clientes", icon: ContactRound },
-  { to: "/branches", label: "Sucursales", icon: Building2 },
-  { to: "/contacts", label: "Contactos", icon: Contact },
-] satisfies NavItem[];
+interface NavSectionItemProps {
+  section: NavSection;
+  items: NavLink[];
+  pathname: string;
+}
+
+function NavSectionItem({ section, items, pathname }: NavSectionItemProps) {
+  const { isMobile, state, setOpen: setSidebarOpen } = useSidebar();
+  const active = items.some((item) => isActive(pathname, item.to));
+  const [open, setOpen] = useState(active);
+  const [wasActive, setWasActive] = useState(active);
+
+  // Entering one of its pages opens the section; leaving keeps whatever the user chose.
+  if (active !== wasActive) {
+    setWasActive(active);
+
+    if (active) {
+      setOpen(true);
+    }
+  }
+
+  function handleOpenChange(next: boolean) {
+    // Sub-items are hidden while collapsed to icons, so expand the sidebar and the section together.
+    if (!isMobile && state === "collapsed") {
+      setSidebarOpen(true);
+      setOpen(true);
+
+      return;
+    }
+
+    setOpen(next);
+  }
+
+  const { label, icon: Icon } = section;
+
+  return (
+    <Collapsible
+      className="group/collapsible"
+      onOpenChange={handleOpenChange}
+      open={open}
+      render={<SidebarMenuItem />}
+    >
+      <CollapsibleTrigger
+        render={<SidebarMenuButton isActive={active} tooltip={label} />}
+      >
+        <Icon />
+        <span>{label}</span>
+        <ChevronRight className="ml-auto transition-transform duration-200 group-data-open/collapsible:rotate-90" />
+      </CollapsibleTrigger>
+      <CollapsibleContent>
+        <SidebarMenuSub className="mt-1">
+          {items.map((item) => (
+            <SidebarMenuSubItem key={item.to}>
+              <SidebarMenuSubButton
+                isActive={isActive(pathname, item.to)}
+                render={<Link to={item.to} />}
+              >
+                <span>{item.label}</span>
+              </SidebarMenuSubButton>
+            </SidebarMenuSubItem>
+          ))}
+        </SidebarMenuSub>
+      </CollapsibleContent>
+    </Collapsible>
+  );
+}
 
 export function NavMain() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isAdmin = useIsAdmin();
-  const items = NAV_ITEMS.filter((item) => isAdmin || !("adminOnly" in item));
+  const canSee = (link: NavLink) => isAdmin || !link.adminOnly;
 
   return (
-    <SidebarMenu>
-      {items.map(({ to, label, icon: Icon }) => {
-        const active = pathname.startsWith(to);
+    <SidebarGroup>
+      <SidebarGroupLabel>Módulos</SidebarGroupLabel>
+      <SidebarMenu>
+        {NAV_ENTRIES.map((entry) => {
+          if (!isSection(entry)) {
+            if (!canSee(entry)) {
+              return null;
+            }
 
-        return (
-          <SidebarMenuItem key={to}>
-            <Link
-              className={cn(
-                "flex min-h-10 w-full items-center gap-2 rounded-md px-3 text-sm transition-colors",
-                "hover:bg-brand [&_svg]:size-4 [&_svg]:shrink-0",
-                active && "bg-brand font-medium text-white"
-              )}
-              to={to}
-            >
-              <Icon className={cn(active && "text-success")} />
-              <span>{label}</span>
-            </Link>
-          </SidebarMenuItem>
-        );
-      })}
-    </SidebarMenu>
+            const { to, label, icon: Icon } = entry;
+
+            return (
+              <SidebarMenuItem key={to}>
+                <SidebarMenuButton
+                  isActive={isActive(pathname, to)}
+                  render={<Link to={to} />}
+                  tooltip={label}
+                >
+                  <Icon />
+                  <span>{label}</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            );
+          }
+
+          const items = entry.items.filter(canSee);
+
+          if (items.length === 0) {
+            return null;
+          }
+
+          return (
+            <NavSectionItem
+              items={items}
+              key={entry.label}
+              pathname={pathname}
+              section={entry}
+            />
+          );
+        })}
+      </SidebarMenu>
+    </SidebarGroup>
   );
 }

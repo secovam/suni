@@ -3,25 +3,63 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarRail,
+  useSidebar,
 } from "@suni/ui/components/sidebar";
+import { Link, useRouter } from "@tanstack/react-router";
+import { useEffect } from "react";
 import type { ComponentProps } from "react";
 
 import { NavMain } from "@/components/nav-bar";
+import { NavUser } from "@/components/nav-user";
 
 export function AppSidebar(props: ComponentProps<typeof Sidebar>) {
+  const router = useRouter();
+  const { setOpenMobile } = useSidebar();
+
+  // On mobile the menu is a sheet over the page; close it once a link navigates.
+  useEffect(
+    () => router.subscribe("onBeforeNavigate", () => setOpenMobile(false)),
+    [router, setOpenMobile]
+  );
+
   return (
-    <Sidebar {...props}>
+    <Sidebar collapsible="icon" variant="inset" {...props}>
       <SidebarHeader>
-        <div className="px-4 py-3 text-sm font-semibold">Suni</div>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              className="h-14 group-data-[collapsible=icon]:hidden hover:bg-transparent"
+              render={<Link aria-label="Suni, ir al inicio" to="/dashboard" />}
+            >
+              <img
+                alt=""
+                className="h-10 w-auto"
+                height={75}
+                src="/suni-logo.png"
+                width={290}
+              />
+            </SidebarMenuButton>
+            <SidebarMenuButton
+              className="bg-brand hover:bg-brand hidden justify-center font-bold text-white group-data-[collapsible=icon]:flex hover:text-white"
+              render={<Link aria-label="Suni, ir al inicio" to="/dashboard" />}
+              tooltip="Suni"
+            >
+              S
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <div className="p-2">
-          <NavMain />
-        </div>
+        <NavMain />
       </SidebarContent>
       <SidebarFooter>
-        <div className="text-muted-foreground px-4 py-3 text-xs">Footer</div>
+        <NavUser />
       </SidebarFooter>
+      <SidebarRail />
     </Sidebar>
   );
 }

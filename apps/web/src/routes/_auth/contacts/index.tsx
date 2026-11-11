@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { ContactsList } from "@/components/customers/contacts/contact-grid";
 import { NewEntityButton } from "@/components/customers/new-entity-button";
+import { PageHeader } from "@/components/page-header";
 
 /* oxlint-disable promise/prefer-await-to-then, github/no-then -- zod `.catch()` is not Promise.catch */
 const searchSchema = z.object({
@@ -24,23 +25,15 @@ function RouteComponent() {
   const navigate = Route.useNavigate();
 
   return (
-    <div className="flex flex-col gap-6 p-6">
-      <div className="border-border from-muted/60 to-muted/25 flex items-center justify-between rounded-xl border bg-linear-to-r px-5 py-4 shadow-sm">
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-3">
-            <div className="bg-success/10 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg">
-              <Users className="text-success h-4.5 w-4.5" />
-            </div>
-            <h1 className="text-success text-xl font-bold">Contactos</h1>
-          </div>
-          <p className="text-brand mt-2 text-sm">
-            Gestiona los contactos de las sucursales
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
+    <div className="flex flex-col gap-6">
+      <PageHeader
+        description="Gestiona los contactos de las sucursales"
+        icon={Users}
+        title="Contactos"
+        actions={
           <NewEntityButton className="w-full sm:w-auto" entity="contact" />
-        </div>
-      </div>
+        }
+      />
 
       <ContactsList
         filters={filters}

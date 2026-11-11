@@ -35,9 +35,7 @@ export const Route = createFileRoute("/_auth/customers/$customerId/")({
     ),
   component: RouteComponent,
   errorComponent: () => (
-    <p className="text-destructive p-6 text-sm">
-      No se pudo cargar el cliente.
-    </p>
+    <p className="text-destructive text-sm">No se pudo cargar el cliente.</p>
   ),
 });
 
@@ -147,14 +145,17 @@ function RouteComponent() {
       <CustomerData customer={customer} />
 
       <Tabs className="mt-6" defaultValue="branches">
-        <TabsList className="mb-3 h-auto w-full justify-start">
-          {TABS.map(({ value, label, icon: Icon }) => (
-            <TabsTrigger key={value} value={value}>
-              <Icon className="mr-2 size-4" />
-              {label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+        {/* Six tabs don't fit a phone; scroll them instead of widening the page. */}
+        <div className="mb-3 overflow-x-auto">
+          <TabsList className="h-auto w-max min-w-full justify-start">
+            {TABS.map(({ value, label, icon: Icon }) => (
+              <TabsTrigger key={value} value={value}>
+                <Icon className="mr-2 size-4" />
+                {label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </div>
         <TabsContent value="branches">
           <BranchesGrid
             canCreate={!customer.archived}
