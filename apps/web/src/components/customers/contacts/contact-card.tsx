@@ -39,20 +39,23 @@ function getArchiveState(contact: Contact) {
   const isOwn = !!contact.archived;
   const isCustomer = !!contact.customer?.archived;
   const isBranch = !!contact.branch?.archived;
-  const isParent = isCustomer || isBranch;
 
-  let label = "Archivado";
   let parentHint: string | undefined;
 
   if (isCustomer) {
-    label = "Cliente archivado";
     parentHint = "Desarchiva primero el cliente";
   } else if (isBranch) {
-    label = "Sucursal archivada";
     parentHint = "Desarchiva primero la sucursal";
   }
 
-  return { isOwn, parentHint, isArchived: isOwn || isParent, label };
+  return {
+    isOwn,
+    isCustomerArchived: isCustomer,
+    // A branch under an archived customer is effectively archived too.
+    isBranchArchived: isCustomer || isBranch,
+    parentHint,
+    isArchived: isOwn || isCustomer || isBranch,
+  };
 }
 
 interface ContactMenuProps {
@@ -78,7 +81,10 @@ function ContactMenu({
           <span className="sr-only">Abrir menú</span>
           <MoreVertical className="size-4" />
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
+        <DropdownMenuContent
+          align="end"
+          className={cn(parentHint && "min-w-56")}
+        >
           <DropdownMenuGroup>
             <DropdownMenuLabel>Acciones</DropdownMenuLabel>
             {!isArchived && (
@@ -122,16 +128,32 @@ function ContactMenu({
 interface ContactParentsProps {
   contact: Contact;
   customer?: { id: string; name: string };
+  isCustomerArchived: boolean;
+  isBranchArchived: boolean;
 }
 
-function ContactParents({ contact, customer }: ContactParentsProps) {
+const PARENT_LINK = "line-clamp-1 text-sm font-medium hover:underline";
+
+function nameColor(isArchived: boolean) {
+  return isArchived ? "text-muted-foreground" : "text-success";
+}
+
+function ContactParents({
+  contact,
+  customer,
+  isCustomerArchived,
+  isBranchArchived,
+}: ContactParentsProps) {
+  const CustomerIcon = isCustomerArchived ? Archive : Building2;
+  const BranchIcon = isBranchArchived ? Archive : MapPin;
+
   return (
     <>
       {customer && (
-        <div className="mt-2 flex items-center gap-1.5">
-          <Building2 className="text-muted-foreground/70 size-3.5 shrink-0" />
+        <div className="mt-2 flex items-center gap-2">
+          <CustomerIcon className="text-muted-foreground/70 size-4 shrink-0" />
           <Link
-            className="text-success line-clamp-1 text-sm font-medium hover:underline"
+            className={cn(PARENT_LINK, nameColor(isCustomerArchived))}
             params={{ customerId: customer.id }}
             title={customer.name}
             to="/customers/$customerId"
@@ -142,10 +164,10 @@ function ContactParents({ contact, customer }: ContactParentsProps) {
       )}
 
       {contact.branch && (
-        <div className="mt-2 flex items-center gap-1.5">
-          <MapPin className="text-muted-foreground/70 size-3.5 shrink-0" />
+        <div className="mt-2 flex items-center gap-2">
+          <BranchIcon className="text-muted-foreground/70 size-4 shrink-0" />
           <Link
-            className="text-success line-clamp-1 text-sm font-medium hover:underline"
+            className={cn(PARENT_LINK, nameColor(isBranchArchived))}
             params={{
               customerId: contact.customerId,
               branchId: contact.branch.id,
@@ -182,7 +204,13 @@ export default function ContactCard({
   customer,
   readOnly = false,
 }: ContactCardProps) {
-  const { isOwn, parentHint, isArchived, label } = getArchiveState(contact);
+  const {
+    isOwn,
+    isCustomerArchived,
+    isBranchArchived,
+    parentHint,
+    isArchived,
+  } = getArchiveState(contact);
 
   const [isUpdateFormOpen, setIsUpdateFormOpen] = useState(false);
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
@@ -204,7 +232,7 @@ export default function ContactCard({
               <h2
                 className={cn(
                   "line-clamp-2 text-lg leading-tight font-semibold transition-colors",
-                  isArchived ? "text-muted-foreground" : "text-success"
+                  nameColor(isArchived)
                 )}
               >
                 {contact.name}
@@ -223,7 +251,12 @@ export default function ContactCard({
                 </p>
               )}
 
-              <ContactParents contact={contact} customer={customer} />
+              <ContactParents
+                contact={contact}
+                customer={customer}
+                isBranchArchived={isBranchArchived}
+                isCustomerArchived={isCustomerArchived}
+              />
             </div>
 
             {!readOnly && (
@@ -239,12 +272,7 @@ export default function ContactCard({
         </div>
 
         {/* Body */}
-        <div
-          className={cn(
-            "flex grow flex-col gap-2 p-5",
-            isArchived && "opacity-60"
-          )}
-        >
+        <div className="flex grow flex-col gap-2 px-4 py-5">
           <a
             className="group/mail text-muted-foreground hover:text-success flex items-center gap-2 text-sm transition-colors"
             href={`mailto:${contact.email}`}
@@ -258,10 +286,10 @@ export default function ContactCard({
 
         {/* Archived badge */}
         {isArchived && (
-          <div className="px-5 pb-4">
+          <div className="px-4 pb-4">
             <Badge variant="secondary">
               <Archive className="size-3" />
-              {label}
+              Archivado
             </Badge>
           </div>
         )}
