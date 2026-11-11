@@ -1,4 +1,5 @@
-import { buttonVariants } from "@suni/ui/components/button";
+import { Badge } from "@suni/ui/components/badge";
+import { Button, buttonVariants } from "@suni/ui/components/button";
 import {
   Tabs,
   TabsList,
@@ -9,6 +10,8 @@ import { cn } from "@suni/ui/lib/utils";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
+  Archive,
+  ArchiveRestore,
   ContactRound,
   FileText,
   FolderOpen,
@@ -17,8 +20,10 @@ import {
   ShoppingCart,
   Users,
 } from "lucide-react";
+import { useState } from "react";
 
 import { BranchesGrid } from "@/components/customers/branches/grid";
+import { ChangeCustomerStatusDialog } from "@/components/customers/change-customer-status-dialog";
 import { ContactsGrid } from "@/components/customers/contacts/contact-grid";
 import { CustomerData } from "@/components/customers/data";
 import { orpc } from "@/utils/orpc";
@@ -53,15 +58,50 @@ function RouteComponent() {
     orpc.customers.get.queryOptions({ input: { id: customerId } })
   );
 
+  const isArchived = !!customer.archived;
+  const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
+
   return (
     <div className="flex flex-col">
-      <div className="from-muted/60 to-muted/20 flex items-center justify-between rounded-xl border bg-linear-to-r px-5 py-4">
-        <div className="flex flex-col gap-1">
+      <div
+        className={cn(
+          "flex items-center justify-between gap-4 rounded-xl border px-5 py-4",
+          isArchived
+            ? "border-border/60 bg-muted/40"
+            : "from-muted/60 to-muted/20 bg-linear-to-r"
+        )}
+      >
+        <div className="flex min-w-0 flex-col gap-1">
           <div className="flex items-center gap-3">
-            <div className="bg-brand/10 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg">
-              <ContactRound className="text-brand h-4.5 w-4.5" />
+            <div
+              className={cn(
+                "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
+                isArchived ? "bg-muted" : "bg-brand/10"
+              )}
+            >
+              <ContactRound
+                className={cn(
+                  "h-4.5 w-4.5",
+                  isArchived ? "text-muted-foreground" : "text-brand"
+                )}
+              />
             </div>
-            <h1 className="text-brand text-xl font-bold">{customer.name}</h1>
+            <div className="flex min-w-0 items-center gap-2">
+              <h1
+                className={cn(
+                  "truncate text-xl font-bold",
+                  isArchived ? "text-muted-foreground" : "text-brand"
+                )}
+              >
+                {customer.name}
+              </h1>
+              {isArchived ? (
+                <Badge className="shrink-0" variant="secondary">
+                  <Archive className="size-3" />
+                  Archivado
+                </Badge>
+              ) : null}
+            </div>
           </div>
           <div className="mt-1 flex items-center gap-2">
             <p className="text-muted-foreground text-sm">{customer.rfc}</p>
@@ -77,16 +117,32 @@ function RouteComponent() {
             </span>
           </div>
         </div>
-        {customer.archived ? null : (
-          <Link
-            className={buttonVariants({ variant: "green" })}
-            params={{ customerId: customer.id }}
-            to="/customers/$customerId/edit"
-          >
-            Editar
-          </Link>
-        )}
+        <div className="flex shrink-0 items-center gap-2">
+          {isArchived ? null : (
+            <Link
+              className={buttonVariants({ variant: "green" })}
+              params={{ customerId: customer.id }}
+              to="/customers/$customerId/edit"
+            >
+              Editar
+            </Link>
+          )}
+          <Button onClick={() => setIsStatusDialogOpen(true)} variant="outline">
+            {isArchived ? (
+              <ArchiveRestore className="size-3.5" />
+            ) : (
+              <Archive className="size-3.5" />
+            )}
+            {isArchived ? "Desarchivar" : "Archivar"}
+          </Button>
+        </div>
       </div>
+
+      <ChangeCustomerStatusDialog
+        customer={customer}
+        onOpenChange={setIsStatusDialogOpen}
+        open={isStatusDialogOpen}
+      />
 
       <CustomerData customer={customer} />
 
