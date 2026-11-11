@@ -8,13 +8,16 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
+import type { skipToken } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { client, orpc } from "@/utils/orpc";
 
 type CustomerRow = AppRouterOutputs["customers"]["list"][number];
 
-export function useListCustomers(params: AppRouterInputs["customers"]["list"]) {
+export function useListCustomers(
+  params: AppRouterInputs["customers"]["list"] | typeof skipToken
+) {
   return useQuery(
     orpc.customers.list.queryOptions({
       input: params,
@@ -44,7 +47,12 @@ export function useUpdateCustomer() {
     orpc.customers.update.mutationOptions({
       onSuccess: async () => {
         toast.success("Cliente actualizado");
-        await queryClient.invalidateQueries({ queryKey: orpc.customers.key() });
+        // Branches and contacts embed `customer.name`.
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: orpc.customers.key() }),
+          queryClient.invalidateQueries({ queryKey: orpc.branches.key() }),
+          queryClient.invalidateQueries({ queryKey: orpc.contacts.key() }),
+        ]);
       },
       onError: (error) => toast.error(error.message),
     })

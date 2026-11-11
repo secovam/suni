@@ -27,7 +27,7 @@ import { useState } from "react";
 
 import { BranchFormDialog } from "./branch-form-dialog";
 import { ChangeBranchStatusDialog } from "./change-branch-status-dialog";
-import { formatAddress } from "./util/branch-address";
+import { branchImageSrc, formatAddress } from "./util/branch-address";
 
 type Branch = AppRouterOutputs["branches"]["list"][number];
 
@@ -108,12 +108,7 @@ export default function BranchCard({ branch, customer }: BranchCardProps) {
 
   const [isUpdateFormOpen, setIsUpdateFormOpen] = useState(false);
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
-  const placeholder = "/placeholder.webp";
   const address = formatAddress(branch);
-
-  const branchImage = branch.frontImageUrl
-    ? `${branch.frontImageUrl}`
-    : placeholder;
 
   return (
     <>
@@ -129,7 +124,7 @@ export default function BranchCard({ branch, customer }: BranchCardProps) {
           hasImage={!!branch.frontImageUrl}
           isArchived={isArchived}
           name={branch.name}
-          src={branchImage}
+          src={branchImageSrc(branch)}
         />
 
         {/* Header */}

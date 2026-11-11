@@ -20,7 +20,7 @@ export function BranchInfoContent({
   onImagePreview,
   onImageUpload,
 }: BranchInfoContentProps) {
-  const isArchived = !!branch.archived;
+  const isArchived = !!branch.archived || !!branch.customer?.archived;
   const address = formatAddress(branch);
 
   return (

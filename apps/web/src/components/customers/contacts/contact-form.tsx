@@ -12,13 +12,14 @@ type Contact = AppRouterOutputs["contacts"]["list"][number];
 
 type FormValues = z.input<typeof contactSchema>;
 
-interface ContactFormProps {
-  customerId?: string | null;
-  branchId?: string | null;
-  contact?: Contact;
+export type ContactFormTarget =
+  | { contact: Contact }
+  | { contact?: never; customerId: string; branchId: string };
+
+type ContactFormProps = ContactFormTarget & {
   onSuccess?: () => void;
   onCancel: () => void;
-}
+};
 
 const PHONE_LENGTH = 10;
 
@@ -47,12 +48,11 @@ function toFormValues(contact?: Contact): FormValues {
 }
 
 export function ContactForm({
-  customerId,
-  branchId,
-  contact,
   onSuccess,
   onCancel,
+  ...target
 }: ContactFormProps) {
+  const { contact } = target;
   const createContact = useCreateContact();
   const updateContact = useUpdateContact();
 
@@ -63,14 +63,18 @@ export function ContactForm({
     validationLogic: revalidateLogic(),
     validators: { onDynamic: contactSchema },
     onSubmit: ({ value }) => {
-      if (contact) {
+      if (target.contact) {
         updateContact.mutate(
-          { id: contact.id, ...value },
+          { id: target.contact.id, ...value },
           { onSuccess: () => onSuccess?.() }
         );
-      } else if (customerId && branchId) {
+      } else {
         createContact.mutate(
-          { customerId, branchId, ...value },
+          {
+            customerId: target.customerId,
+            branchId: target.branchId,
+            ...value,
+          },
           { onSuccess: () => onSuccess?.() }
         );
       }

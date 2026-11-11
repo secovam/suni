@@ -64,7 +64,6 @@ function BranchPicker({
   const options = useMemo(
     () =>
       branches
-        .filter((branch) => !branch.archived)
         .toSorted((a, b) => a.name.localeCompare(b.name, "es"))
         .map((branch) => ({ value: branch.id, label: branch.name })),
     [branches]

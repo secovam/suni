@@ -3,26 +3,19 @@ import { Input } from "@suni/ui/components/input";
 import { ReactSelect } from "@suni/ui/components/react-select";
 import { X } from "lucide-react";
 
-export type BranchStatusFilter = "all" | "active" | "archived";
-
-export interface BranchFilters {
-  name: string;
-  status: BranchStatusFilter;
-  customerId: string;
-}
-
-const DEFAULT_BRANCH_FILTERS: BranchFilters = {
-  name: "",
-  status: "all",
-  customerId: "all",
-};
+import { FilterBadge } from "@/components/customers/shared/filter-badge";
+import { DEFAULT_BRANCH_FILTERS } from "@/components/customers/shared/filters";
+import type {
+  BranchFilters,
+  StatusFilter,
+} from "@/components/customers/shared/filters";
 
 interface Option<T extends string = string> {
   value: T;
   label: string;
 }
 
-const STATUS_OPTIONS: Option<BranchStatusFilter>[] = [
+const STATUS_OPTIONS: Option<StatusFilter>[] = [
   { value: "all", label: "Todas" },
   { value: "active", label: "Activas" },
   { value: "archived", label: "Archivadas" },
@@ -34,25 +27,6 @@ interface BranchesFiltersProps {
   filters: BranchFilters;
   onFiltersChange: (filters: BranchFilters) => void;
   customers?: { id: string; name: string }[];
-}
-
-function FilterBadge({
-  children,
-  onClear,
-}: {
-  children: React.ReactNode;
-  onClear: () => void;
-}) {
-  return (
-    <button
-      className="hover:bg-muted inline-flex cursor-pointer items-center rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors"
-      onClick={onClear}
-      type="button"
-    >
-      {children}
-      <X className="ml-1 size-3" />
-    </button>
-  );
 }
 
 export function BranchesFilters({
@@ -92,7 +66,7 @@ export function BranchesFilters({
         />
         <ReactSelect
           className="w-full min-w-30 sm:w-37.5"
-          onChange={(option: Option<BranchStatusFilter> | null) =>
+          onChange={(option: Option<StatusFilter> | null) =>
             update({ status: option?.value ?? "all" })
           }
           options={STATUS_OPTIONS}
@@ -132,7 +106,11 @@ export function BranchesFilters({
 
           {filters.status !== "all" && (
             <FilterBadge onClear={() => update({ status: "all" })}>
-              Estatus: {filters.status === "active" ? "Activas" : "Archivadas"}
+              Estatus:{" "}
+              {
+                STATUS_OPTIONS.find((opt) => opt.value === filters.status)
+                  ?.label
+              }
             </FilterBadge>
           )}
 

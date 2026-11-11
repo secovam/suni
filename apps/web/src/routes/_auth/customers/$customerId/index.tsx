@@ -100,10 +100,16 @@ function RouteComponent() {
           ))}
         </TabsList>
         <TabsContent value="branches">
-          <BranchesGrid customerId={customerId} />
+          <BranchesGrid
+            canCreate={!customer.archived}
+            customerId={customer.id}
+          />
         </TabsContent>
         <TabsContent value="contacts">
-          <ContactsGrid customerId={customer.id} />
+          <ContactsGrid
+            canCreate={!customer.archived}
+            customerId={customer.id}
+          />
         </TabsContent>
       </Tabs>
     </div>

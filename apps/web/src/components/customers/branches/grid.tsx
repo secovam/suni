@@ -1,122 +1,114 @@
-import { Button } from "@suni/ui/components/button";
-import { Building2, Plus, SearchX } from "lucide-react";
+import { skipToken } from "@tanstack/react-query";
+import { Building2 } from "lucide-react";
 import { useMemo, useState } from "react";
 
+import { NewEntityButton } from "@/components/customers/select-entity-button";
+import { EntityGrid } from "@/components/customers/shared/entity-grid";
+import { DEFAULT_BRANCH_FILTERS } from "@/components/customers/shared/filters";
+import type { BranchFilters } from "@/components/customers/shared/filters";
 import { useListBranches } from "@/hooks/use-branches";
+import { useListCustomers } from "@/hooks/use-customers";
+import { stripAccents } from "@/lib/string-utils";
 
-import { BranchFormDialog } from "./branch-form-dialog";
 import BranchCard from "./card";
 import { BranchesFilters } from "./filters";
-import type { BranchFilters } from "./filters";
 
-interface BranchesGridProps {
-  customerId: string;
+interface BranchesListProps {
+  filters: BranchFilters;
+  onFiltersChange: (filters: BranchFilters) => void;
+  /** Scopes the list to one customer and hides the customer filter. */
+  customerId?: string;
 }
 
-const DEFAULT_BRANCH_FILTERS: BranchFilters = {
-  name: "",
-  status: "all",
-  customerId: "all",
-};
+export function BranchesList({
+  filters,
+  onFiltersChange,
+  customerId,
+}: BranchesListProps) {
+  const pickedCustomerId =
+    filters.customerId === "all" ? undefined : filters.customerId;
 
-export function BranchesGrid({ customerId }: BranchesGridProps) {
-  const [filters, setFilters] = useState<BranchFilters>(DEFAULT_BRANCH_FILTERS);
-  const [isFormOpen, setIsFormOpen] = useState(false);
+  const query = useListBranches({
+    status: filters.status,
+    customerId: customerId ?? pickedCustomerId,
+  });
 
-  const {
-    data: branches = [],
-    isPending,
-    isError,
-  } = useListBranches({ customerId });
+  // Archived customers stay listed so a filter on one keeps its label.
+  const { data: customers } = useListCustomers(
+    customerId ? skipToken : { status: "all" }
+  );
 
-  const filtered = useMemo(() => {
-    const term = filters.name.trim().toLowerCase();
+  const visibleBranches = useMemo(() => {
+    const term = stripAccents(filters.name.trim()).toLowerCase();
 
-    return branches.filter((branch) => {
-      if (term && !branch.name.toLowerCase().includes(term)) {
-        return false;
-      }
+    return (query.data ?? [])
+      .filter(
+        (branch) =>
+          !term || stripAccents(branch.name).toLowerCase().includes(term)
+      )
+      .toSorted((a, b) => a.name.localeCompare(b.name, "es"));
+  }, [query.data, filters.name]);
 
-      if (filters.status === "active") {
-        return !branch.archived;
-      }
-
-      if (filters.status === "archived") {
-        return !!branch.archived;
-      }
-
-      return true;
-    });
-  }, [branches, filters]);
-
-  const hasActiveFilters =
-    filters.name.trim() !== "" || filters.status !== "all";
+  const hasFilters =
+    filters.name.trim() !== "" ||
+    filters.status !== DEFAULT_BRANCH_FILTERS.status ||
+    (!customerId && filters.customerId !== DEFAULT_BRANCH_FILTERS.customerId);
 
   return (
     <>
-      <div className="flex min-w-full flex-col gap-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-brand text-lg font-semibold">Sucursales</h2>
-          <Button onClick={() => setIsFormOpen(true)} variant="green">
-            <Plus className="mr-2 size-4" />
-            Nueva sucursal
-          </Button>
-        </div>
+      <BranchesFilters
+        customers={customerId ? undefined : customers}
+        filters={filters}
+        onFiltersChange={onFiltersChange}
+      />
 
-        <BranchesFilters filters={filters} onFiltersChange={setFilters} />
+      <EntityGrid
+        copy={{
+          loading: "Cargando sucursales…",
+          error: "No se pudieron cargar las sucursales.",
+          notFound: "No se encontraron sucursales",
+          empty: "No hay sucursales para mostrar",
+          emptyHint: "Las sucursales aparecerán aquí",
+        }}
+        hasFilters={hasFilters}
+        icon={Building2}
+        isEmpty={visibleBranches.length === 0}
+        query={query}
+      >
+        {visibleBranches.map((branch) => (
+          <BranchCard
+            branch={branch}
+            customer={customerId ? undefined : branch.customer}
+            key={branch.id}
+          />
+        ))}
+      </EntityGrid>
+    </>
+  );
+}
 
-        {isPending ? (
-          <p className="text-muted-foreground p-8 text-center text-sm">
-            Cargando sucursales…
-          </p>
-        ) : null}
+interface BranchesGridProps {
+  customerId: string;
+  canCreate: boolean;
+}
 
-        {isError ? (
-          <p className="text-destructive p-8 text-center text-sm">
-            No se pudieron cargar las sucursales.
-          </p>
-        ) : null}
+export function BranchesGrid({ customerId, canCreate }: BranchesGridProps) {
+  const [filters, setFilters] = useState(DEFAULT_BRANCH_FILTERS);
 
-        {!(isPending || isError) && filtered.length === 0 ? (
-          <div className="flex min-h-70 flex-col items-center justify-center p-8 text-center">
-            {hasActiveFilters ? (
-              <SearchX
-                className="text-muted-foreground/70 mb-4 size-12"
-                strokeWidth={1}
-              />
-            ) : (
-              <Building2
-                className="text-muted-foreground/70 mb-4 size-12"
-                strokeWidth={1}
-              />
-            )}
-            <p className="text-muted-foreground text-sm font-medium">
-              {hasActiveFilters
-                ? "No se encontraron sucursales"
-                : "No hay sucursales para mostrar"}
-            </p>
-            <p className="text-muted-foreground/70 mt-1 text-xs">
-              {hasActiveFilters
-                ? "Intenta con otros filtros de búsqueda"
-                : "Las sucursales del cliente aparecerán aquí"}
-            </p>
-          </div>
-        ) : null}
-
-        {filtered.length > 0 ? (
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            {filtered.map((branch) => (
-              <BranchCard branch={branch} key={branch.id} />
-            ))}
-          </div>
+  return (
+    <div className="flex min-w-full flex-col gap-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-brand text-lg font-semibold">Sucursales</h2>
+        {canCreate ? (
+          <NewEntityButton customerId={customerId} entity="branch" />
         ) : null}
       </div>
 
-      <BranchFormDialog
+      <BranchesList
         customerId={customerId}
-        onOpenChange={setIsFormOpen}
-        open={isFormOpen}
+        filters={filters}
+        onFiltersChange={setFilters}
       />
-    </>
+    </div>
   );
 }

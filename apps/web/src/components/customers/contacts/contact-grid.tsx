@@ -1,115 +1,112 @@
-import { SearchX, Users } from "lucide-react";
+import { Users } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { NewEntityButton } from "@/components/customers/select-entity-button";
+import { EntityGrid } from "@/components/customers/shared/entity-grid";
+import { DEFAULT_CONTACT_FILTERS } from "@/components/customers/shared/filters";
+import type { ContactFilters } from "@/components/customers/shared/filters";
 import { useListContacts } from "@/hooks/use-contacts";
+import { stripAccents } from "@/lib/string-utils";
 
 import ContactCard from "./contact-card";
 import { ContactsFilters } from "./contact-filters";
-import type { ContactFilters } from "./contact-filters";
+
+interface ContactsListProps {
+  filters: ContactFilters;
+  onFiltersChange: (filters: ContactFilters) => void;
+  /** Scopes the list to one customer and hides the customer on each card. */
+  customerId?: string;
+  branchId?: string;
+}
+
+export function ContactsList({
+  filters,
+  onFiltersChange,
+  customerId,
+  branchId,
+}: ContactsListProps) {
+  const query = useListContacts({
+    status: filters.status,
+    customerId,
+    branchId,
+  });
+
+  const visibleContacts = useMemo(() => {
+    const term = stripAccents(filters.name.trim()).toLowerCase();
+
+    return (query.data ?? [])
+      .filter(
+        (contact) =>
+          !term || stripAccents(contact.name).toLowerCase().includes(term)
+      )
+      .toSorted((a, b) => a.name.localeCompare(b.name, "es"));
+  }, [query.data, filters.name]);
+
+  const hasFilters =
+    filters.name.trim() !== "" ||
+    filters.status !== DEFAULT_CONTACT_FILTERS.status;
+
+  return (
+    <>
+      <ContactsFilters filters={filters} onFiltersChange={onFiltersChange} />
+
+      <EntityGrid
+        copy={{
+          loading: "Cargando contactos…",
+          error: "No se pudieron cargar los contactos.",
+          notFound: "No se encontraron contactos",
+          empty: "No hay contactos para mostrar",
+          emptyHint: "Los contactos aparecerán aquí",
+        }}
+        hasFilters={hasFilters}
+        icon={Users}
+        isEmpty={visibleContacts.length === 0}
+        query={query}
+      >
+        {visibleContacts.map((contact) => (
+          <ContactCard
+            contact={contact}
+            customer={customerId ? undefined : (contact.customer ?? undefined)}
+            key={contact.id}
+          />
+        ))}
+      </EntityGrid>
+    </>
+  );
+}
 
 interface ContactsGridProps {
   customerId: string;
   branchId?: string;
+  canCreate: boolean;
 }
 
-const DEFAULT_CONTACT_FILTERS: ContactFilters = {
-  name: "",
-  status: "all",
-};
-
-export function ContactsGrid({ customerId, branchId }: ContactsGridProps) {
-  const [filters, setFilters] = useState<ContactFilters>(
-    DEFAULT_CONTACT_FILTERS
-  );
-
-  const {
-    data: contacts = [],
-    isPending,
-    isError,
-  } = useListContacts({ customerId, branchId });
-
-  const filtered = useMemo(() => {
-    const term = filters.name.trim().toLowerCase();
-
-    return contacts.filter((contact) => {
-      if (term && !contact.name.toLowerCase().includes(term)) {
-        return false;
-      }
-
-      if (filters.status === "active") {
-        return !contact.archived;
-      }
-
-      if (filters.status === "archived") {
-        return !!contact.archived;
-      }
-
-      return true;
-    });
-  }, [contacts, filters]);
-
-  const hasActiveFilters =
-    filters.name.trim() !== "" || filters.status !== "all";
+export function ContactsGrid({
+  customerId,
+  branchId,
+  canCreate,
+}: ContactsGridProps) {
+  const [filters, setFilters] = useState(DEFAULT_CONTACT_FILTERS);
 
   return (
     <div className="flex min-w-full flex-col gap-4">
       <div className="flex items-center justify-between">
         <h2 className="text-brand text-lg font-semibold">Contactos</h2>
-        <NewEntityButton
-          branchId={branchId}
-          customerId={customerId}
-          entity="contact"
-        />
+        {canCreate ? (
+          <NewEntityButton
+            branchId={branchId}
+            customerId={customerId}
+            entity="contact"
+          />
+        ) : null}
       </div>
 
-      <ContactsFilters filters={filters} onFiltersChange={setFilters} />
-
-      {isPending ? (
-        <p className="text-muted-foreground p-8 text-center text-sm">
-          Cargando contactos…
-        </p>
-      ) : null}
-
-      {isError ? (
-        <p className="text-destructive p-8 text-center text-sm">
-          No se pudieron cargar los contactos.
-        </p>
-      ) : null}
-
-      {!(isPending || isError) && filtered.length === 0 ? (
-        <div className="flex min-h-70 flex-col items-center justify-center p-8 text-center">
-          {hasActiveFilters ? (
-            <SearchX
-              className="text-muted-foreground/70 mb-4 size-12"
-              strokeWidth={1}
-            />
-          ) : (
-            <Users
-              className="text-muted-foreground/70 mb-4 size-12"
-              strokeWidth={1}
-            />
-          )}
-          <p className="text-muted-foreground text-sm font-medium">
-            {hasActiveFilters
-              ? "No se encontraron contactos"
-              : "No hay contactos para mostrar"}
-          </p>
-          <p className="text-muted-foreground/70 mt-1 text-xs">
-            {hasActiveFilters
-              ? "Intenta con otros filtros de búsqueda"
-              : "Los contactos aparecerán aquí"}
-          </p>
-        </div>
-      ) : null}
-
-      {filtered.length > 0 ? (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          {filtered.map((contact) => (
-            <ContactCard contact={contact} key={contact.id} />
-          ))}
-        </div>
-      ) : null}
+      <ContactsList
+        branchId={branchId}
+        customerId={customerId}
+        filters={filters}
+        onFiltersChange={setFilters}
+      />
     </div>
   );
 }

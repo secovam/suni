@@ -2,6 +2,7 @@ import type { AppRouterOutputs } from "@suni/api/routers/index";
 import { Badge } from "@suni/ui/components/badge";
 import { Button } from "@suni/ui/components/button";
 import { cn } from "@suni/ui/lib/utils";
+import { Link } from "@tanstack/react-router";
 import { Archive, ArchiveRestore, Building2, Pencil } from "lucide-react";
 import { useState } from "react";
 
@@ -10,17 +11,14 @@ import { ChangeBranchStatusDialog } from "./change-branch-status-dialog";
 type Branch = AppRouterOutputs["branches"]["get"];
 
 interface BranchHeaderProps {
-  branch: Pick<Branch, "id" | "customerId" | "name" | "archived">;
-  customerName: string;
+  branch: Pick<Branch, "id" | "customerId" | "name" | "archived" | "customer">;
   onEdit?: () => void;
 }
 
-export function BranchHeader({
-  branch,
-  customerName,
-  onEdit,
-}: BranchHeaderProps) {
-  const isArchived = !!branch.archived;
+export function BranchHeader({ branch, onEdit }: BranchHeaderProps) {
+  const isOwnArchived = !!branch.archived;
+  const isCustomerArchived = !!branch.customer?.archived;
+  const isArchived = isOwnArchived || isCustomerArchived;
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
 
   return (
@@ -60,17 +58,25 @@ export function BranchHeader({
               {isArchived ? (
                 <Badge className="shrink-0" variant="secondary">
                   <Archive className="size-3" />
-                  Archivada
+                  {isCustomerArchived ? "Cliente archivado" : "Archivada"}
                 </Badge>
               ) : null}
             </div>
           </div>
           <p className="text-muted-foreground text-sm">
-            Sucursal de {customerName}
+            Sucursal de{" "}
+            <Link
+              className="hover:underline"
+              params={{ customerId: branch.customerId }}
+              to="/customers/$customerId"
+            >
+              {branch.customer?.name}
+            </Link>
           </p>
         </div>
 
-        {onEdit ? (
+        {/* An archived customer wins: unarchive it first, from its own page */}
+        {onEdit && !isCustomerArchived ? (
           <div className="flex shrink-0 items-center gap-2">
             {isArchived ? null : (
               <Button onClick={onEdit} size="sm" variant="green">
@@ -83,12 +89,12 @@ export function BranchHeader({
               size="sm"
               variant="outline"
             >
-              {isArchived ? (
+              {isOwnArchived ? (
                 <ArchiveRestore className="size-3.5" />
               ) : (
                 <Archive className="size-3.5" />
               )}
-              {isArchived ? "Desarchivar" : "Archivar"}
+              {isOwnArchived ? "Desarchivar" : "Archivar"}
             </Button>
           </div>
         ) : null}

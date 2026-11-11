@@ -1,69 +1,28 @@
-import { cn } from "@suni/ui/lib/utils";
+import { CUSTOMER_STATUSES } from "@suni/db/schema/customer-enums";
 import { createFileRoute, stripSearchParams } from "@tanstack/react-router";
-import { Building2, SearchX } from "lucide-react";
-import { useMemo } from "react";
+import { Building2 } from "lucide-react";
 import { z } from "zod";
 
-import BranchCard from "@/components/customers/branches/card";
-import { BranchesFilters } from "@/components/customers/branches/filters";
-import type { BranchFilters } from "@/components/customers/branches/filters";
+import { BranchesList } from "@/components/customers/branches/grid";
 import { NewEntityButton } from "@/components/customers/select-entity-button";
-import { useListBranches } from "@/hooks/use-branches";
-import { useListCustomers } from "@/hooks/use-customers";
-import { stripAccents } from "@/lib/string-utils";
 
 /* oxlint-disable promise/prefer-await-to-then, github/no-then -- zod `.catch()` is not Promise.catch */
 const searchSchema = z.object({
   name: z.string().default("").catch(""),
-  status: z.enum(["all", "active", "archived"]).default("all").catch("all"),
+  status: z.enum(CUSTOMER_STATUSES).default("all").catch("all"),
   customerId: z.string().default("all").catch("all"),
 });
 /* oxlint-enable promise/prefer-await-to-then, github/no-then */
 
-const defaultFilters = searchSchema.parse({});
-
 export const Route = createFileRoute("/_auth/branches/")({
   validateSearch: searchSchema,
-  search: { middlewares: [stripSearchParams(defaultFilters)] },
+  search: { middlewares: [stripSearchParams(searchSchema.parse({}))] },
   component: RouteComponent,
 });
 
 function RouteComponent() {
   const filters = Route.useSearch();
   const navigate = Route.useNavigate();
-
-  const {
-    data: branches = [],
-    isError,
-    isPending,
-    isPlaceholderData,
-  } = useListBranches({
-    status: filters.status,
-    ...(filters.customerId === "all"
-      ? undefined
-      : { customerId: filters.customerId }),
-  });
-
-  const visibleBranches = useMemo(() => {
-    const term = stripAccents(filters.name.trim()).toLowerCase();
-
-    return branches
-      .filter(
-        (branch) =>
-          !term || stripAccents(branch.name).toLowerCase().includes(term)
-      )
-      .toSorted((a, b) => a.name.localeCompare(b.name, "es"));
-  }, [branches, filters.name]);
-
-  const { data: customers } = useListCustomers({});
-
-  const hasFilters =
-    filters.name.trim() !== "" ||
-    filters.status !== defaultFilters.status ||
-    filters.customerId !== defaultFilters.customerId;
-
-  const handleFiltersChange = (next: BranchFilters) =>
-    navigate({ search: next, replace: true });
 
   return (
     <div className="flex flex-col gap-6 p-6">
@@ -84,67 +43,10 @@ function RouteComponent() {
         </div>
       </div>
 
-      <BranchesFilters
-        customers={customers}
+      <BranchesList
         filters={filters}
-        onFiltersChange={handleFiltersChange}
+        onFiltersChange={(next) => navigate({ search: next, replace: true })}
       />
-
-      {isPending ? (
-        <p className="text-muted-foreground p-8 text-center text-sm">
-          Cargando sucursales…
-        </p>
-      ) : null}
-
-      {isError ? (
-        <p className="text-destructive p-8 text-center text-sm">
-          No se pudieron cargar las sucursales.
-        </p>
-      ) : null}
-
-      {!(isPending || isError) && visibleBranches.length === 0 ? (
-        <div className="flex min-h-70 flex-col items-center justify-center p-8 text-center">
-          {hasFilters ? (
-            <SearchX
-              className="text-muted-foreground/70 mb-4 size-12"
-              strokeWidth={1}
-            />
-          ) : (
-            <Building2
-              className="text-muted-foreground/70 mb-4 size-12"
-              strokeWidth={1}
-            />
-          )}
-          <p className="text-muted-foreground text-sm font-medium">
-            {hasFilters
-              ? "No se encontraron sucursales"
-              : "No hay sucursales para mostrar"}
-          </p>
-          <p className="text-muted-foreground/70 mt-1 text-xs">
-            {hasFilters
-              ? "Intenta con otros filtros de búsqueda"
-              : "Las sucursales aparecerán aquí"}
-          </p>
-        </div>
-      ) : null}
-
-      {visibleBranches.length > 0 ? (
-        <div
-          aria-busy={isPlaceholderData}
-          className={cn(
-            "grid grid-cols-1 gap-4 transition-opacity md:grid-cols-2",
-            isPlaceholderData && "pointer-events-none opacity-50"
-          )}
-        >
-          {visibleBranches.map((branch) => (
-            <BranchCard
-              branch={branch}
-              customer={branch.customer}
-              key={branch.id}
-            />
-          ))}
-        </div>
-      ) : null}
     </div>
   );
 }
