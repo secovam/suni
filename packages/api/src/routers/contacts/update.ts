@@ -1,10 +1,11 @@
 import { contact } from "@suni/db/schema/contacts";
 import { contactSchema } from "@suni/db/validation/contacts";
-import { and, eq, isNull } from "drizzle-orm";
+import { and, eq, inArray, isNull } from "drizzle-orm";
 import { z } from "zod";
 
 import { scopedProcedure } from "../../index";
 import { ownContactsSql } from "../../util/scope";
+import { activeBranchIdsSql } from "../../util/status";
 
 export const update = scopedProcedure
   .route({ method: "PATCH", path: "/{id}" })
@@ -20,6 +21,7 @@ export const update = scopedProcedure
         and(
           eq(contact.id, id),
           isNull(contact.archived),
+          inArray(contact.branchId, activeBranchIdsSql(context.db)),
           ownContactsSql(context)
         )
       )
@@ -27,7 +29,8 @@ export const update = scopedProcedure
 
     if (!updated) {
       throw errors.NOT_FOUND({
-        message: "El contacto no existe o está archivado",
+        message:
+          "El contacto no existe, o él, su sucursal o su cliente están archivados",
       });
     }
 

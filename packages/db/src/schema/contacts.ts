@@ -17,7 +17,9 @@ export const contact = pgTable("contact", {
   customerId: text("customer_id")
     .notNull()
     .references(() => customer.id),
-  branchId: text("branch_id").references(() => branch.id),
+  branchId: text("branch_id")
+    .notNull()
+    .references(() => branch.id),
   archived: timestamp("archived"),
   modifiedBy: text("modified_by")
     .notNull()

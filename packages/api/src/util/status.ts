@@ -1,3 +1,9 @@
+import { branch } from "@suni/db/schema/branches";
+import { customer } from "@suni/db/schema/customers";
+import { and, eq, isNull as isNullSql } from "drizzle-orm";
+
+import type { Context } from "../context";
+
 const isNull = { isNull: true } as const;
 
 const isNotNull = { isNotNull: true } as const;
@@ -40,4 +46,21 @@ export function statusWhere(entity: Entity, status: Status) {
   }
 
   return archived[entity];
+}
+
+// SQL forms for update builders, which cannot filter through relations.
+
+export function activeCustomerIdsSql(db: Context["db"]) {
+  return db
+    .select({ id: customer.id })
+    .from(customer)
+    .where(isNullSql(customer.archived));
+}
+
+export function activeBranchIdsSql(db: Context["db"]) {
+  return db
+    .select({ id: branch.id })
+    .from(branch)
+    .innerJoin(customer, eq(branch.customerId, customer.id))
+    .where(and(isNullSql(branch.archived), isNullSql(customer.archived)));
 }

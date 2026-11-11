@@ -3,21 +3,14 @@ import { z } from "zod";
 
 import { scopedProcedure } from "../../index";
 import { ownCustomers } from "../../util/scope";
-
-const statusFilters = {
-  active: { archived: { isNull: true } },
-  archived: { archived: { isNotNull: true } },
-} as const;
+import { statusWhere } from "../../util/status";
 
 export const list = scopedProcedure
   .route({ method: "GET", path: "/" })
   .input(z.object({ status: z.enum(CUSTOMER_STATUSES).default("active") }))
   .handler(async ({ input, context }) => {
     const where = {
-      AND: [
-        input.status === "all" ? {} : statusFilters[input.status],
-        ownCustomers(context),
-      ],
+      AND: [statusWhere("customer", input.status), ownCustomers(context)],
     };
 
     if (context.admin) {

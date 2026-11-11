@@ -14,7 +14,6 @@ export const get = scopedProcedure
       columns: admin ? undefined : { sellerId: false, modifiedBy: false },
       with: {
         customer: { columns: { id: true, name: true, archived: true } },
-        contacts: true,
         ...(admin && { seller: { columns: { id: true, name: true } } }),
       },
     });

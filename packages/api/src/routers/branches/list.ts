@@ -28,7 +28,6 @@ export const list = scopedProcedure
         with: {
           customer: { columns: { id: true, name: true, archived: true } },
           seller: { columns: { id: true, name: true } },
-          contacts: true,
         },
       });
     }
@@ -39,7 +38,6 @@ export const list = scopedProcedure
       columns: { sellerId: false, modifiedBy: false },
       with: {
         customer: { columns: { id: true, name: true, archived: true } },
-        contacts: true,
       },
     });
 

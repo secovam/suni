@@ -1,9 +1,10 @@
 import { contact } from "@suni/db/schema/contacts";
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { scopedProcedure } from "../../index";
 import { ownContactsSql } from "../../util/scope";
+import { activeBranchIdsSql } from "../../util/status";
 
 export const setArchived = scopedProcedure
   .route({ method: "POST", path: "/{id}/archived" })
@@ -19,11 +20,21 @@ export const setArchived = scopedProcedure
           : null,
         modifiedBy: userId,
       })
-      .where(and(eq(contact.id, input.id), ownContactsSql(context)))
+      // An archived branch or customer wins: the contact status cannot change under it.
+      .where(
+        and(
+          eq(contact.id, input.id),
+          inArray(contact.branchId, activeBranchIdsSql(context.db)),
+          ownContactsSql(context)
+        )
+      )
       .returning({ id: contact.id });
 
     if (!updated) {
-      throw errors.NOT_FOUND({ message: "El contacto no existe" });
+      throw errors.NOT_FOUND({
+        message:
+          "El contacto no existe o su sucursal o cliente están archivados",
+      });
     }
 
     return updated;

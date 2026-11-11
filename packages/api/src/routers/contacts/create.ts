@@ -15,6 +15,7 @@ export const create = scopedProcedure
         id: input.branchId,
         customerId: input.customerId,
         archived: { isNull: true },
+        customer: { archived: { isNull: true } },
         ...ownBranches(context),
       },
       columns: { id: true },
@@ -23,7 +24,7 @@ export const create = scopedProcedure
     if (!parent) {
       throw errors.NOT_FOUND({
         message:
-          "La sucursal no existe, está archivada o no pertenece al cliente",
+          "La sucursal no existe, no pertenece al cliente, o ella o su cliente están archivados",
       });
     }
 
