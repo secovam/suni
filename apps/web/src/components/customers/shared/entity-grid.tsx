@@ -66,8 +66,10 @@ export function EntityGrid({
       aria-busy={query.isPlaceholderData}
       className={cn(
         "grid grid-cols-1 gap-4 transition-opacity md:grid-cols-2",
-        query.isPlaceholderData && "pointer-events-none opacity-50"
+        query.isPlaceholderData && "opacity-50"
       )}
+      // Stale rows stay visible while the new filter loads; block pointer and keyboard on them.
+      inert={query.isPlaceholderData}
     >
       {children}
     </div>
