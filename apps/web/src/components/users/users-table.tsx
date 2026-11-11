@@ -18,7 +18,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import type { PaginationState } from "@tanstack/react-table";
-import { MonitorCheck, MonitorX, Pencil, Shield, User } from "lucide-react";
+import { Pencil, Shield, User } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { ChangeUserStatusDialog } from "@/components/users/change-user-status-dialog";
@@ -34,30 +34,34 @@ function RoleBadge({ role }: { role: string | null }) {
   if (role === "admin") {
     return (
       <Badge>
-        <Shield className="size-3.5" /> Admin
+        <Shield /> Admin
       </Badge>
     );
   }
 
   return (
     <Badge variant="secondary">
-      <User className="size-3.5" /> Usuario
+      <User /> Usuario
     </Badge>
   );
+}
+
+function StatusDot() {
+  return <span aria-hidden className="size-1.5 rounded-full bg-current" />;
 }
 
 function StatusBadge({ banned }: { banned: boolean }) {
   if (banned) {
     return (
       <Badge variant="destructive">
-        <MonitorX className="size-3.5" /> Suspendido
+        <StatusDot /> Suspendido
       </Badge>
     );
   }
 
   return (
     <Badge variant="success">
-      <MonitorCheck className="size-3.5" /> Activo
+      <StatusDot /> Activo
     </Badge>
   );
 }
@@ -70,7 +74,9 @@ function createColumns(currentUserId: string) {
         <span className="flex items-center">
           {info.getValue()}
           {info.row.original.id === currentUserId && (
-            <Badge className="ml-2">Tú</Badge>
+            <Badge className="ml-2" variant="outline">
+              Tú
+            </Badge>
           )}
         </span>
       ),

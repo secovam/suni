@@ -16,9 +16,12 @@ const buttonVariants = cva(
         secondary:
           "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
+        // Quiet row actions whose hover color previews the outcome.
+        "ghost-destructive":
+          "text-muted-foreground hover:bg-destructive/10 hover:text-destructive",
+        "ghost-success":
+          "text-muted-foreground hover:bg-success/10 hover:text-success",
         link: "text-primary underline-offset-4 hover:underline",
-        "outline-destructive":
-          "border border-destructive text-destructive hover:bg-destructive/10 duration-500 active:bg-destructive-pressed active:text-destructive-foreground",
       },
       size: {
         default: "h-9 px-4 py-2",

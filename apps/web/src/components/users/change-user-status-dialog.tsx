@@ -23,7 +23,7 @@ const ACTIONS = {
   suspend: {
     label: "Suspender",
     Icon: Ban,
-    triggerVariant: "outline-destructive",
+    triggerVariant: "ghost-destructive",
     confirmVariant: "destructive",
     emailClassName: "text-destructive",
     description: "Esto suspenderá",
@@ -31,7 +31,7 @@ const ACTIONS = {
   activate: {
     label: "Activar",
     Icon: CircleCheckBig,
-    triggerVariant: "outline",
+    triggerVariant: "ghost-success",
     confirmVariant: "default",
     emailClassName: "text-success",
     description: "Esto reactivará",
