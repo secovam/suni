@@ -1,5 +1,4 @@
 import type { AppRouterOutputs } from "@suni/api/routers/index";
-import { Badge } from "@suni/ui/components/badge";
 import { Button } from "@suni/ui/components/button";
 import {
   DropdownMenu,
@@ -22,6 +21,8 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
+import { ArchivedBanner } from "@/components/customers/shared/archived-banner";
+
 import { ChangeCustomerStatusDialog } from "./change-customer-status-dialog";
 
 interface CustomerCardProps {
@@ -38,10 +39,11 @@ export default function CustomerCard({ customer }: CustomerCardProps) {
         className={cn(
           "group bg-card relative flex h-full flex-col overflow-hidden rounded-xl border transition-colors duration-200",
           isArchived
-            ? "border-border/60 bg-archived-pattern shadow-sm"
+            ? "border-border bg-muted/30"
             : "border-border hover:border-primary/30 hover:shadow-md"
         )}
       >
+        {isArchived ? <ArchivedBanner label="Archivado" /> : null}
         <div className="border-muted border-b p-4">
           <div className="flex items-center justify-between gap-2">
             <Link
@@ -56,6 +58,9 @@ export default function CustomerCard({ customer }: CustomerCardProps) {
                 )}
               >
                 {customer.name}
+                {isArchived ? (
+                  <span className="sr-only">, Archivado</span>
+                ) : null}
               </h2>
             </Link>
 
@@ -134,16 +139,6 @@ export default function CustomerCard({ customer }: CustomerCardProps) {
               </div>
             </div>
           </div>
-
-          {/* Archived badge */}
-          {isArchived && (
-            <div className="mt-3">
-              <Badge variant="secondary">
-                <Archive className="size-3" />
-                Archivado
-              </Badge>
-            </div>
-          )}
         </div>
 
         {/* View details footer */}

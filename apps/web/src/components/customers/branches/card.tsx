@@ -1,4 +1,3 @@
-import { Badge } from "@suni/ui/components/badge";
 import { Button } from "@suni/ui/components/button";
 import {
   DropdownMenu,
@@ -21,8 +20,10 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
+import { ArchivedBanner } from "@/components/customers/shared/archived-banner";
+
 import { ArchiveMenuItem } from "../shared/archive-menu-item";
-import { archiveState } from "../shared/archive-state";
+import { archiveState, archivedLabel } from "../shared/archive-state";
 import { BranchFormDialog } from "./branch-form-dialog";
 import { ChangeBranchStatusDialog } from "./change-branch-status-dialog";
 import { branchImageSrc, formatAddress } from "./util/branch-address";
@@ -53,19 +54,14 @@ function BranchImage({ name, src, isArchived }: BranchImageProps) {
         src={src}
       />
       <div className="absolute inset-0 bg-linear-to-t from-black/40 via-transparent to-transparent" />
-      {isArchived && (
-        <Badge className="absolute top-2 right-2" variant="secondary">
-          <Archive className="size-3" />
-          Archivada
-        </Badge>
-      )}
     </div>
   );
 }
 
 export default function BranchCard({ branch, customer }: BranchCardProps) {
-  const { isOwnArchived, isCustomerArchived, isArchived, parentHint } =
-    archiveState(branch);
+  const archive = archiveState(branch);
+  const { isOwnArchived, isCustomerArchived, isArchived, parentHint } = archive;
+  const archivedText = archivedLabel(archive, "Archivada");
 
   const [isUpdateFormOpen, setIsUpdateFormOpen] = useState(false);
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
@@ -77,10 +73,11 @@ export default function BranchCard({ branch, customer }: BranchCardProps) {
         className={cn(
           "group bg-card relative flex h-full flex-col overflow-hidden rounded-xl border transition-colors duration-200",
           isArchived
-            ? "border-border/60 bg-archived-pattern shadow-sm"
+            ? "border-border bg-muted/30"
             : "border-border hover:border-primary/30 hover:shadow-md"
         )}
       >
+        {archivedText ? <ArchivedBanner label={archivedText} /> : null}
         <BranchImage
           isArchived={isArchived}
           name={branch.name}
@@ -102,6 +99,9 @@ export default function BranchCard({ branch, customer }: BranchCardProps) {
                   )}
                 >
                   {branch.name}
+                  {archivedText ? (
+                    <span className="sr-only">, {archivedText}</span>
+                  ) : null}
                 </h2>
               </Link>
 

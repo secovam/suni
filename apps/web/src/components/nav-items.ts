@@ -24,8 +24,14 @@ export interface NavSection {
 
 type NavEntry = NavLink | NavSection;
 
+export const HOME_LINK: NavLink = {
+  to: "/dashboard",
+  label: "Inicio",
+  icon: Home,
+};
+
+/** The modules, listed below Inicio in the sidebar. */
 export const NAV_ENTRIES: NavEntry[] = [
-  { to: "/dashboard", label: "Inicio", icon: Home },
   { to: "/users", label: "Usuarios", icon: Users, adminOnly: true },
   {
     label: "Ventas",

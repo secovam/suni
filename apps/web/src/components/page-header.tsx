@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 interface PageHeaderProps {
   icon: LucideIcon;
   title: string;
-  description: string;
+  description: ReactNode;
   actions?: ReactNode;
 }
 
@@ -23,7 +23,7 @@ export function PageHeader({
           </div>
           <h1 className="text-primary truncate text-xl font-bold">{title}</h1>
         </div>
-        <p className="text-muted-foreground text-sm">{description}</p>
+        <div className="text-muted-foreground text-sm">{description}</div>
       </div>
       {actions ? (
         <div className="flex shrink-0 items-center gap-2">{actions}</div>

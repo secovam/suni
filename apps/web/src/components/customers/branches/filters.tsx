@@ -1,9 +1,7 @@
-import { Button } from "@suni/ui/components/button";
-import { Input } from "@suni/ui/components/input";
 import { ReactSelect } from "@suni/ui/components/react-select";
-import { X } from "lucide-react";
+import type { ReactNode } from "react";
 
-import { FilterBadge } from "@/components/customers/shared/filter-badge";
+import { FilterBar } from "@/components/customers/shared/filter-bar";
 import { DEFAULT_BRANCH_FILTERS } from "@/components/customers/shared/filters";
 import type {
   BranchFilters,
@@ -16,14 +14,13 @@ interface Option<T extends string = string> {
 }
 
 const STATUS_OPTIONS: Option<StatusFilter>[] = [
-  { value: "all", label: "Todas" },
-  { value: "active", label: "Activas" },
-  { value: "archived", label: "Archivadas" },
+  { value: "all", label: "Todas las sucursales" },
+  { value: "active", label: "Sucursales activas" },
+  { value: "archived", label: "Sucursales archivadas" },
 ];
 
-const MAX_CUSTOMER_BADGE_LENGTH = 20;
-
 interface BranchesFiltersProps {
+  action?: ReactNode;
   filters: BranchFilters;
   hasFilters: boolean;
   onFiltersChange: (filters: BranchFilters) => void;
@@ -35,102 +32,57 @@ export function BranchesFilters({
   hasFilters,
   onFiltersChange,
   customers,
+  action,
 }: BranchesFiltersProps) {
-  const showCustomerFilter = !!customers;
-
-  const customerOptions: Option[] = [
-    { value: "all", label: "Todos los clientes" },
-    ...(customers ?? []).map((c) => ({ value: c.id, label: c.name })),
-  ];
-
-  const selectedCustomerName =
-    filters.customerId === "all"
-      ? null
-      : (customers?.find((c) => c.id === filters.customerId)?.name ?? null);
+  const customerOptions: Option[] = (customers ?? []).map((c) => ({
+    value: c.id,
+    label: c.name,
+  }));
 
   const update = (patch: Partial<BranchFilters>) =>
     onFiltersChange({ ...filters, ...patch });
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col gap-3 sm:flex-row">
-        <Input
-          className="h-9 flex-1"
-          onChange={(event) => update({ name: event.target.value })}
-          placeholder="Buscar por nombre de sucursal..."
-          type="text"
-          value={filters.name}
-        />
+    <FilterBar
+      action={action}
+      hasFilters={hasFilters}
+      onClear={() => onFiltersChange(DEFAULT_BRANCH_FILTERS)}
+      onSearchChange={(name) => update({ name })}
+      search={filters.name}
+      searchLabel="Buscar sucursal"
+    >
+      {customers ? (
         <ReactSelect
-          className="w-full min-w-30 sm:w-37.5"
-          onChange={(option: Option<StatusFilter> | null) =>
-            update({ status: option?.value ?? "all" })
+          aria-label="Filtrar por cliente"
+          className="w-full lg:w-64"
+          isClearable
+          onChange={(option: Option | null) =>
+            update({ customerId: option?.value ?? "all" })
           }
-          options={STATUS_OPTIONS}
-          placeholder="Estatus"
-          value={STATUS_OPTIONS.find((opt) => opt.value === filters.status)}
+          options={customerOptions}
+          // "all" is the empty state, so it shows as the placeholder and offers nothing to clear.
+          placeholder="Todos los clientes"
+          value={
+            filters.customerId === "all"
+              ? null
+              : (customerOptions.find(
+                  (opt) => opt.value === filters.customerId
+                ) ?? {
+                  value: filters.customerId,
+                  label: "Cliente seleccionado",
+                })
+          }
         />
-      </div>
-
-      {showCustomerFilter && (
-        <div className="flex flex-wrap gap-3">
-          <ReactSelect
-            className="min-w-45 flex-1"
-            isClearable
-            onChange={(option: Option | null) =>
-              update({ customerId: option?.value ?? "all" })
-            }
-            options={customerOptions}
-            placeholder="Cliente"
-            value={customerOptions.find(
-              (opt) => opt.value === filters.customerId
-            )}
-          />
-        </div>
-      )}
-
-      {hasFilters && (
-        <div className="flex flex-wrap items-center gap-2 border-t pt-2">
-          <span className="text-muted-foreground mr-1 text-xs">
-            Filtros activos:
-          </span>
-
-          {filters.name.trim() && (
-            <FilterBadge onClear={() => update({ name: "" })}>
-              Nombre: &ldquo;{filters.name.trim()}&rdquo;
-            </FilterBadge>
-          )}
-
-          {filters.status !== "all" && (
-            <FilterBadge onClear={() => update({ status: "all" })}>
-              Estatus:{" "}
-              {
-                STATUS_OPTIONS.find((opt) => opt.value === filters.status)
-                  ?.label
-              }
-            </FilterBadge>
-          )}
-
-          {showCustomerFilter && selectedCustomerName && (
-            <FilterBadge onClear={() => update({ customerId: "all" })}>
-              Cliente:{" "}
-              {selectedCustomerName.length > MAX_CUSTOMER_BADGE_LENGTH
-                ? `${selectedCustomerName.slice(0, MAX_CUSTOMER_BADGE_LENGTH)}...`
-                : selectedCustomerName}
-            </FilterBadge>
-          )}
-
-          <Button
-            className="ml-auto"
-            size="sm"
-            onClick={() => onFiltersChange(DEFAULT_BRANCH_FILTERS)}
-            variant="ghost"
-          >
-            Limpiar todo
-            <X className="ml-1 size-3" />
-          </Button>
-        </div>
-      )}
-    </div>
+      ) : null}
+      <ReactSelect
+        aria-label="Filtrar por estado"
+        className="w-full lg:w-52"
+        onChange={(option: Option<StatusFilter> | null) =>
+          update({ status: option?.value ?? "all" })
+        }
+        options={STATUS_OPTIONS}
+        value={STATUS_OPTIONS.find((opt) => opt.value === filters.status)}
+      />
+    </FilterBar>
   );
 }

@@ -25,7 +25,7 @@ function RouteComponent() {
       : [entry];
 
     for (const link of links) {
-      if (link.to !== "/dashboard" && (isAdmin || !link.adminOnly)) {
+      if (isAdmin || !link.adminOnly) {
         shortcuts.push(link);
       }
     }

@@ -1,5 +1,6 @@
 import { skipToken } from "@tanstack/react-query";
 import { Building2 } from "lucide-react";
+import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
 
 import { NewEntityButton } from "@/components/customers/new-entity-button";
@@ -16,6 +17,7 @@ import BranchCard from "./card";
 import { BranchesFilters } from "./filters";
 
 interface BranchesListProps {
+  action?: ReactNode;
   filters: BranchFilters;
   onFiltersChange: (filters: BranchFilters) => void;
   /** Scopes the list to one customer and hides the customer filter. */
@@ -25,6 +27,7 @@ interface BranchesListProps {
 export function BranchesList({
   filters,
   onFiltersChange,
+  action,
   customerId,
 }: BranchesListProps) {
   const pickedCustomerId =
@@ -53,6 +56,7 @@ export function BranchesList({
   return (
     <>
       <BranchesFilters
+        action={action}
         customers={customerId ? undefined : customers}
         filters={filters}
         hasFilters={hasFilters}
@@ -94,14 +98,12 @@ export function BranchesGrid({ customerId, canCreate }: BranchesGridProps) {
 
   return (
     <div className="flex min-w-full flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-foreground text-lg font-semibold">Sucursales</h2>
-        {canCreate ? (
-          <NewEntityButton customerId={customerId} entity="branch" />
-        ) : null}
-      </div>
-
       <BranchesList
+        action={
+          canCreate ? (
+            <NewEntityButton customerId={customerId} entity="branch" />
+          ) : null
+        }
         customerId={customerId}
         filters={filters}
         onFiltersChange={setFilters}

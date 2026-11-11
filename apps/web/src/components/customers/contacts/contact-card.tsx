@@ -1,5 +1,4 @@
 import type { AppRouterOutputs } from "@suni/api/routers/index";
-import { Badge } from "@suni/ui/components/badge";
 import { Button } from "@suni/ui/components/button";
 import {
   DropdownMenu,
@@ -22,8 +21,10 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
+import { ArchivedBanner } from "@/components/customers/shared/archived-banner";
+
 import { ArchiveMenuItem } from "../shared/archive-menu-item";
-import { archiveState } from "../shared/archive-state";
+import { archiveState, archivedLabel } from "../shared/archive-state";
 import { ChangeContactStatusDialog } from "./change-contact-status-dialog";
 import { ContactFormDialog } from "./contact-form-dialog";
 
@@ -157,13 +158,17 @@ function ContactPhone({ contact }: { contact: Contact }) {
 }
 
 export default function ContactCard({ contact, customer }: ContactCardProps) {
+  const archive = archiveState(contact);
+
   const {
     isOwnArchived,
     isCustomerArchived,
     isBranchArchived,
     parentHint,
     isArchived,
-  } = archiveState(contact);
+  } = archive;
+
+  const archivedText = archivedLabel(archive, "Archivado");
 
   const [isUpdateFormOpen, setIsUpdateFormOpen] = useState(false);
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
@@ -174,10 +179,11 @@ export default function ContactCard({ contact, customer }: ContactCardProps) {
         className={cn(
           "group bg-card relative flex h-full flex-col overflow-hidden rounded-xl border transition-colors duration-200",
           isArchived
-            ? "border-border/60 bg-archived-pattern shadow-sm"
+            ? "border-border bg-muted/30"
             : "border-border hover:border-primary/30 hover:shadow-md"
         )}
       >
+        {archivedText ? <ArchivedBanner label={archivedText} /> : null}
         <div className="border-muted border-b p-4">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0 flex-1">
@@ -188,6 +194,9 @@ export default function ContactCard({ contact, customer }: ContactCardProps) {
                 )}
               >
                 {contact.name}
+                {archivedText ? (
+                  <span className="sr-only">, {archivedText}</span>
+                ) : null}
               </h2>
 
               {contact.position && (
@@ -232,15 +241,6 @@ export default function ContactCard({ contact, customer }: ContactCardProps) {
 
           <ContactPhone contact={contact} />
         </div>
-
-        {isArchived && (
-          <div className="px-4 pb-4">
-            <Badge variant="secondary">
-              <Archive className="size-3" />
-              Archivado
-            </Badge>
-          </div>
-        )}
       </div>
 
       <ContactFormDialog

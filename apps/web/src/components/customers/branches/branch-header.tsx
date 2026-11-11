@@ -6,7 +6,7 @@ import { Link } from "@tanstack/react-router";
 import { Archive, ArchiveRestore, Building2, Pencil } from "lucide-react";
 import { useState } from "react";
 
-import { archiveState } from "../shared/archive-state";
+import { archiveState, archivedLabel } from "../shared/archive-state";
 import { ChangeBranchStatusDialog } from "./change-branch-status-dialog";
 
 type Branch = AppRouterOutputs["branches"]["get"];
@@ -17,8 +17,9 @@ interface BranchHeaderProps {
 }
 
 export function BranchHeader({ branch, onEdit }: BranchHeaderProps) {
-  const { isOwnArchived, isCustomerArchived, isArchived } =
-    archiveState(branch);
+  const archive = archiveState(branch);
+
+  const { isOwnArchived, isCustomerArchived, isArchived } = archive;
 
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
 
@@ -59,7 +60,7 @@ export function BranchHeader({ branch, onEdit }: BranchHeaderProps) {
               {isArchived ? (
                 <Badge className="shrink-0" variant="secondary">
                   <Archive className="size-3" />
-                  {isCustomerArchived ? "Cliente archivado" : "Archivada"}
+                  {archivedLabel(archive, "Archivada")}
                 </Badge>
               ) : null}
             </div>

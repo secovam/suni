@@ -1,4 +1,5 @@
 import { Users } from "lucide-react";
+import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
 
 import { NewEntityButton } from "@/components/customers/new-entity-button";
@@ -14,6 +15,7 @@ import ContactCard from "./contact-card";
 import { ContactsFilters } from "./contact-filters";
 
 interface ContactsListProps {
+  action?: ReactNode;
   filters: ContactFilters;
   onFiltersChange: (filters: ContactFilters) => void;
   /** Scopes the list to one customer and hides the customer on each card. */
@@ -24,6 +26,7 @@ interface ContactsListProps {
 export function ContactsList({
   filters,
   onFiltersChange,
+  action,
   customerId,
   branchId,
 }: ContactsListProps) {
@@ -45,6 +48,7 @@ export function ContactsList({
   return (
     <>
       <ContactsFilters
+        action={action}
         filters={filters}
         hasFilters={hasFilters}
         onFiltersChange={onFiltersChange}
@@ -90,18 +94,16 @@ export function ContactsGrid({
 
   return (
     <div className="flex min-w-full flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-foreground text-lg font-semibold">Contactos</h2>
-        {canCreate ? (
-          <NewEntityButton
-            branchId={branchId}
-            customerId={customerId}
-            entity="contact"
-          />
-        ) : null}
-      </div>
-
       <ContactsList
+        action={
+          canCreate ? (
+            <NewEntityButton
+              branchId={branchId}
+              customerId={customerId}
+              entity="contact"
+            />
+          ) : null
+        }
         branchId={branchId}
         customerId={customerId}
         filters={filters}
