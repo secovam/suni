@@ -1,7 +1,7 @@
 import { Users } from "lucide-react";
 import { useMemo, useState } from "react";
 
-import { NewEntityButton } from "@/components/customers/select-entity-button";
+import { NewEntityButton } from "@/components/customers/new-entity-button";
 import { EntityGrid } from "@/components/customers/shared/entity-grid";
 import { DEFAULT_CONTACT_FILTERS } from "@/components/customers/shared/filters";
 import type { ContactFilters } from "@/components/customers/shared/filters";

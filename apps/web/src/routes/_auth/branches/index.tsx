@@ -4,7 +4,7 @@ import { Building2 } from "lucide-react";
 import { z } from "zod";
 
 import { BranchesList } from "@/components/customers/branches/grid";
-import { NewEntityButton } from "@/components/customers/select-entity-button";
+import { NewEntityButton } from "@/components/customers/new-entity-button";
 
 /* oxlint-disable promise/prefer-await-to-then, github/no-then -- zod `.catch()` is not Promise.catch */
 const searchSchema = z.object({
