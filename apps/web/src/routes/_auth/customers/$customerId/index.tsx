@@ -17,7 +17,6 @@ import { ChangeCustomerStatusDialog } from "@/components/customers/change-custom
 import { ContactsGrid } from "@/components/customers/contacts/contact-grid";
 import { CustomerData } from "@/components/customers/data";
 import { PageHeader } from "@/components/page-header";
-import { formatDate } from "@/lib/date-utils";
 import { orpc } from "@/utils/orpc";
 
 export const Route = createFileRoute("/_auth/customers/$customerId/")({
@@ -98,7 +97,6 @@ function RouteComponent() {
             <Badge variant={customer.type === "Asesor" ? "outline" : "default"}>
               {customer.type}
             </Badge>
-            <span>Actualizado {formatDate(customer.updatedAt)}</span>
           </div>
         }
         icon={ContactRound}
