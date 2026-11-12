@@ -122,7 +122,11 @@ interface BranchesGridProps {
 }
 
 export function BranchesGrid({ customerId, canCreate }: BranchesGridProps) {
-  const [filters, setFilters] = useState(DEFAULT_BRANCH_FILTERS);
+  // An archived customer archives all its branches, so "Activas" would always be empty.
+  const [filters, setFilters] = useState<BranchFilters>({
+    ...DEFAULT_BRANCH_FILTERS,
+    status: canCreate ? "active" : "all",
+  });
 
   return (
     <div className="flex min-w-full flex-col gap-4">

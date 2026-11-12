@@ -14,7 +14,7 @@ export interface BranchFilters {
 
 export const DEFAULT_BRANCH_FILTERS: BranchFilters = {
   name: "",
-  status: "all",
+  status: "active",
   customerId: "all",
 };
 
@@ -25,7 +25,7 @@ export interface ContactFilters {
 
 export const DEFAULT_CONTACT_FILTERS: ContactFilters = {
   name: "",
-  status: "all",
+  status: "active",
 };
 
 /** Rows per status tab, using the same archive rule as the API. */

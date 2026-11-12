@@ -116,7 +116,11 @@ export function ContactsGrid({
   branchId,
   canCreate,
 }: ContactsGridProps) {
-  const [filters, setFilters] = useState(DEFAULT_CONTACT_FILTERS);
+  // An archived parent archives everything under it, so "Activos" would always be empty.
+  const [filters, setFilters] = useState<ContactFilters>({
+    ...DEFAULT_CONTACT_FILTERS,
+    status: canCreate ? "active" : "all",
+  });
 
   return (
     <div className="flex min-w-full flex-col gap-4">

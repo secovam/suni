@@ -10,7 +10,7 @@ import { PageHeader } from "@/components/page-header";
 /* oxlint-disable promise/prefer-await-to-then, github/no-then -- zod `.catch()` is not Promise.catch */
 const searchSchema = z.object({
   name: z.string().default("").catch(""),
-  status: z.enum(CUSTOMER_STATUSES).default("all").catch("all"),
+  status: z.enum(CUSTOMER_STATUSES).default("active").catch("active"),
   customerId: z.string().default("all").catch("all"),
 });
 /* oxlint-enable promise/prefer-await-to-then, github/no-then */
