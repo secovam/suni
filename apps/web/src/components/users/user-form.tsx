@@ -2,7 +2,6 @@ import type { AppRouterOutputs } from "@suni/api/routers/index";
 import { userSchema } from "@suni/db/validation/users";
 import { Button } from "@suni/ui/components/button";
 import { revalidateLogic } from "@tanstack/react-form";
-import { Link, useNavigate } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
 import type { z } from "zod";
 
@@ -16,16 +15,15 @@ const ROLE_OPTIONS = [
 
 interface UserFormProps {
   user?: AppRouterOutputs["users"]["get"];
+  onSuccess: () => void;
+  onCancel: () => void;
 }
 
-export function UserForm({ user }: UserFormProps) {
-  const navigate = useNavigate();
+export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
   const createUser = useCreateUser();
   const updateUser = useUpdateUser();
 
   const submitting = createUser.isPending || updateUser.isPending;
-
-  const goToUsers = () => navigate({ to: "/users" });
 
   const defaultValues: z.input<typeof userSchema> = {
     name: user?.name ?? "",
@@ -40,22 +38,22 @@ export function UserForm({ user }: UserFormProps) {
     validators: { onDynamic: userSchema },
     onSubmit: ({ value }) => {
       if (user) {
-        updateUser.mutate({ id: user.id, ...value }, { onSuccess: goToUsers });
+        updateUser.mutate({ id: user.id, ...value }, { onSuccess });
       } else {
-        createUser.mutate(value, { onSuccess: goToUsers });
+        createUser.mutate(value, { onSuccess });
       }
     },
   });
 
   return (
     <form
-      className="space-y-4"
+      className="@container space-y-4"
       onSubmit={(event) => {
         event.preventDefault();
         form.handleSubmit();
       }}
     >
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 @2xl:grid-cols-2">
         <form.AppField name="name">
           {(field) => (
             <field.TextField label="Nombre" placeholder="Juan Pérez" required />
@@ -74,7 +72,7 @@ export function UserForm({ user }: UserFormProps) {
         </form.AppField>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 @2xl:grid-cols-2">
         <form.AppField name="role">
           {(field) => (
             <field.SelectField
@@ -87,27 +85,24 @@ export function UserForm({ user }: UserFormProps) {
         </form.AppField>
       </div>
 
-      <div className="flex w-full justify-end">
-        <div className="flex w-1/2 space-x-4 pt-12 lg:pl-2">
-          <Button
-            className="w-full"
-            disabled={submitting}
-            nativeButton={false}
-            render={<Link to="/users" />}
-            variant="outline-destructive"
-          >
-            Cancelar
-          </Button>
-          <Button
-            className="w-full"
-            disabled={submitting}
-            type="submit"
-            variant="green"
-          >
-            {submitting ? <Loader2 className="animate-spin" /> : null}
-            {user?.id ? "Guardar" : "Crear"}
-          </Button>
-        </div>
+      <div className="flex justify-end gap-4 pt-4">
+        <Button
+          className="w-full sm:w-auto"
+          disabled={submitting}
+          onClick={onCancel}
+          type="button"
+          variant="outline"
+        >
+          Cancelar
+        </Button>
+        <Button
+          className="w-full sm:w-auto"
+          disabled={submitting}
+          type="submit"
+        >
+          {submitting ? <Loader2 className="animate-spin" /> : null}
+          {user ? "Guardar" : "Crear"}
+        </Button>
       </div>
     </form>
   );

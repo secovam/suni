@@ -1,4 +1,3 @@
-import { Badge } from "@suni/ui/components/badge";
 import { Button } from "@suni/ui/components/button";
 import {
   DropdownMenu,
@@ -19,10 +18,12 @@ import {
   Pencil,
   Phone,
 } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
+
+import { ArchivedFooter } from "@/components/customers/shared/archived-footer";
 
 import { ArchiveMenuItem } from "../shared/archive-menu-item";
-import { archiveState } from "../shared/archive-state";
+import { archiveState, archivedLabel } from "../shared/archive-state";
 import { BranchFormDialog } from "./branch-form-dialog";
 import { ChangeBranchStatusDialog } from "./change-branch-status-dialog";
 import { branchImageSrc, formatAddress } from "./util/branch-address";
@@ -53,32 +54,29 @@ function BranchImage({ name, src, isArchived }: BranchImageProps) {
         src={src}
       />
       <div className="absolute inset-0 bg-linear-to-t from-black/40 via-transparent to-transparent" />
-      {isArchived && (
-        <Badge className="absolute top-2 right-2" variant="secondary">
-          <Archive className="size-3" />
-          Archivada
-        </Badge>
-      )}
     </div>
   );
 }
 
 export default function BranchCard({ branch, customer }: BranchCardProps) {
-  const { isOwnArchived, isCustomerArchived, isArchived, parentHint } =
-    archiveState(branch);
+  const archive = archiveState(branch);
+  const { isOwnArchived, isCustomerArchived, isArchived, parentHint } = archive;
+  const archivedText = archivedLabel(archive, "Archivada");
 
   const [isUpdateFormOpen, setIsUpdateFormOpen] = useState(false);
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
   const address = formatAddress(branch);
 
   return (
     <>
       <div
+        ref={cardRef}
         className={cn(
           "group bg-card relative flex h-full flex-col overflow-hidden rounded-xl border transition-colors duration-200",
           isArchived
-            ? "border-border/60 bg-archived-pattern shadow-sm"
-            : "border-border hover:border-success/30 hover:shadow-md"
+            ? "border-border bg-muted/30"
+            : "border-border hover:border-primary/30 hover:shadow-md"
         )}
       >
         <BranchImage
@@ -98,10 +96,15 @@ export default function BranchCard({ branch, customer }: BranchCardProps) {
                 <h2
                   className={cn(
                     "line-clamp-2 text-lg leading-tight font-semibold transition-colors hover:underline",
-                    isArchived ? "text-muted-foreground" : "text-success"
+                    isArchived
+                      ? "text-muted-foreground decoration-muted-foreground/50 underline underline-offset-4"
+                      : "text-primary"
                   )}
                 >
                   {branch.name}
+                  {archivedText ? (
+                    <span className="sr-only">, {archivedText}</span>
+                  ) : null}
                 </h2>
               </Link>
 
@@ -117,7 +120,7 @@ export default function BranchCard({ branch, customer }: BranchCardProps) {
                       "line-clamp-1 text-sm font-medium hover:underline",
                       isCustomerArchived
                         ? "text-muted-foreground"
-                        : "text-success"
+                        : "text-primary"
                     )}
                     params={{ customerId: customer.id }}
                     title={customer.name}
@@ -181,17 +184,29 @@ export default function BranchCard({ branch, customer }: BranchCardProps) {
           )}
         </div>
 
-        <Link
-          params={{ customerId: branch.customerId, branchId: branch.id }}
-          to="/customers/$customerId/branches/$branchId"
-        >
-          <div className="border-border bg-card group-hover:bg-muted/30 flex items-center justify-between border-t px-4 py-3 transition-colors">
-            <span className="text-muted-foreground text-sm font-medium">
-              Ver detalles
-            </span>
-            <ChevronRight className="text-muted-foreground/70 group-hover:text-success size-4 transition-colors" />
-          </div>
-        </Link>
+        {archivedText ? (
+          <ArchivedFooter
+            label={archivedText}
+            name={branch.name}
+            onUnarchive={
+              archive.archivedBy === "self"
+                ? () => setIsStatusDialogOpen(true)
+                : undefined
+            }
+          />
+        ) : (
+          <Link
+            params={{ customerId: branch.customerId, branchId: branch.id }}
+            to="/customers/$customerId/branches/$branchId"
+          >
+            <div className="border-border bg-card group-hover:bg-muted/30 flex items-center justify-between border-t px-4 py-3 transition-colors">
+              <span className="text-muted-foreground text-sm font-medium">
+                Ver detalles
+              </span>
+              <ChevronRight className="text-muted-foreground/70 group-hover:text-primary size-4 transition-colors" />
+            </div>
+          </Link>
+        )}
       </div>
 
       <BranchFormDialog
@@ -201,6 +216,7 @@ export default function BranchCard({ branch, customer }: BranchCardProps) {
         open={isUpdateFormOpen}
       />
       <ChangeBranchStatusDialog
+        finalFocus={cardRef}
         branch={branch}
         onOpenChange={setIsStatusDialogOpen}
         open={isStatusDialogOpen}

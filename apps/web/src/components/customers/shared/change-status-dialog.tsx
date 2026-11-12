@@ -9,6 +9,7 @@ import {
   AlertDialogTitle,
 } from "@suni/ui/components/alert-dialog";
 import { useState } from "react";
+import type { RefObject } from "react";
 
 const ACTIONS = {
   archive: {
@@ -40,6 +41,8 @@ interface ChangeStatusDialogProps {
   mutation: ArchiveMutation;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** Where focus lands on close; the button that opened the dialog may be gone once the status flips. */
+  finalFocus?: RefObject<HTMLElement | null>;
 }
 
 export function ChangeStatusDialog({
@@ -48,6 +51,7 @@ export function ChangeStatusDialog({
   mutation,
   open,
   onOpenChange,
+  finalFocus,
 }: ChangeStatusDialogProps) {
   // Freeze the status seen on open: the refetch after saving lands before the close animation ends.
   const [archivedOnOpen, setArchivedOnOpen] = useState(!!entity.archived);
@@ -68,7 +72,7 @@ export function ChangeStatusDialog({
       onOpenChange={(next) => !mutation.isPending && onOpenChange(next)}
       open={open}
     >
-      <AlertDialogContent>
+      <AlertDialogContent finalFocus={finalFocus}>
         <AlertDialogHeader>
           <AlertDialogTitle>
             ¿Quieres {action.label.toLowerCase()} {noun} {entity.name}?

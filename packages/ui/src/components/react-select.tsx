@@ -13,7 +13,7 @@ export const selectClassNames = {
   control: (state) =>
     cn(
       // Mirrors Input so selects line up with text fields; min-h needs ! to beat react-select's base minHeight of 38px.
-      "min-h-8! rounded-lg border border-input bg-transparent px-2.5 text-base transition-colors md:text-sm dark:bg-input/30",
+      "min-h-9! rounded-lg border border-input bg-transparent px-2.5 text-base transition-colors md:text-sm dark:bg-input/30",
       state.isFocused && "border-ring ring-3 ring-ring/50",
       // aria-invalid sits on the inner input, so Input's aria-invalid: variants can't reach this box.
       isInvalid(state.selectProps["aria-invalid"]) &&

@@ -97,7 +97,7 @@ export function BranchForm({
       }}
     >
       <fieldset className="space-y-4">
-        <legend className="text-brand mb-4 text-lg font-semibold">
+        <legend className="text-foreground mb-4 text-lg font-semibold">
           Datos generales
         </legend>
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -119,7 +119,7 @@ export function BranchForm({
       </fieldset>
 
       <fieldset className="space-y-4">
-        <legend className="text-brand mb-4 text-lg font-semibold">
+        <legend className="text-foreground mb-4 text-lg font-semibold">
           Dirección
         </legend>
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -206,7 +206,7 @@ export function BranchForm({
           disabled={submitting}
           onClick={onCancel}
           type="button"
-          variant="outline-destructive"
+          variant="outline"
         >
           Cancelar
         </Button>
@@ -214,7 +214,6 @@ export function BranchForm({
           className="w-full sm:w-auto"
           disabled={submitting}
           type="submit"
-          variant="green"
         >
           {submitting ? <Loader2 className="animate-spin" /> : null}
           {branch ? "Guardar" : "Crear"}

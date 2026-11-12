@@ -1,14 +1,24 @@
 import { skipToken } from "@tanstack/react-query";
 import { Building2 } from "lucide-react";
+import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
 
 import { NewEntityButton } from "@/components/customers/new-entity-button";
 import { EntityGrid } from "@/components/customers/shared/entity-grid";
 import {
   DEFAULT_BRANCH_FILTERS,
+  byStatus,
+  countByStatus,
   matchingName,
 } from "@/components/customers/shared/filters";
-import type { BranchFilters } from "@/components/customers/shared/filters";
+import type {
+  BranchFilters,
+  StatusFilter,
+} from "@/components/customers/shared/filters";
+import {
+  StatusSegmented,
+  StatusTabs,
+} from "@/components/customers/shared/status-tabs";
 import { useListBranches } from "@/hooks/use-branches";
 import { useListCustomers } from "@/hooks/use-customers";
 
@@ -16,6 +26,7 @@ import BranchCard from "./card";
 import { BranchesFilters } from "./filters";
 
 interface BranchesListProps {
+  action?: ReactNode;
   filters: BranchFilters;
   onFiltersChange: (filters: BranchFilters) => void;
   /** Scopes the list to one customer and hides the customer filter. */
@@ -25,13 +36,14 @@ interface BranchesListProps {
 export function BranchesList({
   filters,
   onFiltersChange,
+  action,
   customerId,
 }: BranchesListProps) {
   const pickedCustomerId =
     filters.customerId === "all" ? undefined : filters.customerId;
 
   const query = useListBranches({
-    status: filters.status,
+    status: "all",
     customerId: customerId ?? pickedCustomerId,
   });
 
@@ -40,24 +52,38 @@ export function BranchesList({
     customerId ? skipToken : { status: "all" }
   );
 
-  const visibleBranches = useMemo(
-    () => matchingName(query.data ?? [], filters.name),
+  const rowsByStatus = useMemo(
+    () => byStatus(matchingName(query.data ?? [], filters.name)),
     [query.data, filters.name]
   );
 
+  const visibleBranches = rowsByStatus[filters.status];
+
   const hasFilters =
     filters.name.trim() !== "" ||
-    filters.status !== DEFAULT_BRANCH_FILTERS.status ||
     (!customerId && filters.customerId !== DEFAULT_BRANCH_FILTERS.customerId);
 
-  return (
+  const statusProps = {
+    counts: query.data ? countByStatus(rowsByStatus) : undefined,
+    gender: "feminine" as const,
+    onValueChange: (status: StatusFilter) =>
+      onFiltersChange({ ...filters, status }),
+    value: filters.status,
+  };
+
+  // Inside the customer or branch detail the page already has tabs, so the status is a segmented control.
+  const isNested = customerId !== undefined;
+
+  const list = (
     <>
       <BranchesFilters
+        action={action}
         customers={customerId ? undefined : customers}
         filters={filters}
-        hasFilters={hasFilters}
         onFiltersChange={onFiltersChange}
-      />
+      >
+        {isNested ? <StatusSegmented {...statusProps} /> : null}
+      </BranchesFilters>
 
       <EntityGrid
         copy={{
@@ -82,6 +108,12 @@ export function BranchesList({
       </EntityGrid>
     </>
   );
+
+  if (isNested) {
+    return list;
+  }
+
+  return <StatusTabs {...statusProps}>{list}</StatusTabs>;
 }
 
 interface BranchesGridProps {
@@ -90,18 +122,20 @@ interface BranchesGridProps {
 }
 
 export function BranchesGrid({ customerId, canCreate }: BranchesGridProps) {
-  const [filters, setFilters] = useState(DEFAULT_BRANCH_FILTERS);
+  // An archived customer archives all its branches, so "Activas" would always be empty.
+  const [filters, setFilters] = useState<BranchFilters>({
+    ...DEFAULT_BRANCH_FILTERS,
+    status: canCreate ? "active" : "all",
+  });
 
   return (
     <div className="flex min-w-full flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-brand text-lg font-semibold">Sucursales</h2>
-        {canCreate ? (
-          <NewEntityButton customerId={customerId} entity="branch" />
-        ) : null}
-      </div>
-
       <BranchesList
+        action={
+          canCreate ? (
+            <NewEntityButton customerId={customerId} entity="branch" />
+          ) : null
+        }
         customerId={customerId}
         filters={filters}
         onFiltersChange={setFilters}

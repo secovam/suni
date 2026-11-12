@@ -119,7 +119,7 @@ export function CustomerForm({ customer }: CustomerFormProps) {
       }}
     >
       <fieldset className="space-y-4">
-        <legend className="text-brand mb-4 text-lg font-semibold">
+        <legend className="text-foreground mb-4 text-lg font-semibold">
           Datos generales
         </legend>
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -181,7 +181,7 @@ export function CustomerForm({ customer }: CustomerFormProps) {
       </fieldset>
 
       <fieldset className="space-y-4">
-        <legend className="text-brand mb-4 text-lg font-semibold">
+        <legend className="text-foreground mb-4 text-lg font-semibold">
           Dirección
         </legend>
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -278,16 +278,11 @@ export function CustomerForm({ customer }: CustomerFormProps) {
                 <Link to="/customers" />
               )
             }
-            variant="outline-destructive"
+            variant="outline"
           >
             Cancelar
           </Button>
-          <Button
-            className="w-full"
-            disabled={submitting}
-            type="submit"
-            variant="green"
-          >
+          <Button className="w-full" disabled={submitting} type="submit">
             {submitting ? <Loader2 className="animate-spin" /> : null}
             {customer ? "Guardar" : "Crear"}
           </Button>

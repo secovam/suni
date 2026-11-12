@@ -1,5 +1,4 @@
 import type { AppRouterOutputs } from "@suni/api/routers/index";
-import { Badge } from "@suni/ui/components/badge";
 import { Button } from "@suni/ui/components/button";
 import {
   DropdownMenu,
@@ -20,7 +19,9 @@ import {
   Pencil,
   UserRound,
 } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
+
+import { ArchivedFooter } from "@/components/customers/shared/archived-footer";
 
 import { ChangeCustomerStatusDialog } from "./change-customer-status-dialog";
 
@@ -31,15 +32,17 @@ interface CustomerCardProps {
 export default function CustomerCard({ customer }: CustomerCardProps) {
   const isArchived = !!customer.archived;
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
 
   return (
     <>
       <div
+        ref={cardRef}
         className={cn(
           "group bg-card relative flex h-full flex-col overflow-hidden rounded-xl border transition-colors duration-200",
           isArchived
-            ? "border-border/60 bg-archived-pattern shadow-sm"
-            : "border-border hover:border-success/30 hover:shadow-md"
+            ? "border-border bg-muted/30"
+            : "border-border hover:border-primary/30 hover:shadow-md"
         )}
       >
         <div className="border-muted border-b p-4">
@@ -52,10 +55,15 @@ export default function CustomerCard({ customer }: CustomerCardProps) {
               <h2
                 className={cn(
                   "line-clamp-2 text-lg leading-tight font-semibold transition-colors hover:underline",
-                  isArchived ? "text-muted-foreground" : "text-success"
+                  isArchived
+                    ? "text-muted-foreground decoration-muted-foreground/50 underline underline-offset-4"
+                    : "text-primary"
                 )}
               >
                 {customer.name}
+                {isArchived ? (
+                  <span className="sr-only">, Archivado</span>
+                ) : null}
               </h2>
             </Link>
 
@@ -134,30 +142,31 @@ export default function CustomerCard({ customer }: CustomerCardProps) {
               </div>
             </div>
           </div>
-
-          {/* Archived badge */}
-          {isArchived && (
-            <div className="mt-3">
-              <Badge variant="secondary">
-                <Archive className="size-3" />
-                Archivado
-              </Badge>
-            </div>
-          )}
         </div>
 
-        {/* View details footer */}
-        <Link params={{ customerId: customer.id }} to="/customers/$customerId">
-          <div className="border-border bg-card group-hover:bg-muted/30 flex items-center justify-between border-t px-4 py-3 transition-colors">
-            <span className="text-muted-foreground text-sm font-medium">
-              Ver detalles
-            </span>
-            <ChevronRight className="text-muted-foreground/70 group-hover:text-success size-4 transition-colors" />
-          </div>
-        </Link>
+        {isArchived ? (
+          <ArchivedFooter
+            label="Archivado"
+            name={customer.name}
+            onUnarchive={() => setIsStatusDialogOpen(true)}
+          />
+        ) : (
+          <Link
+            params={{ customerId: customer.id }}
+            to="/customers/$customerId"
+          >
+            <div className="border-border bg-card group-hover:bg-muted/30 flex items-center justify-between border-t px-4 py-3 transition-colors">
+              <span className="text-muted-foreground text-sm font-medium">
+                Ver detalles
+              </span>
+              <ChevronRight className="text-muted-foreground/70 group-hover:text-primary size-4 transition-colors" />
+            </div>
+          </Link>
+        )}
       </div>
 
       <ChangeCustomerStatusDialog
+        finalFocus={cardRef}
         customer={customer}
         onOpenChange={setIsStatusDialogOpen}
         open={isStatusDialogOpen}

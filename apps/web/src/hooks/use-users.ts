@@ -83,3 +83,34 @@ export function useChangeUserStatus() {
     },
   });
 }
+
+function throwOnError({ error }: { error: { message?: string } | null }) {
+  if (error) {
+    throw new Error(error.message ?? "Error desconocido");
+  }
+}
+
+// A full reload swaps the session in the route context and drops every cached query.
+function reloadAsCurrentSession() {
+  window.location.assign("/dashboard");
+}
+
+export function useImpersonateUser() {
+  return useMutation({
+    mutationFn: async (userId: string) => {
+      throwOnError(await authClient.admin.impersonateUser({ userId }));
+    },
+    onSuccess: reloadAsCurrentSession,
+    onError: () => toast.error("No se pudo suplantar al usuario."),
+  });
+}
+
+export function useStopImpersonating() {
+  return useMutation({
+    mutationFn: async () => {
+      throwOnError(await authClient.admin.stopImpersonating());
+    },
+    onSuccess: reloadAsCurrentSession,
+    onError: () => toast.error("No se pudo volver a tu cuenta."),
+  });
+}

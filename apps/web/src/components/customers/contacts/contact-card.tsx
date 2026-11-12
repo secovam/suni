@@ -1,5 +1,4 @@
 import type { AppRouterOutputs } from "@suni/api/routers/index";
-import { Badge } from "@suni/ui/components/badge";
 import { Button } from "@suni/ui/components/button";
 import {
   DropdownMenu,
@@ -20,10 +19,12 @@ import {
   Pencil,
   Phone,
 } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
+
+import { ArchivedFooter } from "@/components/customers/shared/archived-footer";
 
 import { ArchiveMenuItem } from "../shared/archive-menu-item";
-import { archiveState } from "../shared/archive-state";
+import { archiveState, archivedLabel } from "../shared/archive-state";
 import { ChangeContactStatusDialog } from "./change-contact-status-dialog";
 import { ContactFormDialog } from "./contact-form-dialog";
 
@@ -92,7 +93,7 @@ interface ContactParentsProps {
 const PARENT_LINK = "line-clamp-1 text-sm font-medium hover:underline";
 
 function nameColor(isArchived: boolean) {
-  return isArchived ? "text-muted-foreground" : "text-success";
+  return isArchived ? "text-muted-foreground" : "text-primary";
 }
 
 function ContactParents({
@@ -157,25 +158,31 @@ function ContactPhone({ contact }: { contact: Contact }) {
 }
 
 export default function ContactCard({ contact, customer }: ContactCardProps) {
+  const archive = archiveState(contact);
+
   const {
     isOwnArchived,
     isCustomerArchived,
     isBranchArchived,
     parentHint,
     isArchived,
-  } = archiveState(contact);
+  } = archive;
+
+  const archivedText = archivedLabel(archive, "Archivado");
 
   const [isUpdateFormOpen, setIsUpdateFormOpen] = useState(false);
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
 
   return (
     <>
       <div
+        ref={cardRef}
         className={cn(
           "group bg-card relative flex h-full flex-col overflow-hidden rounded-xl border transition-colors duration-200",
           isArchived
-            ? "border-border/60 bg-archived-pattern shadow-sm"
-            : "border-border hover:border-success/30 hover:shadow-md"
+            ? "border-border bg-muted/30"
+            : "border-border hover:border-primary/30 hover:shadow-md"
         )}
       >
         <div className="border-muted border-b p-4">
@@ -188,6 +195,9 @@ export default function ContactCard({ contact, customer }: ContactCardProps) {
                 )}
               >
                 {contact.name}
+                {archivedText ? (
+                  <span className="sr-only">, {archivedText}</span>
+                ) : null}
               </h2>
 
               {contact.position && (
@@ -223,24 +233,27 @@ export default function ContactCard({ contact, customer }: ContactCardProps) {
 
         <div className="flex grow flex-col gap-2 px-4 py-5">
           <a
-            className="group/mail text-muted-foreground hover:text-success flex items-center gap-2 text-sm transition-colors"
+            className="group/mail text-muted-foreground hover:text-primary flex items-center gap-2 text-sm transition-colors"
             href={`mailto:${contact.email}`}
           >
-            <Mail className="text-muted-foreground/70 group-hover/mail:text-success size-4 shrink-0 transition-colors" />
+            <Mail className="text-muted-foreground/70 group-hover/mail:text-primary size-4 shrink-0 transition-colors" />
             <span className="truncate">{contact.email}</span>
           </a>
 
           <ContactPhone contact={contact} />
         </div>
 
-        {isArchived && (
-          <div className="px-4 pb-4">
-            <Badge variant="secondary">
-              <Archive className="size-3" />
-              Archivado
-            </Badge>
-          </div>
-        )}
+        {archivedText ? (
+          <ArchivedFooter
+            label={archivedText}
+            name={contact.name}
+            onUnarchive={
+              archive.archivedBy === "self"
+                ? () => setIsStatusDialogOpen(true)
+                : undefined
+            }
+          />
+        ) : null}
       </div>
 
       <ContactFormDialog
@@ -249,6 +262,7 @@ export default function ContactCard({ contact, customer }: ContactCardProps) {
         open={isUpdateFormOpen}
       />
       <ChangeContactStatusDialog
+        finalFocus={cardRef}
         contact={contact}
         onOpenChange={setIsStatusDialogOpen}
         open={isStatusDialogOpen}

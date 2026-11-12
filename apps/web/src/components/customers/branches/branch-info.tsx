@@ -27,7 +27,9 @@ export function BranchInfoContent({
   return (
     <div className="flex flex-col gap-6">
       <section>
-        <h3 className="text-brand mb-3 text-lg font-semibold">Dirección</h3>
+        <h3 className="text-foreground mb-3 text-lg font-semibold">
+          Dirección
+        </h3>
         <div className="text-muted-foreground flex flex-col gap-3 text-sm">
           <div className="flex items-start gap-2.5">
             <MapPin className="text-muted-foreground/70 mt-0.5 size-4 shrink-0" />
@@ -47,7 +49,7 @@ export function BranchInfoContent({
       </section>
 
       <section>
-        <h3 className="text-brand mb-3 text-lg font-semibold">
+        <h3 className="text-foreground mb-3 text-lg font-semibold">
           Imagen de fachada
         </h3>
         <div className="group relative aspect-video w-full overflow-hidden rounded-lg">

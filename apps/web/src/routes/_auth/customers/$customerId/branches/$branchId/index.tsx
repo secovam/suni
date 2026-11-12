@@ -1,3 +1,4 @@
+import { Badge } from "@suni/ui/components/badge";
 import {
   Tabs,
   TabsContent,
@@ -6,7 +7,6 @@ import {
 } from "@suni/ui/components/tabs";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { FileText, FolderOpen, HardHat, Info, Users } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
 
@@ -40,21 +40,18 @@ export const Route = createFileRoute(
   },
   component: RouteComponent,
   errorComponent: () => (
-    <p className="text-destructive p-6 text-sm">
-      No se pudo cargar la sucursal.
-    </p>
+    <p className="text-destructive text-sm">No se pudo cargar la sucursal.</p>
   ),
 });
 
 const TABS = [
-  { value: "info", label: "Información general", icon: Info },
-  { value: "quotations", label: "Cotizaciones", icon: FileText },
-  { value: "files", label: "Archivos", icon: FolderOpen },
-  { value: "contacts", label: "Contactos", icon: Users },
+  { value: "info", label: "Información general" },
+  { value: "quotations", label: "Cotizaciones" },
+  { value: "files", label: "Archivos" },
+  { value: "contacts", label: "Contactos" },
   {
     value: "technical-requirements",
     label: "Requerimientos Técnicos",
-    icon: HardHat,
   },
 ] as const;
 
@@ -84,6 +81,8 @@ function RouteComponent() {
       <ContactsGrid
         branchId={branchId}
         canCreate={!isArchived}
+        // Remounts on archive or unarchive so the status tab follows the new default.
+        key={String(isArchived)}
         customerId={branch.customerId}
       />
     ),
@@ -97,14 +96,26 @@ function RouteComponent() {
       <BranchHeader branch={branch} onEdit={() => setIsUpdateFormOpen(true)} />
 
       <Tabs defaultValue="info">
-        <TabsList className="mb-3 h-auto w-full justify-start">
-          {TABS.map(({ value, label, icon: Icon }) => (
-            <TabsTrigger key={value} value={value}>
-              <Icon className="mr-2 size-4" />
-              {label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+        <div className="overflow-x-auto">
+          <TabsList
+            aria-label="Secciones de la sucursal"
+            className="w-max min-w-full"
+          >
+            {TABS.map(({ value, label }) => (
+              // Tabs without content yet stay visible but disabled, so the roadmap shows without dead ends.
+              <TabsTrigger
+                disabled={content[value] === null}
+                key={value}
+                value={value}
+              >
+                {label}
+                {content[value] === null ? (
+                  <Badge variant="secondary">Pronto</Badge>
+                ) : null}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </div>
 
         {TABS.map(({ value }) => (
           <TabsContent key={value} value={value}>

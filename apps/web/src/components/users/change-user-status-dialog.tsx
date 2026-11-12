@@ -14,24 +14,29 @@ import { Button } from "@suni/ui/components/button";
 import { Ban, CircleCheckBig } from "lucide-react";
 import { useState } from "react";
 
+import { ActionTooltip } from "@/components/users/action-tooltip";
 import { useChangeUserStatus } from "@/hooks/use-users";
 
 type UserRow = AppRouterOutputs["users"]["list"]["items"][number];
+
+const BLOCKED_REASON = "No puedes cambiar tu propio estado";
 
 // What the dialog shows when suspending an active user vs. activating a suspended one.
 const ACTIONS = {
   suspend: {
     label: "Suspender",
+    hint: "Suspender el acceso de este usuario",
     Icon: Ban,
-    triggerVariant: "outline-destructive",
+    triggerVariant: "ghost-destructive",
     confirmVariant: "destructive",
     emailClassName: "text-destructive",
     description: "Esto suspenderá",
   },
   activate: {
     label: "Activar",
+    hint: "Reactivar el acceso de este usuario",
     Icon: CircleCheckBig,
-    triggerVariant: "outline-green",
+    triggerVariant: "ghost-success",
     confirmVariant: "default",
     emailClassName: "text-success",
     description: "Esto reactivará",
@@ -57,21 +62,24 @@ export function ChangeUserStatusDialog({
       onOpenChange={(next) => !mutation.isPending && setOpen(next)}
       open={open}
     >
-      <AlertDialogTrigger
-        render={
-          <Button
-            disabled={disabled}
-            size="icon-sm"
-            title={
-              disabled ? "No puedes cambiar tu propio estado" : action.label
-            }
-            variant={action.triggerVariant}
-          />
-        }
-      >
-        <action.Icon className="size-4" />
-        <span className="sr-only">{action.label}</span>
-      </AlertDialogTrigger>
+      <ActionTooltip label={disabled ? BLOCKED_REASON : action.hint}>
+        <AlertDialogTrigger
+          render={
+            <Button
+              disabled={disabled}
+              // Keeps the tooltip with the blocked reason reachable by keyboard.
+              focusableWhenDisabled
+              size="icon-sm"
+              variant={action.triggerVariant}
+            />
+          }
+        >
+          <action.Icon className="size-4" />
+          <span className="sr-only">
+            {disabled ? BLOCKED_REASON : action.label}
+          </span>
+        </AlertDialogTrigger>
+      </ActionTooltip>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>

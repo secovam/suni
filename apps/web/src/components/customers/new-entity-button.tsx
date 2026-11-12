@@ -188,7 +188,6 @@ export function NewEntityButton({
       <Button
         className={className}
         onClick={() => setStep(canContinue ? "form" : "select")}
-        variant="green"
       >
         <Plus className="mr-2 h-4 w-4" />
         {label ?? copy.label}
@@ -233,11 +232,7 @@ export function NewEntityButton({
             <Button onClick={close} variant="outline">
               Cancelar
             </Button>
-            <Button
-              disabled={!canContinue}
-              onClick={() => setStep("form")}
-              variant="green"
-            >
+            <Button disabled={!canContinue} onClick={() => setStep("form")}>
               Continuar
             </Button>
           </DialogFooter>
