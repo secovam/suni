@@ -81,6 +81,8 @@ function RouteComponent() {
       <ContactsGrid
         branchId={branchId}
         canCreate={!isArchived}
+        // Remounts on archive or unarchive so the status tab follows the new default.
+        key={String(isArchived)}
         customerId={branch.customerId}
       />
     ),

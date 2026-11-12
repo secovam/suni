@@ -51,8 +51,21 @@ function RouteComponent() {
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
 
   const content: Record<(typeof TABS)[number]["value"], ReactNode> = {
-    branches: <BranchesGrid canCreate={!isArchived} customerId={customer.id} />,
-    contacts: <ContactsGrid canCreate={!isArchived} customerId={customer.id} />,
+    // Keyed on the archive state so the status tab follows the new default after archive or unarchive.
+    branches: (
+      <BranchesGrid
+        canCreate={!isArchived}
+        customerId={customer.id}
+        key={String(isArchived)}
+      />
+    ),
+    contacts: (
+      <ContactsGrid
+        canCreate={!isArchived}
+        customerId={customer.id}
+        key={String(isArchived)}
+      />
+    ),
     quotes: null,
     files: null,
     orders: null,
