@@ -95,7 +95,7 @@ function ImpersonateUserButton({
         variant="ghost"
       >
         <LogIn className="size-4" />
-        <span className="sr-only">Suplantar</span>
+        <span className="sr-only">{blockedReason ?? "Suplantar"}</span>
       </Button>
     </ActionTooltip>
   );

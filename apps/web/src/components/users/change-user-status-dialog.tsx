@@ -19,6 +19,8 @@ import { useChangeUserStatus } from "@/hooks/use-users";
 
 type UserRow = AppRouterOutputs["users"]["list"]["items"][number];
 
+const BLOCKED_REASON = "No puedes cambiar tu propio estado";
+
 // What the dialog shows when suspending an active user vs. activating a suspended one.
 const ACTIONS = {
   suspend: {
@@ -60,9 +62,7 @@ export function ChangeUserStatusDialog({
       onOpenChange={(next) => !mutation.isPending && setOpen(next)}
       open={open}
     >
-      <ActionTooltip
-        label={disabled ? "No puedes cambiar tu propio estado" : action.hint}
-      >
+      <ActionTooltip label={disabled ? BLOCKED_REASON : action.hint}>
         <AlertDialogTrigger
           render={
             <Button
@@ -75,7 +75,9 @@ export function ChangeUserStatusDialog({
           }
         >
           <action.Icon className="size-4" />
-          <span className="sr-only">{action.label}</span>
+          <span className="sr-only">
+            {disabled ? BLOCKED_REASON : action.label}
+          </span>
         </AlertDialogTrigger>
       </ActionTooltip>
       <AlertDialogContent>
