@@ -6,9 +6,18 @@ import { NewEntityButton } from "@/components/customers/new-entity-button";
 import { EntityGrid } from "@/components/customers/shared/entity-grid";
 import {
   DEFAULT_CONTACT_FILTERS,
+  byStatus,
+  countByStatus,
   matchingName,
 } from "@/components/customers/shared/filters";
-import type { ContactFilters } from "@/components/customers/shared/filters";
+import type {
+  ContactFilters,
+  StatusFilter,
+} from "@/components/customers/shared/filters";
+import {
+  StatusSegmented,
+  StatusTabs,
+} from "@/components/customers/shared/status-tabs";
 import { useListContacts } from "@/hooks/use-contacts";
 
 import ContactCard from "./contact-card";
@@ -31,28 +40,39 @@ export function ContactsList({
   branchId,
 }: ContactsListProps) {
   const query = useListContacts({
-    status: filters.status,
+    status: "all",
     customerId,
     branchId,
   });
 
-  const visibleContacts = useMemo(
-    () => matchingName(query.data ?? [], filters.name),
+  const rowsByStatus = useMemo(
+    () => byStatus(matchingName(query.data ?? [], filters.name)),
     [query.data, filters.name]
   );
 
-  const hasFilters =
-    filters.name.trim() !== "" ||
-    filters.status !== DEFAULT_CONTACT_FILTERS.status;
+  const visibleContacts = rowsByStatus[filters.status];
 
-  return (
+  const hasFilters = filters.name.trim() !== "";
+
+  const statusProps = {
+    counts: query.data ? countByStatus(rowsByStatus) : undefined,
+    onValueChange: (status: StatusFilter) =>
+      onFiltersChange({ ...filters, status }),
+    value: filters.status,
+  };
+
+  // Inside the customer or branch detail the page already has tabs, so the status is a segmented control.
+  const isNested = customerId !== undefined;
+
+  const list = (
     <>
       <ContactsFilters
         action={action}
         filters={filters}
-        hasFilters={hasFilters}
         onFiltersChange={onFiltersChange}
-      />
+      >
+        {isNested ? <StatusSegmented {...statusProps} /> : null}
+      </ContactsFilters>
 
       <EntityGrid
         copy={{
@@ -77,6 +97,12 @@ export function ContactsList({
       </EntityGrid>
     </>
   );
+
+  if (isNested) {
+    return list;
+  }
+
+  return <StatusTabs {...statusProps}>{list}</StatusTabs>;
 }
 
 interface ContactsGridProps {

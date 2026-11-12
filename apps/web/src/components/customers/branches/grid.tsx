@@ -7,9 +7,18 @@ import { NewEntityButton } from "@/components/customers/new-entity-button";
 import { EntityGrid } from "@/components/customers/shared/entity-grid";
 import {
   DEFAULT_BRANCH_FILTERS,
+  byStatus,
+  countByStatus,
   matchingName,
 } from "@/components/customers/shared/filters";
-import type { BranchFilters } from "@/components/customers/shared/filters";
+import type {
+  BranchFilters,
+  StatusFilter,
+} from "@/components/customers/shared/filters";
+import {
+  StatusSegmented,
+  StatusTabs,
+} from "@/components/customers/shared/status-tabs";
 import { useListBranches } from "@/hooks/use-branches";
 import { useListCustomers } from "@/hooks/use-customers";
 
@@ -34,7 +43,7 @@ export function BranchesList({
     filters.customerId === "all" ? undefined : filters.customerId;
 
   const query = useListBranches({
-    status: filters.status,
+    status: "all",
     customerId: customerId ?? pickedCustomerId,
   });
 
@@ -43,25 +52,38 @@ export function BranchesList({
     customerId ? skipToken : { status: "all" }
   );
 
-  const visibleBranches = useMemo(
-    () => matchingName(query.data ?? [], filters.name),
+  const rowsByStatus = useMemo(
+    () => byStatus(matchingName(query.data ?? [], filters.name)),
     [query.data, filters.name]
   );
 
+  const visibleBranches = rowsByStatus[filters.status];
+
   const hasFilters =
     filters.name.trim() !== "" ||
-    filters.status !== DEFAULT_BRANCH_FILTERS.status ||
     (!customerId && filters.customerId !== DEFAULT_BRANCH_FILTERS.customerId);
 
-  return (
+  const statusProps = {
+    counts: query.data ? countByStatus(rowsByStatus) : undefined,
+    gender: "feminine" as const,
+    onValueChange: (status: StatusFilter) =>
+      onFiltersChange({ ...filters, status }),
+    value: filters.status,
+  };
+
+  // Inside the customer or branch detail the page already has tabs, so the status is a segmented control.
+  const isNested = customerId !== undefined;
+
+  const list = (
     <>
       <BranchesFilters
         action={action}
         customers={customerId ? undefined : customers}
         filters={filters}
-        hasFilters={hasFilters}
         onFiltersChange={onFiltersChange}
-      />
+      >
+        {isNested ? <StatusSegmented {...statusProps} /> : null}
+      </BranchesFilters>
 
       <EntityGrid
         copy={{
@@ -86,6 +108,12 @@ export function BranchesList({
       </EntityGrid>
     </>
   );
+
+  if (isNested) {
+    return list;
+  }
+
+  return <StatusTabs {...statusProps}>{list}</StatusTabs>;
 }
 
 interface BranchesGridProps {

@@ -3,7 +3,6 @@ import {
   CUSTOMER_TYPES,
 } from "@suni/db/schema/customer-enums";
 import { Button } from "@suni/ui/components/button";
-import { cn } from "@suni/ui/lib/utils";
 import {
   Link,
   createFileRoute,
@@ -15,9 +14,14 @@ import { z } from "zod";
 
 import CustomerFilters from "@/components/customers/customer-filters";
 import CustomerList from "@/components/customers/customer-list";
+import {
+  byStatus,
+  countByStatus,
+  matchingName,
+} from "@/components/customers/shared/filters";
+import { StatusTabs } from "@/components/customers/shared/status-tabs";
 import { PageHeader } from "@/components/page-header";
 import { useListCustomers } from "@/hooks/use-customers";
-import { stripAccents } from "@/lib/string-utils";
 
 /* oxlint-disable promise/prefer-await-to-then, github/no-then -- zod `.catch()` is not Promise.catch */
 const searchSchema = z.object({
@@ -40,31 +44,26 @@ export const Route = createFileRoute("/_auth/customers/")({
 
 function RouteComponent() {
   const { name, type, status } = Route.useSearch();
+  const navigate = Route.useNavigate();
 
+  // Fetch every status once so each tab shows its count and switching is instant.
   const {
-    data: customers = [],
+    data: customers,
     isError,
     isPending,
-    isPlaceholderData,
-  } = useListCustomers({ status });
+  } = useListCustomers({ status: "all" });
 
-  const matchingName = useMemo(() => {
-    const term = stripAccents(name.trim()).toLowerCase();
+  const rowsByStatus = useMemo(
+    () => byStatus(matchingName(customers ?? [], name)),
+    [customers, name]
+  );
 
-    return customers
-      .filter((customer) =>
-        stripAccents(customer.name).toLowerCase().includes(term)
-      )
-      .toSorted((a, b) => a.name.localeCompare(b.name, "es"));
-  }, [customers, name]);
+  const inTab = rowsByStatus[status];
 
   const visibleCustomers =
-    type === "all"
-      ? matchingName
-      : matchingName.filter((customer) => customer.type === type);
+    type === "all" ? inTab : inTab.filter((customer) => customer.type === type);
 
-  const hasFilters =
-    name.trim() !== "" || type !== "all" || status !== defaultFilters.status;
+  const hasFilters = name.trim() !== "" || type !== "all";
 
   return (
     <div className="flex flex-col gap-6">
@@ -84,23 +83,24 @@ function RouteComponent() {
         }
       />
 
-      <CustomerFilters customers={matchingName} hasFilters={hasFilters} />
-
-      {/* Placeholder data is the previous filter's list; dim it until the new one arrives. */}
-      <div
-        aria-busy={isPlaceholderData}
-        className={cn(
-          "transition-opacity",
-          isPlaceholderData && "pointer-events-none opacity-50"
-        )}
+      <StatusTabs
+        counts={customers ? countByStatus(rowsByStatus) : undefined}
+        onValueChange={(next) =>
+          navigate({
+            search: (prev) => ({ ...prev, status: next }),
+            replace: true,
+          })
+        }
+        value={status}
       >
+        <CustomerFilters customers={inTab} />
         <CustomerList
           customers={visibleCustomers}
           hasFilters={hasFilters}
           isError={isError}
           isPending={isPending}
         />
-      </div>
+      </StatusTabs>
     </div>
   );
 }
