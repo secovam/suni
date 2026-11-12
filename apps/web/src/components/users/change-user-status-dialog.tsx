@@ -14,6 +14,7 @@ import { Button } from "@suni/ui/components/button";
 import { Ban, CircleCheckBig } from "lucide-react";
 import { useState } from "react";
 
+import { ActionTooltip } from "@/components/users/action-tooltip";
 import { useChangeUserStatus } from "@/hooks/use-users";
 
 type UserRow = AppRouterOutputs["users"]["list"]["items"][number];
@@ -22,6 +23,7 @@ type UserRow = AppRouterOutputs["users"]["list"]["items"][number];
 const ACTIONS = {
   suspend: {
     label: "Suspender",
+    hint: "Suspender el acceso de este usuario",
     Icon: Ban,
     triggerVariant: "ghost-destructive",
     confirmVariant: "destructive",
@@ -30,6 +32,7 @@ const ACTIONS = {
   },
   activate: {
     label: "Activar",
+    hint: "Reactivar el acceso de este usuario",
     Icon: CircleCheckBig,
     triggerVariant: "ghost-success",
     confirmVariant: "default",
@@ -57,21 +60,22 @@ export function ChangeUserStatusDialog({
       onOpenChange={(next) => !mutation.isPending && setOpen(next)}
       open={open}
     >
-      <AlertDialogTrigger
-        render={
-          <Button
-            disabled={disabled}
-            size="icon-sm"
-            title={
-              disabled ? "No puedes cambiar tu propio estado" : action.label
-            }
-            variant={action.triggerVariant}
-          />
-        }
+      <ActionTooltip
+        label={disabled ? "No puedes cambiar tu propio estado" : action.hint}
       >
-        <action.Icon className="size-4" />
-        <span className="sr-only">{action.label}</span>
-      </AlertDialogTrigger>
+        <AlertDialogTrigger
+          render={
+            <Button
+              disabled={disabled}
+              size="icon-sm"
+              variant={action.triggerVariant}
+            />
+          }
+        >
+          <action.Icon className="size-4" />
+          <span className="sr-only">{action.label}</span>
+        </AlertDialogTrigger>
+      </ActionTooltip>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>

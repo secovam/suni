@@ -18,11 +18,12 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import type { PaginationState } from "@tanstack/react-table";
-import { Pencil, Shield, User } from "lucide-react";
+import { LogIn, Pencil, Shield, User } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
+import { ActionTooltip } from "@/components/users/action-tooltip";
 import { ChangeUserStatusDialog } from "@/components/users/change-user-status-dialog";
-import { useListUsers } from "@/hooks/use-users";
+import { useImpersonateUser, useListUsers } from "@/hooks/use-users";
 
 type UserRow = AppRouterOutputs["users"]["list"]["items"][number];
 
@@ -66,6 +67,38 @@ function StatusBadge({ banned }: { banned: boolean }) {
   );
 }
 
+function ImpersonateUserButton({
+  user,
+  currentUserId,
+}: {
+  user: UserRow;
+  currentUserId: string;
+}) {
+  const impersonate = useImpersonateUser();
+  // Better Auth rejects impersonating admins by default.
+  let blockedReason: string | undefined;
+
+  if (user.id === currentUserId) {
+    blockedReason = "No puedes suplantarte a ti mismo";
+  } else if (user.role === "admin") {
+    blockedReason = "No puedes suplantar a un administrador";
+  }
+
+  return (
+    <ActionTooltip label={blockedReason ?? "Entrar como este usuario"}>
+      <Button
+        disabled={!!blockedReason || impersonate.isPending}
+        onClick={() => impersonate.mutate(user.id)}
+        size="icon-sm"
+        variant="ghost"
+      >
+        <LogIn className="size-4" />
+        <span className="sr-only">Suplantar</span>
+      </Button>
+    </ActionTooltip>
+  );
+}
+
 function createColumns(currentUserId: string) {
   return [
     columnHelper.accessor("name", {
@@ -103,19 +136,21 @@ function createColumns(currentUserId: string) {
 
         return (
           <div className="flex items-center justify-end gap-1">
-            <Button
-              className="text-muted-foreground hover:text-foreground"
-              nativeButton={false}
-              render={
-                <Link params={{ userId: user.id }} to="/users/$userId/edit" />
-              }
-              size="icon-sm"
-              title="Editar usuario"
-              variant="ghost"
-            >
-              <Pencil className="size-4" />
-              <span className="sr-only">Editar</span>
-            </Button>
+            <ActionTooltip label="Editar usuario">
+              <Button
+                className="text-muted-foreground hover:text-foreground"
+                nativeButton={false}
+                render={
+                  <Link params={{ userId: user.id }} to="/users/$userId/edit" />
+                }
+                size="icon-sm"
+                variant="ghost"
+              >
+                <Pencil className="size-4" />
+                <span className="sr-only">Editar</span>
+              </Button>
+            </ActionTooltip>
+            <ImpersonateUserButton currentUserId={currentUserId} user={user} />
             <ChangeUserStatusDialog
               disabled={user.id === currentUserId}
               user={user}
