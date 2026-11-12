@@ -62,7 +62,7 @@ function AuthLayout() {
       >
         <AppSidebar />
         <SidebarInset className="min-w-0">
-          <header className="bg-background/95 sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 border-b px-4 backdrop-blur md:rounded-t-xl">
+          <header className="bg-background/95 sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 px-4 backdrop-blur md:rounded-t-xl">
             <SidebarTrigger className="-ml-1" />
             <Separator
               className="mr-2 data-vertical:h-4 data-vertical:self-auto"
