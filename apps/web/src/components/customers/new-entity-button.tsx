@@ -8,11 +8,13 @@ import {
   DialogTitle,
 } from "@suni/ui/components/dialog";
 import { ReactSelect } from "@suni/ui/components/react-select";
+import { skipToken } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { BranchFormDialog } from "@/components/customers/branches/branch-form-dialog";
 import { ContactFormDialog } from "@/components/customers/contacts/contact-form-dialog";
+import { byName } from "@/components/customers/shared/filters";
 import { useListBranches } from "@/hooks/use-branches";
 import { useListCustomers } from "@/hooks/use-customers";
 
@@ -29,7 +31,7 @@ function CustomerPicker({ value, onValueChange }: PickerProps) {
   const options = useMemo(
     () =>
       customers
-        .toSorted((a, b) => a.name.localeCompare(b.name, "es"))
+        .toSorted(byName)
         .map((customer) => ({ value: customer.id, label: customer.name })),
     [customers]
   );
@@ -57,15 +59,13 @@ function BranchPicker({
   onValueChange,
 }: PickerProps & { customerId: string | null }) {
   const { data: branches = [], isPending } = useListBranches(
-    customerId ? { customerId } : {},
-    !!customerId
+    customerId ? { customerId } : skipToken
   );
 
   const options = useMemo(
     () =>
       branches
-        .filter((branch) => !branch.archived)
-        .toSorted((a, b) => a.name.localeCompare(b.name, "es"))
+        .toSorted(byName)
         .map((branch) => ({ value: branch.id, label: branch.name })),
     [branches]
   );

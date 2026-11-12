@@ -5,7 +5,7 @@ import {
   TabsTrigger,
 } from "@suni/ui/components/tabs";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { FileText, FolderOpen, HardHat, Info, Users } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
@@ -13,21 +13,31 @@ import { useState } from "react";
 import { BranchFormDialog } from "@/components/customers/branches/branch-form-dialog";
 import { BranchHeader } from "@/components/customers/branches/branch-header";
 import { BranchInfoContent } from "@/components/customers/branches/branch-info";
+import { branchImageSrc } from "@/components/customers/branches/util/branch-address";
 import { ContactsGrid } from "@/components/customers/contacts/contact-grid";
+import { archiveState } from "@/components/customers/shared/archive-state";
 import { orpc } from "@/utils/orpc";
 
 export const Route = createFileRoute(
   "/_auth/customers/$customerId/branches/$branchId/"
 )({
-  loader: ({ context: { queryClient }, params: { customerId, branchId } }) =>
-    Promise.all([
-      queryClient.query(
-        orpc.branches.get.queryOptions({ input: { id: branchId } })
-      ),
-      queryClient.query(
-        orpc.customers.get.queryOptions({ input: { id: customerId } })
-      ),
-    ]),
+  loader: async ({
+    context: { queryClient },
+    params: { customerId, branchId },
+  }) => {
+    const branch = await queryClient.query(
+      orpc.branches.get.queryOptions({ input: { id: branchId } })
+    );
+
+    // A hand-edited URL can pair a branch with another customer.
+    if (branch.customerId !== customerId) {
+      throw redirect({
+        to: "/customers/$customerId/branches/$branchId",
+        params: { customerId: branch.customerId, branchId },
+        replace: true,
+      });
+    }
+  },
   component: RouteComponent,
   errorComponent: () => (
     <p className="text-destructive p-6 text-sm">
@@ -49,33 +59,34 @@ const TABS = [
 ] as const;
 
 function RouteComponent() {
-  const { customerId, branchId } = Route.useParams();
+  const { branchId } = Route.useParams();
   const [isUpdateFormOpen, setIsUpdateFormOpen] = useState(false);
 
-  // Lee el caché de queries (no el loader) para que ediciones y archivados se reflejen.
+  // Reads the query cache, not loader data, so saves and archives show up even after a preload.
   const { data: branch } = useSuspenseQuery(
     orpc.branches.get.queryOptions({ input: { id: branchId } })
   );
 
-  const { data: customer } = useSuspenseQuery(
-    orpc.customers.get.queryOptions({ input: { id: customerId } })
-  );
-
-  const placeholder = "/placeholder.webp";
-  const branchImage = branch.frontImageUrl ?? placeholder;
+  const { isArchived } = archiveState(branch);
 
   const content: Record<(typeof TABS)[number]["value"], ReactNode> = {
     info: (
       <BranchInfoContent
         branch={branch}
-        branchImage={branchImage}
+        branchImage={branchImageSrc(branch)}
         // eslint-disable-next-line no-empty-function -- pendiente de implementar
         onImagePreview={() => {}}
         // eslint-disable-next-line no-empty-function -- pendiente de implementar
         onImageUpload={() => {}}
       />
     ),
-    contacts: <ContactsGrid branchId={branchId} customerId={customer.id} />,
+    contacts: (
+      <ContactsGrid
+        branchId={branchId}
+        canCreate={!isArchived}
+        customerId={branch.customerId}
+      />
+    ),
     quotations: null,
     files: null,
     "technical-requirements": null,
@@ -83,11 +94,7 @@ function RouteComponent() {
 
   return (
     <div className="flex flex-col gap-6">
-      <BranchHeader
-        branch={branch}
-        customerName={customer.name}
-        onEdit={() => setIsUpdateFormOpen(true)}
-      />
+      <BranchHeader branch={branch} onEdit={() => setIsUpdateFormOpen(true)} />
 
       <Tabs defaultValue="info">
         <TabsList className="mb-3 h-auto w-full justify-start">
@@ -108,7 +115,7 @@ function RouteComponent() {
 
       <BranchFormDialog
         branch={branch}
-        customerId={customer.id}
+        customerId={branch.customerId}
         onOpenChange={setIsUpdateFormOpen}
         open={isUpdateFormOpen}
       />

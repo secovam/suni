@@ -1,23 +1,16 @@
-import type { AppRouterOutputs } from "@suni/api/routers/index";
-import {
-  branchFormSchema,
-  branchInputSchema,
-} from "@suni/db/validation/branches";
+import { branchSchema } from "@suni/db/validation/branches";
 import { Button } from "@suni/ui/components/button";
 import { revalidateLogic, useSelector } from "@tanstack/react-form";
-import { useQueryClient } from "@tanstack/react-query";
-import type { UseQueryResult } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import type { z } from "zod";
 
 import { useAppForm } from "@/components/form/use-app-form";
 import { useCreateBranch, useUpdateBranch } from "@/hooks/use-branches";
-import { postalCodeQueryOptions, usePostalCode } from "@/hooks/use-postal-code";
-import type { Settlement } from "@/hooks/use-postal-code";
+import { POSTAL_CODE_LENGTH, useAddressLookup } from "@/hooks/use-postal-code";
 
-type Branch = AppRouterOutputs["branches"]["list"][number];
+import type { Branch } from "./util/branch-address";
 
-type FormValues = z.input<typeof branchFormSchema>;
+type FormValues = z.input<typeof branchSchema>;
 
 interface BranchFormProps {
   customerId: string;
@@ -25,8 +18,6 @@ interface BranchFormProps {
   onSuccess?: () => void;
   onCancel: () => void;
 }
-
-const POSTAL_CODE_LENGTH = 5;
 
 const PHONE_LENGTH = 10;
 
@@ -54,33 +45,14 @@ function toFormValues(branch?: Branch): FormValues {
     name: branch.name,
     street: branch.street,
     extNumber: branch.extNumber,
-    intNumber: branch.intNumber ?? "",
+    intNumber: branch.intNumber,
     postalCode: branch.postalCode,
     suburb: branch.suburb,
     city: branch.city,
     state: branch.state,
-    phone: branch.phone ?? "",
-    frontImageUrl: branch.frontImageUrl ?? "",
+    phone: branch.phone,
+    frontImageUrl: branch.frontImageUrl,
   };
-}
-
-function postalCodeStatus(
-  query: UseQueryResult<Settlement[]>,
-  settlements: Settlement[]
-): string | null {
-  if (query.isFetching) {
-    return "Buscando código postal…";
-  }
-
-  if (query.isError) {
-    return "No se pudo consultar el código postal. Captura la dirección a mano.";
-  }
-
-  if (query.isSuccess && settlements.length === 0) {
-    return "No encontramos ese código postal. Captura la dirección a mano.";
-  }
-
-  return null;
 }
 
 export function BranchForm({
@@ -89,7 +61,6 @@ export function BranchForm({
   onSuccess,
   onCancel,
 }: BranchFormProps) {
-  const queryClient = useQueryClient();
   const createBranch = useCreateBranch();
   const updateBranch = useUpdateBranch();
 
@@ -98,18 +69,16 @@ export function BranchForm({
   const form = useAppForm({
     defaultValues: toFormValues(branch),
     validationLogic: revalidateLogic(),
-    validators: { onDynamic: branchFormSchema },
+    validators: { onDynamic: branchSchema },
     onSubmit: ({ value }) => {
-      const parsed = branchInputSchema.parse(value);
-
       if (branch) {
         updateBranch.mutate(
-          { id: branch.id, ...parsed },
+          { id: branch.id, ...value },
           { onSuccess: () => onSuccess?.() }
         );
       } else {
         createBranch.mutate(
-          { customerId, ...parsed },
+          { customerId, ...value },
           { onSuccess: () => onSuccess?.() }
         );
       }
@@ -117,58 +86,7 @@ export function BranchForm({
   });
 
   const zip = useSelector(form.store, (state) => state.values.postalCode);
-  const postalCode = usePostalCode(zip);
-  const settlements = postalCode.data ?? [];
-
-  // SEPOMEX define municipio y estado; solo un fallo o un código inexistente los desbloquea.
-  const regionLocked = !(
-    postalCode.isError ||
-    (postalCode.isSuccess && settlements.length === 0)
-  );
-
-  // La colonia solo espera a la consulta; después queda abierta por si SEPOMEX no la tiene.
-  const suburbLocked = !(postalCode.isSuccess || postalCode.isError);
-
-  const suburbOptions = [...new Set(settlements.map((s) => s.d_asenta))].map(
-    (value) => ({ value, label: value })
-  );
-
-  const fillAddress = async (value: string) => {
-    form.setFieldValue("suburb", "");
-    form.setFieldValue("city", "");
-    form.setFieldValue("state", "");
-
-    if (value.length !== POSTAL_CODE_LENGTH) {
-      return;
-    }
-
-    let found: Settlement[];
-
-    try {
-      found = await queryClient.query(postalCodeQueryOptions(value));
-    } catch {
-      // usePostalCode muestra el error bajo el campo.
-      return;
-    }
-
-    // El usuario siguió escribiendo mientras corría la petición.
-    if (form.getFieldValue("postalCode") !== value) {
-      return;
-    }
-
-    const [first] = found;
-
-    if (!first) {
-      return;
-    }
-
-    form.setFieldValue("city", first.d_mnpio);
-    form.setFieldValue("state", first.d_estado);
-
-    if (found.length === 1) {
-      form.setFieldValue("suburb", first.d_asenta);
-    }
-  };
+  const address = useAddressLookup(zip);
 
   return (
     <form
@@ -206,13 +124,20 @@ export function BranchForm({
         </legend>
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           <form.AppField
-            listeners={{ onChange: ({ value }) => fillAddress(value) }}
+            listeners={{
+              onChange: ({ value }) =>
+                address.fill(value, {
+                  getPostalCode: () => form.getFieldValue("postalCode"),
+                  set: (field, fieldValue) =>
+                    form.setFieldValue(field, fieldValue),
+                }),
+            }}
             name="postalCode"
           >
             {(field) => (
               <field.DigitsField
                 autoComplete="postal-code"
-                hint={postalCodeStatus(postalCode, settlements)}
+                hint={address.hint}
                 label="Código postal"
                 maxLength={POSTAL_CODE_LENGTH}
                 required
@@ -224,13 +149,13 @@ export function BranchForm({
               <field.SelectField
                 creatable
                 label="Colonia"
-                options={suburbOptions}
+                options={address.suburbOptions}
                 placeholder={
-                  suburbLocked
+                  address.suburbLocked
                     ? FILLED_BY_POSTAL_CODE
                     : "Selecciona o escribe la colonia..."
                 }
-                readOnly={suburbLocked}
+                readOnly={address.suburbLocked}
                 required
               />
             )}
@@ -240,8 +165,8 @@ export function BranchForm({
               <field.TextField
                 autoComplete="address-level2"
                 label="Municipio"
-                placeholder={regionLocked ? FILLED_BY_POSTAL_CODE : ""}
-                readOnly={regionLocked}
+                placeholder={address.regionLocked ? FILLED_BY_POSTAL_CODE : ""}
+                readOnly={address.regionLocked}
                 required
               />
             )}
@@ -251,8 +176,8 @@ export function BranchForm({
               <field.TextField
                 autoComplete="address-level1"
                 label="Estado"
-                placeholder={regionLocked ? FILLED_BY_POSTAL_CODE : ""}
-                readOnly={regionLocked}
+                placeholder={address.regionLocked ? FILLED_BY_POSTAL_CODE : ""}
+                readOnly={address.regionLocked}
                 required
               />
             )}

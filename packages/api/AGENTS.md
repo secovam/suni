@@ -19,7 +19,7 @@ See [package.json](package.json) for available scripts. From the repo root, run 
 
 ## Conventions
 
-- Use `publicProcedure` for an open endpoint, `protectedProcedure` when a session is required, and `adminProcedure` when the user must have the `admin` role. `adminProcedure` reads the role from the database, not the cached session.
+- Use `publicProcedure` for an open endpoint, `protectedProcedure` when a session is required, `scopedProcedure` when the handler branches on the role (it adds `context.userId` and `context.admin`), and `adminProcedure` when the user must have the `admin` role. Both read the role from the database, not the cached session.
 - Create and update users through the Better Auth admin API (`context.auth.api` with `context.headers`) rather than writing auth tables directly.
 - Type web code with `AppRouterInputs` and `AppRouterOutputs` from `src/routers/index.ts` instead of redeclaring procedure shapes.
 - Put each procedure in its own file under `src/routers/<module>/` and set `prefix` and `tag` once on the router in `index.ts`.

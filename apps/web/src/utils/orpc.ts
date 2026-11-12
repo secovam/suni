@@ -13,7 +13,7 @@ function createQueryClient() {
       onError: (error, query) => {
         toast.error(`Error: ${error.message}`, {
           action: {
-            label: "retry",
+            label: "Reintentar",
             onClick: () => {
               query.invalidate();
             },

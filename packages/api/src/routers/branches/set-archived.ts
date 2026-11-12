@@ -1,34 +1,37 @@
-import { ORPCError } from "@orpc/server";
 import { branch } from "@suni/db/schema/branches";
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { z } from "zod";
 
-import { isAdmin, protectedProcedure } from "../../index";
+import { scopedProcedure } from "../../index";
+import { ownBranchesSql } from "../../util/scope";
+import { activeCustomerIdsSql, archivedValue } from "../../util/status";
 
-export const setArchived = protectedProcedure
+export const setArchived = scopedProcedure
   .route({ method: "POST", path: "/{id}/archived" })
   .input(z.object({ id: z.string(), archived: z.boolean() }))
-  .handler(async ({ input, context }) => {
-    const userId = context.session.user.id;
-    const admin = await isAdmin(context, userId);
+  .handler(async ({ input, context, errors }) => {
+    const { userId } = context;
 
     const [updated] = await context.db
       .update(branch)
       .set({
-        archived: input.archived
-          ? sql`COALESCE(${branch.archived}, now())`
-          : null,
+        archived: archivedValue(branch.archived, input.archived),
         modifiedBy: userId,
       })
+      // An archived customer wins: the branch status cannot change under it.
       .where(
-        admin
-          ? eq(branch.id, input.id)
-          : and(eq(branch.id, input.id), eq(branch.sellerId, userId))
+        and(
+          eq(branch.id, input.id),
+          inArray(branch.customerId, activeCustomerIdsSql(context.db)),
+          ownBranchesSql(context)
+        )
       )
       .returning({ id: branch.id });
 
     if (!updated) {
-      throw new ORPCError("NOT_FOUND", { message: "Branch not found" });
+      throw errors.NOT_FOUND({
+        message: "La sucursal no existe o su cliente está archivado",
+      });
     }
 
     return updated;

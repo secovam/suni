@@ -1,30 +1,31 @@
-import { ORPCError } from "@orpc/server";
 import { contact } from "@suni/db/schema/contacts";
 import { createContactSchema } from "@suni/db/validation/contacts";
 
-import { isAdmin, protectedProcedure } from "../../index";
+import { scopedProcedure } from "../../index";
+import { ownBranches } from "../../util/scope";
+import { statusWhere } from "../../util/status";
 
-export const create = protectedProcedure
+export const create = scopedProcedure
   .route({ method: "POST", path: "/" })
   .input(createContactSchema)
-  .handler(async ({ input, context }) => {
-    const userId = context.session.user.id;
-    const admin = await isAdmin(context, userId);
+  .handler(async ({ input, context, errors }) => {
+    const { userId } = context;
 
     const parent = await context.db.query.branch.findFirst({
       where: {
-        id: input.branchId,
-        customerId: input.customerId,
-        archived: { isNull: true },
-        sellerId: admin ? undefined : userId,
+        AND: [
+          { id: input.branchId, customerId: input.customerId },
+          statusWhere("branch", "active"),
+          ownBranches(context),
+        ],
       },
       columns: { id: true },
     });
 
     if (!parent) {
-      throw new ORPCError("NOT_FOUND", {
+      throw errors.NOT_FOUND({
         message:
-          "La sucursal no existe, está archivada o no pertenece al cliente",
+          "La sucursal no existe, no pertenece al cliente, o ella o su cliente están archivados",
       });
     }
 

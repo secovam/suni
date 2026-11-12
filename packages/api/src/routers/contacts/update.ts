@@ -1,30 +1,18 @@
-import { ORPCError } from "@orpc/server";
-import { branch } from "@suni/db/schema/branches";
 import { contact } from "@suni/db/schema/contacts";
-import { updateContactSchema } from "@suni/db/validation/contacts";
+import { contactSchema } from "@suni/db/validation/contacts";
 import { and, eq, inArray, isNull } from "drizzle-orm";
 import { z } from "zod";
 
-import { isAdmin, protectedProcedure } from "../../index";
+import { scopedProcedure } from "../../index";
+import { ownContactsSql } from "../../util/scope";
+import { activeBranchIdsSql } from "../../util/status";
 
-export const update = protectedProcedure
+export const update = scopedProcedure
   .route({ method: "PATCH", path: "/{id}" })
-  .input(
-    updateContactSchema
-      .omit({ archived: true, customerId: true })
-      .extend({ id: z.string() })
-  )
-  .handler(async ({ input, context }) => {
+  .input(contactSchema.extend({ id: z.string() }))
+  .handler(async ({ input, context, errors }) => {
     const { id, ...fields } = input;
-    const userId = context.session.user.id;
-
-    if (Object.values(fields).every((v) => v === undefined)) {
-      throw new ORPCError("BAD_REQUEST", {
-        message: "No hay campos para actualizar",
-      });
-    }
-
-    const admin = await isAdmin(context, userId);
+    const { userId } = context;
 
     const [updated] = await context.db
       .update(contact)
@@ -33,22 +21,16 @@ export const update = protectedProcedure
         and(
           eq(contact.id, id),
           isNull(contact.archived),
-          admin
-            ? undefined
-            : inArray(
-                contact.branchId,
-                context.db
-                  .select({ id: branch.id })
-                  .from(branch)
-                  .where(eq(branch.sellerId, userId))
-              )
+          inArray(contact.branchId, activeBranchIdsSql(context.db)),
+          ownContactsSql(context)
         )
       )
       .returning({ id: contact.id });
 
     if (!updated) {
-      throw new ORPCError("NOT_FOUND", {
-        message: "El contacto no existe o está archivado",
+      throw errors.NOT_FOUND({
+        message:
+          "El contacto no existe, o él, su sucursal o su cliente están archivados",
       });
     }
 

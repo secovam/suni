@@ -16,6 +16,7 @@
     "db:seed": "varlock run -- bun ./src/seeds/index.ts"
   },
   "dependencies": {
+    "@paralleldrive/cuid2": "catalog:",
     "drizzle-orm": "catalog:",
     "pg": "^8.23.0",
     "zod": "catalog:"

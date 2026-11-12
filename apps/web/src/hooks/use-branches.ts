@@ -8,6 +8,7 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
+import type { skipToken } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { client, orpc } from "@/utils/orpc";
@@ -15,14 +16,14 @@ import { client, orpc } from "@/utils/orpc";
 type BranchRow = AppRouterOutputs["branches"]["list"][number];
 
 export function useListBranches(
-  params: AppRouterInputs["branches"]["list"],
-  enabled = true
+  params: AppRouterInputs["branches"]["list"] | typeof skipToken
 ) {
-  return useQuery({
-    ...orpc.branches.list.queryOptions({ input: params }),
-    placeholderData: keepPreviousData,
-    enabled,
-  });
+  return useQuery(
+    orpc.branches.list.queryOptions({
+      input: params,
+      placeholderData: keepPreviousData,
+    })
+  );
 }
 
 export function useCreateBranch() {
@@ -46,8 +47,10 @@ export function useUpdateBranch() {
     orpc.branches.update.mutationOptions({
       onSuccess: async () => {
         toast.success("Sucursal actualizada");
-        await queryClient.invalidateQueries({ queryKey: orpc.branches.key() });
-        await queryClient.invalidateQueries({ queryKey: orpc.contacts.key() });
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: orpc.branches.key() }),
+          queryClient.invalidateQueries({ queryKey: orpc.contacts.key() }),
+        ]);
       },
       onError: (error) => toast.error(error.message),
     })
@@ -64,7 +67,11 @@ export function useArchiveBranch() {
     }: Pick<BranchRow, "id" | "name"> & { archived: boolean }) =>
       client.branches.setArchived({ id, archived }),
     onSuccess: async (_data, { archived, name }) => {
-      await queryClient.invalidateQueries({ queryKey: orpc.branches.key() });
+      // Contacts embed `branch.archived` to show the archived-branch label.
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: orpc.branches.key() }),
+        queryClient.invalidateQueries({ queryKey: orpc.contacts.key() }),
+      ]);
       toast.success(archived ? "Sucursal archivada" : "Sucursal desarchivada", {
         description: `Se ${archived ? "archivó" : "desarchivó"} ${name} con éxito.`,
       });

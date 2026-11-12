@@ -13,7 +13,6 @@ import { cn } from "@suni/ui/lib/utils";
 import { Link } from "@tanstack/react-router";
 import {
   Archive,
-  ArchiveRestore,
   Building2,
   Mail,
   MapPin,
@@ -23,6 +22,8 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
+import { ArchiveMenuItem } from "../shared/archive-menu-item";
+import { archiveState } from "../shared/archive-state";
 import { ChangeContactStatusDialog } from "./change-contact-status-dialog";
 import { ContactFormDialog } from "./contact-form-dialog";
 
@@ -30,32 +31,14 @@ type Contact = AppRouterOutputs["contacts"]["list"][number];
 
 interface ContactCardProps {
   contact: Contact;
-  /** Si viene definido, muestra el cliente (útil en listados de varios clientes). */
+  /** Shown in lists that span several customers. */
   customer?: { id: string; name: string };
-  readOnly?: boolean;
-}
-
-function getArchiveState(contact: Contact) {
-  const isOwn = !!contact.archived;
-  const isCustomer = !!contact.customer?.archived;
-  const isBranch = !!contact.branch?.archived;
-  const isParent = isCustomer || isBranch;
-
-  let label = "Archivado";
-
-  if (isCustomer) {
-    label = "Cliente archivado";
-  } else if (isBranch) {
-    label = "Sucursal archivada";
-  }
-
-  return { isOwn, isParent, isArchived: isOwn || isParent, label };
 }
 
 interface ContactMenuProps {
   isArchived: boolean;
   isOwnArchived: boolean;
-  isParentArchived: boolean;
+  parentHint?: string;
   onEdit: () => void;
   onToggleStatus: () => void;
 }
@@ -63,7 +46,7 @@ interface ContactMenuProps {
 function ContactMenu({
   isArchived,
   isOwnArchived,
-  isParentArchived,
+  parentHint,
   onEdit,
   onToggleStatus,
 }: ContactMenuProps) {
@@ -74,7 +57,10 @@ function ContactMenu({
           <span className="sr-only">Abrir menú</span>
           <MoreVertical className="size-4" />
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
+        <DropdownMenuContent
+          align="end"
+          className={cn(parentHint && "min-w-56")}
+        >
           <DropdownMenuGroup>
             <DropdownMenuLabel>Acciones</DropdownMenuLabel>
             {!isArchived && (
@@ -84,20 +70,11 @@ function ContactMenu({
               </DropdownMenuItem>
             )}
 
-            {/* Si un padre lo archiva, desarchivarlo no tendría efecto */}
-            {!isParentArchived && (
-              <DropdownMenuItem
-                className="cursor-pointer"
-                onClick={onToggleStatus}
-              >
-                {isOwnArchived ? (
-                  <ArchiveRestore className="mr-2 size-4" />
-                ) : (
-                  <Archive className="mr-2 size-4" />
-                )}
-                {isOwnArchived ? "Desarchivar" : "Archivar"}
-              </DropdownMenuItem>
-            )}
+            <ArchiveMenuItem
+              isOwnArchived={isOwnArchived}
+              onClick={onToggleStatus}
+              parentHint={parentHint}
+            />
           </DropdownMenuGroup>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -108,16 +85,32 @@ function ContactMenu({
 interface ContactParentsProps {
   contact: Contact;
   customer?: { id: string; name: string };
+  isCustomerArchived: boolean;
+  isBranchArchived: boolean;
 }
 
-function ContactParents({ contact, customer }: ContactParentsProps) {
+const PARENT_LINK = "line-clamp-1 text-sm font-medium hover:underline";
+
+function nameColor(isArchived: boolean) {
+  return isArchived ? "text-muted-foreground" : "text-success";
+}
+
+function ContactParents({
+  contact,
+  customer,
+  isCustomerArchived,
+  isBranchArchived,
+}: ContactParentsProps) {
+  const CustomerIcon = isCustomerArchived ? Archive : Building2;
+  const BranchIcon = isBranchArchived ? Archive : MapPin;
+
   return (
     <>
       {customer && (
-        <div className="mt-2 flex items-center gap-1.5">
-          <Building2 className="text-muted-foreground/70 size-3.5 shrink-0" />
+        <div className="mt-2 flex items-center gap-2">
+          <CustomerIcon className="text-muted-foreground/70 size-4 shrink-0" />
           <Link
-            className="text-success line-clamp-1 text-sm font-medium hover:underline"
+            className={cn(PARENT_LINK, nameColor(isCustomerArchived))}
             params={{ customerId: customer.id }}
             title={customer.name}
             to="/customers/$customerId"
@@ -128,10 +121,10 @@ function ContactParents({ contact, customer }: ContactParentsProps) {
       )}
 
       {contact.branch && (
-        <div className="mt-2 flex items-center gap-1.5">
-          <MapPin className="text-muted-foreground/70 size-3.5 shrink-0" />
+        <div className="mt-2 flex items-center gap-2">
+          <BranchIcon className="text-muted-foreground/70 size-4 shrink-0" />
           <Link
-            className="text-success line-clamp-1 text-sm font-medium hover:underline"
+            className={cn(PARENT_LINK, nameColor(isBranchArchived))}
             params={{
               customerId: contact.customerId,
               branchId: contact.branch.id,
@@ -163,12 +156,14 @@ function ContactPhone({ contact }: { contact: Contact }) {
   );
 }
 
-export default function ContactCard({
-  contact,
-  customer,
-  readOnly = false,
-}: ContactCardProps) {
-  const { isOwn, isParent, isArchived, label } = getArchiveState(contact);
+export default function ContactCard({ contact, customer }: ContactCardProps) {
+  const {
+    isOwnArchived,
+    isCustomerArchived,
+    isBranchArchived,
+    parentHint,
+    isArchived,
+  } = archiveState(contact);
 
   const [isUpdateFormOpen, setIsUpdateFormOpen] = useState(false);
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
@@ -183,14 +178,13 @@ export default function ContactCard({
             : "border-border hover:border-success/30 hover:shadow-md"
         )}
       >
-        {/* Header */}
         <div className="border-muted border-b p-4">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0 flex-1">
               <h2
                 className={cn(
                   "line-clamp-2 text-lg leading-tight font-semibold transition-colors",
-                  isArchived ? "text-muted-foreground" : "text-success"
+                  nameColor(isArchived)
                 )}
               >
                 {contact.name}
@@ -209,28 +203,25 @@ export default function ContactCard({
                 </p>
               )}
 
-              <ContactParents contact={contact} customer={customer} />
+              <ContactParents
+                contact={contact}
+                customer={customer}
+                isBranchArchived={isBranchArchived}
+                isCustomerArchived={isCustomerArchived}
+              />
             </div>
 
-            {!readOnly && (
-              <ContactMenu
-                isArchived={isArchived}
-                isOwnArchived={isOwn}
-                isParentArchived={isParent}
-                onEdit={() => setIsUpdateFormOpen(true)}
-                onToggleStatus={() => setIsStatusDialogOpen(true)}
-              />
-            )}
+            <ContactMenu
+              isArchived={isArchived}
+              isOwnArchived={isOwnArchived}
+              onEdit={() => setIsUpdateFormOpen(true)}
+              onToggleStatus={() => setIsStatusDialogOpen(true)}
+              parentHint={parentHint}
+            />
           </div>
         </div>
 
-        {/* Body */}
-        <div
-          className={cn(
-            "flex grow flex-col gap-2 p-5",
-            isArchived && "opacity-60"
-          )}
-        >
+        <div className="flex grow flex-col gap-2 px-4 py-5">
           <a
             className="group/mail text-muted-foreground hover:text-success flex items-center gap-2 text-sm transition-colors"
             href={`mailto:${contact.email}`}
@@ -242,31 +233,26 @@ export default function ContactCard({
           <ContactPhone contact={contact} />
         </div>
 
-        {/* Archived badge */}
         {isArchived && (
-          <div className="px-5 pb-4">
+          <div className="px-4 pb-4">
             <Badge variant="secondary">
               <Archive className="size-3" />
-              {label}
+              Archivado
             </Badge>
           </div>
         )}
       </div>
 
-      {!readOnly && (
-        <>
-          <ContactFormDialog
-            contact={contact}
-            onOpenChange={setIsUpdateFormOpen}
-            open={isUpdateFormOpen}
-          />
-          <ChangeContactStatusDialog
-            contact={contact}
-            onOpenChange={setIsStatusDialogOpen}
-            open={isStatusDialogOpen}
-          />
-        </>
-      )}
+      <ContactFormDialog
+        contact={contact}
+        onOpenChange={setIsUpdateFormOpen}
+        open={isUpdateFormOpen}
+      />
+      <ChangeContactStatusDialog
+        contact={contact}
+        onOpenChange={setIsStatusDialogOpen}
+        open={isStatusDialogOpen}
+      />
     </>
   );
 }

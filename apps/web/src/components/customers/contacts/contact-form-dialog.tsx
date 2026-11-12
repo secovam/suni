@@ -5,25 +5,22 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@suni/ui/components/dialog";
-import type { ComponentProps } from "react";
 
 import { ContactForm } from "./contact-form";
+import type { ContactFormTarget } from "./contact-form";
 
-interface ContactFormDialogProps extends Pick<
-  ComponentProps<typeof ContactForm>,
-  "contact" | "customerId" | "branchId"
-> {
+type ContactFormDialogProps = ContactFormTarget & {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-}
+};
 
 export function ContactFormDialog({
-  contact,
-  customerId,
-  branchId,
   open,
   onOpenChange,
+  ...target
 }: ContactFormDialogProps) {
+  const { contact } = target;
+
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
@@ -38,9 +35,7 @@ export function ContactFormDialog({
           </DialogDescription>
         </DialogHeader>
         <ContactForm
-          branchId={branchId}
-          contact={contact}
-          customerId={customerId}
+          {...target}
           onCancel={() => onOpenChange(false)}
           onSuccess={() => onOpenChange(false)}
         />

@@ -15,10 +15,12 @@ import { client, orpc } from "@/utils/orpc";
 type ContactRow = AppRouterOutputs["contacts"]["list"][number];
 
 export function useListContacts(params: AppRouterInputs["contacts"]["list"]) {
-  return useQuery({
-    ...orpc.contacts.list.queryOptions({ input: params }),
-    placeholderData: keepPreviousData,
-  });
+  return useQuery(
+    orpc.contacts.list.queryOptions({
+      input: params,
+      placeholderData: keepPreviousData,
+    })
+  );
 }
 
 export function useCreateContact() {

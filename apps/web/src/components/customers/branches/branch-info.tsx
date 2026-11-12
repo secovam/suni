@@ -1,6 +1,7 @@
 import { cn } from "@suni/ui/lib/utils";
 import { Camera, MapPin, Phone, ZoomIn } from "lucide-react";
 
+import { archiveState } from "../shared/archive-state";
 import type { Branch } from "./util/branch-address";
 import { formatAddress } from "./util/branch-address";
 
@@ -20,7 +21,7 @@ export function BranchInfoContent({
   onImagePreview,
   onImageUpload,
 }: BranchInfoContentProps) {
-  const isArchived = !!branch.archived;
+  const { isArchived } = archiveState(branch);
   const address = formatAddress(branch);
 
   return (

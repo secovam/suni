@@ -4,13 +4,17 @@ import { eq } from "drizzle-orm";
 
 import type { Context } from "./context";
 
-export const o = os.$context<Context>();
+export const o = os.$context<Context>().errors({
+  NOT_FOUND: { message: "El registro no existe" },
+});
 
 export const publicProcedure = o;
 
 const requireAuth = o.middleware(({ context, next }) => {
   if (!context.session?.user) {
-    throw new ORPCError("UNAUTHORIZED");
+    throw new ORPCError("UNAUTHORIZED", {
+      message: "Inicia sesión para continuar",
+    });
   }
 
   return next({
@@ -22,7 +26,7 @@ const requireAuth = o.middleware(({ context, next }) => {
 
 export const protectedProcedure = publicProcedure.use(requireAuth);
 
-export async function isAdmin(context: Pick<Context, "db">, userId: string) {
+async function isAdmin(context: Pick<Context, "db">, userId: string) {
   const [currentUser] = await context.db
     .select({ role: user.role })
     .from(user)
@@ -32,12 +36,23 @@ export async function isAdmin(context: Pick<Context, "db">, userId: string) {
   return currentUser?.role === "admin";
 }
 
-export const adminProcedure = protectedProcedure.use(
+// Role is read from the database, not the cached session, so revocations apply immediately.
+export const scopedProcedure = protectedProcedure.use(
   async ({ context, next }) => {
-    if (!(await isAdmin(context, context.session.user.id))) {
-      throw new ORPCError("FORBIDDEN");
-    }
+    const userId = context.session.user.id;
 
-    return next();
+    return next({
+      context: { userId, admin: await isAdmin(context, userId) },
+    });
   }
 );
+
+export const adminProcedure = scopedProcedure.use(({ context, next }) => {
+  if (!context.admin) {
+    throw new ORPCError("FORBIDDEN", {
+      message: "No tienes permiso para esta acción",
+    });
+  }
+
+  return next();
+});

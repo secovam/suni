@@ -1,44 +1,38 @@
-import { ORPCError } from "@orpc/server";
-import { branch } from "@suni/db/schema/branches";
 import { contact } from "@suni/db/schema/contacts";
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { z } from "zod";
 
-import { isAdmin, protectedProcedure } from "../../index";
+import { scopedProcedure } from "../../index";
+import { ownContactsSql } from "../../util/scope";
+import { activeBranchIdsSql, archivedValue } from "../../util/status";
 
-export const setArchived = protectedProcedure
+export const setArchived = scopedProcedure
   .route({ method: "POST", path: "/{id}/archived" })
   .input(z.object({ id: z.string(), archived: z.boolean() }))
-  .handler(async ({ input, context }) => {
-    const userId = context.session.user.id;
-    const admin = await isAdmin(context, userId);
+  .handler(async ({ input, context, errors }) => {
+    const { userId } = context;
 
     const [updated] = await context.db
       .update(contact)
       .set({
-        archived: input.archived
-          ? sql`COALESCE(${contact.archived}, now())`
-          : null,
+        archived: archivedValue(contact.archived, input.archived),
         modifiedBy: userId,
       })
+      // An archived branch or customer wins: the contact status cannot change under it.
       .where(
         and(
           eq(contact.id, input.id),
-          admin
-            ? undefined
-            : inArray(
-                contact.branchId,
-                context.db
-                  .select({ id: branch.id })
-                  .from(branch)
-                  .where(eq(branch.sellerId, userId))
-              )
+          inArray(contact.branchId, activeBranchIdsSql(context.db)),
+          ownContactsSql(context)
         )
       )
       .returning({ id: contact.id });
 
     if (!updated) {
-      throw new ORPCError("NOT_FOUND", { message: "Contact not found" });
+      throw errors.NOT_FOUND({
+        message:
+          "El contacto no existe o su sucursal o cliente están archivados",
+      });
     }
 
     return updated;

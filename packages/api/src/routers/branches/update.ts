@@ -1,26 +1,19 @@
-import { ORPCError } from "@orpc/server";
 import { branch } from "@suni/db/schema/branches";
-import { updateBranchSchema } from "@suni/db/validation/branches";
-import { and, eq, isNull } from "drizzle-orm";
+import { branchSchema } from "@suni/db/validation/branches";
+import { and, eq, inArray, isNull } from "drizzle-orm";
 import { z } from "zod";
 
-import { isAdmin, protectedProcedure } from "../../index";
+import { scopedProcedure } from "../../index";
+import { ownBranchesSql } from "../../util/scope";
+import { activeCustomerIdsSql } from "../../util/status";
 
-export const update = protectedProcedure
+export const update = scopedProcedure
   .route({ method: "PATCH", path: "/{id}" })
-  .input(updateBranchSchema.omit({ archived: true }).extend({ id: z.string() }))
-  .handler(async ({ input, context }) => {
+  .input(branchSchema.extend({ id: z.string() }))
+  .handler(async ({ input, context, errors }) => {
     const { id, ...fields } = input;
 
-    const userId = context.session.user.id;
-
-    if (Object.values(fields).every((v) => v === undefined)) {
-      throw new ORPCError("BAD_REQUEST", {
-        message: "No hay campos para actualizar",
-      });
-    }
-
-    const admin = await isAdmin(context, userId);
+    const { userId } = context;
 
     const [updated] = await context.db
       .update(branch)
@@ -29,14 +22,15 @@ export const update = protectedProcedure
         and(
           eq(branch.id, id),
           isNull(branch.archived),
-          admin ? undefined : eq(branch.sellerId, userId)
+          inArray(branch.customerId, activeCustomerIdsSql(context.db)),
+          ownBranchesSql(context)
         )
       )
       .returning({ id: branch.id });
 
     if (!updated) {
-      throw new ORPCError("NOT_FOUND", {
-        message: "La sucursal no existe o está archivada",
+      throw errors.NOT_FOUND({
+        message: "La sucursal no existe, o ella o su cliente están archivados",
       });
     }
 

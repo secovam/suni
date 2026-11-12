@@ -8,17 +8,22 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
+import type { skipToken } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { client, orpc } from "@/utils/orpc";
 
 type CustomerRow = AppRouterOutputs["customers"]["list"][number];
 
-export function useListCustomers(params: AppRouterInputs["customers"]["list"]) {
-  return useQuery({
-    ...orpc.customers.list.queryOptions({ input: params }),
-    placeholderData: keepPreviousData,
-  });
+export function useListCustomers(
+  params: AppRouterInputs["customers"]["list"] | typeof skipToken
+) {
+  return useQuery(
+    orpc.customers.list.queryOptions({
+      input: params,
+      placeholderData: keepPreviousData,
+    })
+  );
 }
 
 export function useCreateCustomer() {
@@ -42,7 +47,12 @@ export function useUpdateCustomer() {
     orpc.customers.update.mutationOptions({
       onSuccess: async () => {
         toast.success("Cliente actualizado");
-        await queryClient.invalidateQueries({ queryKey: orpc.customers.key() });
+        // Branches and contacts embed `customer.name`.
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: orpc.customers.key() }),
+          queryClient.invalidateQueries({ queryKey: orpc.branches.key() }),
+          queryClient.invalidateQueries({ queryKey: orpc.contacts.key() }),
+        ]);
       },
       onError: (error) => toast.error(error.message),
     })
@@ -61,7 +71,12 @@ export function useArchiveCustomer() {
     }: Pick<CustomerRow, "id" | "name"> & { archived: boolean }) =>
       client.customers.setArchived({ id, archived }),
     onSuccess: async (_data, { archived, name }) => {
-      await queryClient.invalidateQueries({ queryKey: orpc.customers.key() });
+      // Branches and contacts embed `customer.archived` to show the archived-customer label.
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: orpc.customers.key() }),
+        queryClient.invalidateQueries({ queryKey: orpc.branches.key() }),
+        queryClient.invalidateQueries({ queryKey: orpc.contacts.key() }),
+      ]);
       toast.success(archived ? "Cliente archivado" : "Cliente desarchivado", {
         description: `Se ${archived ? "archivó" : "desarchivó"} a ${name} con éxito.`,
       });

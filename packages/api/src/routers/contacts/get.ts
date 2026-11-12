@@ -1,20 +1,16 @@
-import { ORPCError } from "@orpc/server";
 import { z } from "zod";
 
-import { isAdmin, protectedProcedure } from "../../index";
+import { scopedProcedure } from "../../index";
+import { ownContacts } from "../../util/scope";
 
-export const get = protectedProcedure
+export const get = scopedProcedure
   .route({ method: "GET", path: "/{id}" })
   .input(z.object({ id: z.string() }))
-  .handler(async ({ input, context }) => {
-    const userId = context.session.user.id;
-    const admin = await isAdmin(context, userId);
+  .handler(async ({ input, context, errors }) => {
+    const { admin } = context;
 
     const found = await context.db.query.contact.findFirst({
-      where: {
-        id: input.id,
-        branch: admin ? undefined : { sellerId: userId },
-      },
+      where: { id: input.id, ...ownContacts(context) },
       columns: admin ? undefined : { modifiedBy: false },
       with: {
         branch: { columns: { id: true, name: true, archived: true } },
@@ -23,7 +19,7 @@ export const get = protectedProcedure
     });
 
     if (!found) {
-      throw new ORPCError("NOT_FOUND", { message: "Contact not found" });
+      throw errors.NOT_FOUND({ message: "El contacto no existe" });
     }
 
     return found;

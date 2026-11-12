@@ -1,4 +1,4 @@
-import { queryOptions, useQuery } from "@tanstack/react-query";
+import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 
 import { ENV } from "@/env";
@@ -15,9 +15,9 @@ const responseSchema = z.object({
   zip_codes: z.array(settlementSchema),
 });
 
-export type Settlement = z.infer<typeof settlementSchema>;
+type Settlement = z.infer<typeof settlementSchema>;
 
-export function postalCodeQueryOptions(zip: string) {
+function postalCodeQueryOptions(zip: string) {
   return queryOptions({
     queryKey: ["postal-code", zip],
     enabled: /^\d{5}$/u.test(zip),
@@ -43,6 +43,84 @@ export function postalCodeQueryOptions(zip: string) {
   });
 }
 
-export function usePostalCode(zip: string) {
+function usePostalCode(zip: string) {
   return useQuery(postalCodeQueryOptions(zip));
+}
+
+export const POSTAL_CODE_LENGTH = 5;
+
+type AddressField = "suburb" | "city" | "state";
+
+interface AddressForm {
+  /** Current postal code, read after the lookup resolves. */
+  getPostalCode: () => string;
+  set: (field: AddressField, value: string) => void;
+}
+
+/** Fills colonia, municipio and estado from a SEPOMEX postal code lookup. */
+export function useAddressLookup(zip: string) {
+  const queryClient = useQueryClient();
+  const query = usePostalCode(zip);
+  const settlements = query.data ?? [];
+  const notFound = query.isSuccess && settlements.length === 0;
+
+  let hint: string | null = null;
+
+  if (query.isFetching) {
+    hint = "Buscando código postal…";
+  } else if (query.isError) {
+    hint =
+      "No se pudo consultar el código postal. Captura la dirección a mano.";
+  } else if (notFound) {
+    hint = "No encontramos ese código postal. Captura la dirección a mano.";
+  }
+
+  async function fill(value: string, form: AddressForm) {
+    form.set("suburb", "");
+    form.set("city", "");
+    form.set("state", "");
+
+    if (value.length !== POSTAL_CODE_LENGTH) {
+      return;
+    }
+
+    let found: Settlement[];
+
+    try {
+      found = await queryClient.query(postalCodeQueryOptions(value));
+    } catch {
+      // `hint` shows the error under the field.
+      return;
+    }
+
+    // The user kept typing while the request was in flight.
+    if (form.getPostalCode() !== value) {
+      return;
+    }
+
+    const [first] = found;
+
+    if (!first) {
+      return;
+    }
+
+    form.set("city", first.d_mnpio);
+    form.set("state", first.d_estado);
+
+    if (found.length === 1) {
+      form.set("suburb", first.d_asenta);
+    }
+  }
+
+  return {
+    hint,
+    // SEPOMEX owns municipio and estado; only a miss or an error unlocks them so the address can be typed by hand.
+    regionLocked: !(query.isError || notFound),
+    // Colonia only waits for the lookup; it stays open afterwards so a colonia SEPOMEX lacks can be typed.
+    suburbLocked: !(query.isSuccess || query.isError),
+    suburbOptions: [...new Set(settlements.map((s) => s.d_asenta))].map(
+      (value) => ({ value, label: value })
+    ),
+    fill,
+  };
 }

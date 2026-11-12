@@ -3,24 +3,19 @@ import { Input } from "@suni/ui/components/input";
 import { ReactSelect } from "@suni/ui/components/react-select";
 import { X } from "lucide-react";
 
-export type ContactStatusFilter = "all" | "active" | "archived";
-
-export interface ContactFilters {
-  name: string;
-  status: ContactStatusFilter;
-}
-
-const DEFAULT_CONTACT_FILTERS: ContactFilters = {
-  name: "",
-  status: "all",
-};
+import { FilterBadge } from "@/components/customers/shared/filter-badge";
+import { DEFAULT_CONTACT_FILTERS } from "@/components/customers/shared/filters";
+import type {
+  ContactFilters,
+  StatusFilter,
+} from "@/components/customers/shared/filters";
 
 interface Option<T extends string = string> {
   value: T;
   label: string;
 }
 
-const STATUS_OPTIONS: Option<ContactStatusFilter>[] = [
+const STATUS_OPTIONS: Option<StatusFilter>[] = [
   { value: "all", label: "Todos" },
   { value: "active", label: "Activos" },
   { value: "archived", label: "Archivados" },
@@ -28,35 +23,17 @@ const STATUS_OPTIONS: Option<ContactStatusFilter>[] = [
 
 interface ContactsFiltersProps {
   filters: ContactFilters;
+  hasFilters: boolean;
   onFiltersChange: (filters: ContactFilters) => void;
-}
-
-function FilterBadge({
-  children,
-  onClear,
-}: {
-  children: React.ReactNode;
-  onClear: () => void;
-}) {
-  return (
-    <button
-      className="hover:bg-muted inline-flex cursor-pointer items-center rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors"
-      onClick={onClear}
-      type="button"
-    >
-      {children}
-      <X className="ml-1 size-3" />
-    </button>
-  );
 }
 
 export function ContactsFilters({
   filters,
+  hasFilters,
   onFiltersChange,
 }: ContactsFiltersProps) {
   const hasName = filters.name.trim() !== "";
   const hasStatus = filters.status !== "all";
-  const hasActiveFilters = hasName || hasStatus;
 
   const statusLabel = STATUS_OPTIONS.find(
     (option) => option.value === filters.status
@@ -77,7 +54,7 @@ export function ContactsFilters({
         />
         <ReactSelect
           className="w-full min-w-30 sm:w-37.5"
-          onChange={(option: Option<ContactStatusFilter> | null) =>
+          onChange={(option: Option<StatusFilter> | null) =>
             update({ status: option?.value ?? "all" })
           }
           options={STATUS_OPTIONS}
@@ -86,7 +63,7 @@ export function ContactsFilters({
         />
       </div>
 
-      {hasActiveFilters && (
+      {hasFilters && (
         <div className="flex flex-wrap items-center gap-2 border-t pt-2">
           <span className="text-muted-foreground mr-1 text-xs">
             Filtros activos:

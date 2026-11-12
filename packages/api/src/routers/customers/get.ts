@@ -1,40 +1,26 @@
-import { ORPCError } from "@orpc/server";
 import { z } from "zod";
 
-import { isAdmin, protectedProcedure } from "../../index";
+import { scopedProcedure } from "../../index";
+import {
+  ownCustomers,
+  sellerColumns,
+  sellerRelation,
+  withSeller,
+} from "../../util/scope";
 
-function notFound() {
-  return new ORPCError("NOT_FOUND", { message: "Customer not found" });
-}
-
-export const get = protectedProcedure
+export const get = scopedProcedure
   .route({ method: "GET", path: "/{id}" })
   .input(z.object({ id: z.string() }))
-  .handler(async ({ input, context }) => {
-    const where = { id: input.id };
-
-    if (await isAdmin(context, context.session.user.id)) {
-      const found = await context.db.query.customer.findFirst({
-        where,
-        with: { seller: { columns: { id: true, name: true } } },
-      });
-
-      if (!found) {
-        throw notFound();
-      }
-
-      return found;
-    }
-
-    // Seller identity is admin-only.
+  .handler(async ({ input, context, errors }) => {
     const found = await context.db.query.customer.findFirst({
-      where,
-      columns: { sellerId: false, modifiedBy: false },
+      where: { id: input.id, ...ownCustomers(context) },
+      columns: sellerColumns(context),
+      with: sellerRelation(context),
     });
 
     if (!found) {
-      throw notFound();
+      throw errors.NOT_FOUND({ message: "El cliente no existe" });
     }
 
-    return { ...found, seller: null };
+    return withSeller(context, found);
   });
