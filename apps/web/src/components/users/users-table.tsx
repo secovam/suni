@@ -88,6 +88,8 @@ function ImpersonateUserButton({
     <ActionTooltip label={blockedReason ?? "Entrar como este usuario"}>
       <Button
         disabled={!!blockedReason || impersonate.isPending}
+        // Keeps the tooltip with the blocked reason reachable by keyboard.
+        focusableWhenDisabled
         onClick={() => impersonate.mutate(user.id)}
         size="icon-sm"
         variant="ghost"

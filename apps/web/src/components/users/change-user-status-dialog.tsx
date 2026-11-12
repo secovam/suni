@@ -67,6 +67,8 @@ export function ChangeUserStatusDialog({
           render={
             <Button
               disabled={disabled}
+              // Keeps the tooltip with the blocked reason reachable by keyboard.
+              focusableWhenDisabled
               size="icon-sm"
               variant={action.triggerVariant}
             />
