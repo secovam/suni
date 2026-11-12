@@ -19,9 +19,9 @@ import {
   Pencil,
   Phone,
 } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
-import { ArchivedBanner } from "@/components/customers/shared/archived-banner";
+import { ArchivedFooter } from "@/components/customers/shared/archived-footer";
 
 import { ArchiveMenuItem } from "../shared/archive-menu-item";
 import { archiveState, archivedLabel } from "../shared/archive-state";
@@ -172,10 +172,12 @@ export default function ContactCard({ contact, customer }: ContactCardProps) {
 
   const [isUpdateFormOpen, setIsUpdateFormOpen] = useState(false);
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
 
   return (
     <>
       <div
+        ref={cardRef}
         className={cn(
           "group bg-card relative flex h-full flex-col overflow-hidden rounded-xl border transition-colors duration-200",
           isArchived
@@ -183,7 +185,6 @@ export default function ContactCard({ contact, customer }: ContactCardProps) {
             : "border-border hover:border-primary/30 hover:shadow-md"
         )}
       >
-        {archivedText ? <ArchivedBanner label={archivedText} /> : null}
         <div className="border-muted border-b p-4">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0 flex-1">
@@ -241,6 +242,18 @@ export default function ContactCard({ contact, customer }: ContactCardProps) {
 
           <ContactPhone contact={contact} />
         </div>
+
+        {archivedText ? (
+          <ArchivedFooter
+            label={archivedText}
+            name={contact.name}
+            onUnarchive={
+              archive.archivedBy === "self"
+                ? () => setIsStatusDialogOpen(true)
+                : undefined
+            }
+          />
+        ) : null}
       </div>
 
       <ContactFormDialog
@@ -249,6 +262,7 @@ export default function ContactCard({ contact, customer }: ContactCardProps) {
         open={isUpdateFormOpen}
       />
       <ChangeContactStatusDialog
+        finalFocus={cardRef}
         contact={contact}
         onOpenChange={setIsStatusDialogOpen}
         open={isStatusDialogOpen}
