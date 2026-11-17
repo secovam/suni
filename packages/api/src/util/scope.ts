@@ -61,6 +61,6 @@ export function sellerRelation({ admin }: Pick<Scope, "admin">) {
 export function withSeller<T extends { seller?: unknown }>(
   { admin }: Pick<Scope, "admin">,
   row: T
-) {
+): T | (Omit<T, "seller"> & { seller: null }) {
   return admin ? row : { ...row, seller: null };
 }

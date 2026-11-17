@@ -6,7 +6,6 @@ import { ZodToJsonSchemaConverter } from "@orpc/zod/zod4";
 import { appRouter } from "@suni/api/routers/index";
 import { initLogger } from "evlog";
 import { createAuthMiddleware } from "evlog/better-auth";
-import type { BetterAuthInstance } from "evlog/better-auth";
 import { createFsDrain } from "evlog/fs";
 import { evlog } from "evlog/hono";
 import type { EvlogVariables } from "evlog/hono";
@@ -22,8 +21,7 @@ initLogger({
   env: { service: "suni-server" },
 });
 
-// SAFETY: auth is created by Better Auth and implements the evlog BetterAuthInstance contract.
-const identifyUser = createAuthMiddleware(auth as BetterAuthInstance, {
+const identifyUser = createAuthMiddleware(auth, {
   exclude: ["/api/auth/**"],
   maskEmail: true,
 });

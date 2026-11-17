@@ -90,7 +90,7 @@ export function ContactsList({
         {visibleContacts.map((contact) => (
           <ContactCard
             contact={contact}
-            customer={customerId ? undefined : (contact.customer ?? undefined)}
+            customer={customerId ? undefined : contact.customer}
             key={contact.id}
           />
         ))}
