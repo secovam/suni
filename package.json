@@ -36,7 +36,7 @@
     "knip": "knip",
     "check:type-aware": "oxlint -c oxlint-type-aware.config.ts",
     "check:changed": "ultracite check && pnpm run check:type-aware && turbo run check-types --affected && knip",
-    "prepare": "lefthook install"
+    "prepare": "test ! -e .git || lefthook install"
   },
   "devDependencies": {
     "@coderabbitai/config": "1.1.1",
