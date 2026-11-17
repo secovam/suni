@@ -59,10 +59,22 @@ A change is not done until it reaches every surface it touches. Before calling w
 - Migration or `.env.schema` change needed? The user generates migrations, never you.
 - Docs, only if existing guidance became inaccurate.
 
-## Rules the linter cannot check
+## Rules and what enforces them
 
-- A mutation on a child entity checks, in the same `UPDATE ... WHERE`, that neither it nor its parents are archived.
-- UI copy and accessibility text (`aria-label`, `sr-only`, `title`) are in Spanish.
+When the operator corrects a repeated mistake, fix it and add a row here. If the rule was already here with no enforcer, that is a repeat: enforce it in the same change. Drop a row once its mistake can no longer be written.
+
+| Rule | Enforced by |
+| --- | --- |
+| Hooks never list query keys to invalidate. | The `MutationCache` in `apps/web/src/utils/orpc.ts` |
+| Customer and branch reads hide seller identity from non-admins. | `suni/require-seller-scope` |
+| No unnecessary conditions or type assertions. | `pnpm run check:type-aware` (pre-push and CI) |
+| No manual memoization. | React Compiler plus a `no-restricted-imports` ban |
+| Web types come from `AppRouterInputs`/`AppRouterOutputs`, not hand-derived. | `suni/prefer-router-types` |
+| Validation strings are bounded; text is never nullable. | `suni/require-string-bound`, `suni/no-nullable-text` |
+| Zod schemas live in `@suni/db/validation/*`, not in components. | `no-restricted-imports` of `zod/**` in components |
+| Forms use TanStack Form; the web never imports server packages. | `no-restricted-imports` |
+| A mutation on a child entity checks, in the same `UPDATE ... WHERE`, that neither it nor its parents are archived. | Review only |
+| UI copy and accessibility text (`aria-label`, `sr-only`, `title`) are in Spanish. | Review only |
 
 ## Context files
 
