@@ -16,4 +16,5 @@ COPY --from=builder /app /app
 EXPOSE 3000
 
 WORKDIR /app/apps/server
-CMD ["bun", "dist/index.mjs"]
+# Apply pending migrations before serving; a failed migration stops the container so the deploy fails.
+CMD ["sh", "-c", "cd /app/packages/db && bunx drizzle-kit migrate && cd /app/apps/server && exec bun dist/index.mjs"]
