@@ -1,6 +1,6 @@
 import { Users } from "lucide-react";
 import type { ReactNode } from "react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 import { NewEntityButton } from "@/components/customers/new-entity-button";
 import { EntityGrid } from "@/components/customers/shared/entity-grid";
@@ -45,10 +45,7 @@ export function ContactsList({
     branchId,
   });
 
-  const rowsByStatus = useMemo(
-    () => byStatus(matchingName(query.data ?? [], filters.name)),
-    [query.data, filters.name]
-  );
+  const rowsByStatus = byStatus(matchingName(query.data ?? [], filters.name));
 
   const visibleContacts = rowsByStatus[filters.status];
 

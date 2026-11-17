@@ -10,7 +10,7 @@ import {
 import { ReactSelect } from "@suni/ui/components/react-select";
 import { skipToken } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 import { BranchFormDialog } from "@/components/customers/branches/branch-form-dialog";
 import { ContactFormDialog } from "@/components/customers/contacts/contact-form-dialog";
@@ -28,13 +28,9 @@ function CustomerPicker({ value, onValueChange }: PickerProps) {
     status: "active",
   });
 
-  const options = useMemo(
-    () =>
-      customers
-        .toSorted(byName)
-        .map((customer) => ({ value: customer.id, label: customer.name })),
-    [customers]
-  );
+  const options = customers
+    .toSorted(byName)
+    .map((customer) => ({ value: customer.id, label: customer.name }));
 
   return (
     <ReactSelect
@@ -62,13 +58,9 @@ function BranchPicker({
     customerId ? { customerId } : skipToken
   );
 
-  const options = useMemo(
-    () =>
-      branches
-        .toSorted(byName)
-        .map((branch) => ({ value: branch.id, label: branch.name })),
-    [branches]
-  );
+  const options = branches
+    .toSorted(byName)
+    .map((branch) => ({ value: branch.id, label: branch.name }));
 
   return (
     <ReactSelect

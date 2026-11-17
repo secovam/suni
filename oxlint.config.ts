@@ -11,6 +11,31 @@ const REACT_HOOK_FORM_BAN = {
   message: "Use TanStack Form with the Zod schemas from @suni/db/validation/*.",
 };
 
+const WEB_RESTRICTED_PATTERNS = [
+  {
+    group: ["@suni/auth", "@suni/auth/**"],
+    message:
+      "@suni/auth is the server package. Use the client in @/lib/auth-client.",
+  },
+  {
+    group: [
+      "@suni/db",
+      "@suni/db/**",
+      "!@suni/db/validation/*",
+      "!@suni/db/schema/*-enums",
+    ],
+    message:
+      "The web app must not pull table definitions or the DB client. Import shared rules from @suni/db/validation/* or enums from @suni/db/schema/*-enums.",
+  },
+];
+
+const MANUAL_MEMO_BAN = {
+  name: "react",
+  importNames: ["useMemo", "useCallback", "memo"],
+  message:
+    "The React Compiler memoizes components in apps/web. Write plain code; do not memoize by hand.",
+};
+
 const jsPlugins = selectJsPlugins(["github", "sonarjs", "react-doctor"]);
 
 export default defineConfig({
@@ -42,24 +67,8 @@ export default defineConfig({
         "no-restricted-imports": [
           "error",
           {
-            paths: [REACT_HOOK_FORM_BAN],
-            patterns: [
-              {
-                group: ["@suni/auth", "@suni/auth/**"],
-                message:
-                  "@suni/auth is the server package. Use the client in @/lib/auth-client.",
-              },
-              {
-                group: [
-                  "@suni/db",
-                  "@suni/db/**",
-                  "!@suni/db/validation/*",
-                  "!@suni/db/schema/*-enums",
-                ],
-                message:
-                  "The web app must not pull table definitions or the DB client. Import shared rules from @suni/db/validation/* or enums from @suni/db/schema/*-enums.",
-              },
-            ],
+            paths: [REACT_HOOK_FORM_BAN, MANUAL_MEMO_BAN],
+            patterns: WEB_RESTRICTED_PATTERNS,
           },
         ],
       },
@@ -103,6 +112,13 @@ export default defineConfig({
       files: ["apps/web/src/components/**/*.{ts,tsx}"],
       rules: {
         "func-style": "off",
+        "no-restricted-imports": [
+          "error",
+          {
+            paths: [REACT_HOOK_FORM_BAN, MANUAL_MEMO_BAN],
+            patterns: WEB_RESTRICTED_PATTERNS,
+          },
+        ],
       },
     },
   ],

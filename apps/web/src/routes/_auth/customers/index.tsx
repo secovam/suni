@@ -9,7 +9,6 @@ import {
   stripSearchParams,
 } from "@tanstack/react-router";
 import { ContactRound, Plus } from "lucide-react";
-import { useMemo } from "react";
 import { z } from "zod";
 
 import CustomerFilters from "@/components/customers/customer-filters";
@@ -53,10 +52,7 @@ function RouteComponent() {
     isPending,
   } = useListCustomers({ status: "all" });
 
-  const rowsByStatus = useMemo(
-    () => byStatus(matchingName(customers ?? [], name)),
-    [customers, name]
-  );
+  const rowsByStatus = byStatus(matchingName(customers ?? [], name));
 
   const inTab = rowsByStatus[status];
 
