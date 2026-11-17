@@ -8,6 +8,7 @@
     "build": "tsc -b ../../packages/api && vite build",
     "serve": "vite preview",
     "start": "vite",
+    "test": "bun test",
     "check-types": "tsc -b ../../packages/api && vite build && tsc --noEmit",
     "env:generate": "varlock codegen"
   },
@@ -23,12 +24,14 @@
     "@tanstack/react-router": "^1.170.32",
     "@tanstack/react-table": "^8.21.3",
     "@varlock/vite-integration": "1.5.2",
+    "@xstate/react": "7.0.0-beta.0",
     "better-auth": "catalog:",
     "lucide-react": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
     "sonner": "catalog:",
     "varlock": "catalog:",
+    "xstate": "6.0.0-beta.3",
     "zod": "catalog:"
   },
   "devDependencies": {

@@ -1,6 +1,6 @@
 import { branchSchema } from "@suni/db/validation/branches";
 import { Button } from "@suni/ui/components/button";
-import { revalidateLogic, useSelector } from "@tanstack/react-form";
+import { revalidateLogic } from "@tanstack/react-form";
 import { Loader2 } from "lucide-react";
 import type { z } from "zod";
 
@@ -85,8 +85,10 @@ export function BranchForm({
     },
   });
 
-  const zip = useSelector(form.store, (state) => state.values.postalCode);
-  const address = useAddressLookup(zip);
+  const address = useAddressLookup(
+    form.getFieldValue("postalCode"),
+    (field, value) => form.setFieldValue(field, value)
+  );
 
   return (
     <form
@@ -125,12 +127,7 @@ export function BranchForm({
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           <form.AppField
             listeners={{
-              onChange: ({ value }) =>
-                address.fill(value, {
-                  getPostalCode: () => form.getFieldValue("postalCode"),
-                  set: (field, fieldValue) =>
-                    form.setFieldValue(field, fieldValue),
-                }),
+              onChange: ({ value }) => address.changePostalCode(value),
             }}
             name="postalCode"
           >

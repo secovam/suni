@@ -13,7 +13,7 @@ For database schema changes, do not generate or apply migrations and do not run 
 | Auth plugins or schema options | Run `pnpm run auth:generate`, review changes to `packages/db/src/schema/auth.ts`, then run `pnpm run check-types`. |
 | Database tables or relations | Run `pnpm run check-types`. The user decides whether to generate migrations or run `db:push`. |
 
-There is no test script or test runner configured in the current workspace manifests. If one is added, use its script for behavior changes and record its scope here.
+`pnpm --filter web test` runs `bun test` over `apps/web/src/**/*.test.ts`. Today it covers only the address lookup state machine. No other workspace has a test script. If one is added, use its script for behavior changes and record its scope here.
 
 Do not create or add tests unless the user explicitly asks for them.
 
