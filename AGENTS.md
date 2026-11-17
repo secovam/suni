@@ -3,8 +3,8 @@
 Suni manufactures cleaning and sanitation products for homes and businesses. This repo is Suni's internal operations system: inventory, orders, production, and related operations. The public company landing page will be added here later.
 
 - Users are staff from four areas: administration, production (plant), warehouse, and sales.
-- Access will be role-based, so each area sees only its own part of the system. The per-area role system is not built yet. Today Better Auth's admin plugin gives each user the `user` or `admin` role: `protectedProcedure` checks for a session and `adminProcedure` also requires `admin`. Until per-area roles exist, ask how a new route or procedure should be scoped instead of adding ad hoc role checks.
-- The domain modules are not built yet; today the code is the scaffold, auth, and admin user management.
+- Access will be role-based, so each area sees only its own part of the system. The per-area role system is not built yet. Today Better Auth's admin plugin gives each user the `user` or `admin` role: `protectedProcedure` checks for a session, `scopedProcedure` adds `context.userId` and `context.admin` for handlers that branch on the role, and `adminProcedure` also requires `admin`. Non-admin sellers reach only their own customers and branches and the contacts under them. Until per-area roles exist, ask how a new route or procedure should be scoped instead of adding ad hoc role checks.
+- Built so far: auth, admin user management, and the sales modules for customers, their branches, and their contacts.
 
 This is a TypeScript monorepo with a React/Vite web app, a Hono/oRPC server, and shared UI, API, auth, and database packages.
 
@@ -51,8 +51,8 @@ A change is not done until it reaches every surface it touches. Before calling w
 
 - Drizzle table and enums.
 - Zod validation in `@suni/db/validation/*`, shared by the API and the form.
-- oRPC procedure and its access scoping (`protectedProcedure` or `adminProcedure`, per the role note above).
-- Hook with query invalidation.
+- oRPC procedure and its access scoping (`protectedProcedure`, `scopedProcedure`, or `adminProcedure`, per the role note above).
+- Hook in `apps/web/src/hooks/`. Every successful mutation refreshes all oRPC queries (see `apps/web/src/utils/orpc.ts`), so hooks never list query keys.
 - Route with loading, empty and error states.
 - Reverse actions: archive needs unarchive, and a way in needs a way out and a way to see it.
 - Nav items and actions hidden from users who cannot use them.
