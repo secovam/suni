@@ -7,4 +7,5 @@ The repository uses Ultracite with Oxlint and Oxfmt. Treat `oxlint.config.ts` an
 - For named functions, follow the declaration style required by `oxlint.config.ts`. Use arrow functions for callbacks. The config has scoped exceptions for web routes and components.
 - Name complex conditions, use early returns for error cases, and avoid nested ternaries.
 - Remove `console.log`, `debugger`, and `alert` from production code.
+- Project rules live in `tools/oxlint/suni/` (the `suni/*` rules in `oxlint.config.ts`). They cover bounded `z.string()`, no nullable text, and router types from `AppRouterInputs`/`AppRouterOutputs`. Fix the code; do not disable the rule.
 - `pnpm run check:type-aware` runs the type-aware rules (`no-unnecessary-condition`, `no-unnecessary-type-assertion`) with `oxlint-type-aware.config.ts`. It also runs in CI and on pre-push.

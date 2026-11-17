@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { ID_LENGTH } from "./ids";
+
 export const contactSchema = z.object({
   name: z
     .string()
@@ -13,6 +15,6 @@ export const contactSchema = z.object({
 });
 
 export const createContactSchema = contactSchema.extend({
-  customerId: z.string().min(1, "El cliente es requerido"),
-  branchId: z.string().min(1, "La sucursal es requerida"),
+  customerId: z.string().length(ID_LENGTH, "El cliente es requerido"),
+  branchId: z.string().length(ID_LENGTH, "La sucursal es requerida"),
 });

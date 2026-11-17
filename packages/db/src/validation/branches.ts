@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { ID_LENGTH } from "./ids";
+
 const MAX_100_MESSAGE = "Máximo 100 caracteres";
 
 export const branchSchema = z.object({
@@ -40,5 +42,5 @@ export const branchSchema = z.object({
 });
 
 export const createBranchSchema = branchSchema.extend({
-  customerId: z.string().min(1, "El cliente es requerido"),
+  customerId: z.string().length(ID_LENGTH, "El cliente es requerido"),
 });
