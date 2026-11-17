@@ -2,12 +2,7 @@ import type {
   AppRouterInputs,
   AppRouterOutputs,
 } from "@suni/api/routers/index";
-import {
-  keepPreviousData,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { authClient } from "@/lib/auth-client";
@@ -25,13 +20,10 @@ export function useListUsers(params: AppRouterInputs["users"]["list"]) {
 }
 
 export function useCreateUser() {
-  const queryClient = useQueryClient();
-
   return useMutation(
     orpc.users.create.mutationOptions({
-      onSuccess: async () => {
+      onSuccess: () => {
         toast.success("Usuario creado");
-        await queryClient.invalidateQueries({ queryKey: orpc.users.key() });
       },
       onError: (error) => toast.error(error.message),
     })
@@ -39,13 +31,10 @@ export function useCreateUser() {
 }
 
 export function useUpdateUser() {
-  const queryClient = useQueryClient();
-
   return useMutation(
     orpc.users.update.mutationOptions({
-      onSuccess: async () => {
+      onSuccess: () => {
         toast.success("Usuario actualizado");
-        await queryClient.invalidateQueries({ queryKey: orpc.users.key() });
       },
       onError: (error) => toast.error(error.message),
     })
@@ -53,8 +42,6 @@ export function useUpdateUser() {
 }
 
 export function useChangeUserStatus() {
-  const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: async (user: Pick<UserRow, "id" | "name" | "banned">) => {
       const { error } = user.banned
@@ -68,8 +55,7 @@ export function useChangeUserStatus() {
         throw new Error(error.message ?? "Error desconocido");
       }
     },
-    onSuccess: async (_data, user) => {
-      await queryClient.invalidateQueries({ queryKey: orpc.users.key() });
+    onSuccess: (_data, user) => {
       toast.success(user.banned ? "Usuario activado" : "Usuario suspendido", {
         description: `Se ${user.banned ? "activó" : "suspendió"} el usuario de ${user.name} con éxito.`,
       });

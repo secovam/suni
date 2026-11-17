@@ -1,10 +1,10 @@
+import { userSchema } from "@suni/db/validation/users";
 import { Button } from "@suni/ui/components/button";
 import { Input } from "@suni/ui/components/input";
 import { Label } from "@suni/ui/components/label";
 import { useForm } from "@tanstack/react-form";
 import { useState } from "react";
 import { toast } from "sonner";
-import { z } from "zod";
 
 import { authClient } from "@/lib/auth-client";
 
@@ -51,7 +51,7 @@ function EmailSignInForm({ onSent }: { onSent: () => void }) {
         toast.error("No pudimos enviar el enlace. Intenta de nuevo.");
       }
     },
-    validators: { onSubmit: z.object({ email: z.email("Correo inválido") }) },
+    validators: { onSubmit: userSchema.pick({ email: true }) },
   });
 
   return (

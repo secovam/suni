@@ -2,12 +2,7 @@ import type {
   AppRouterInputs,
   AppRouterOutputs,
 } from "@suni/api/routers/index";
-import {
-  keepPreviousData,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
 import type { skipToken } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -27,13 +22,10 @@ export function useListCustomers(
 }
 
 export function useCreateCustomer() {
-  const queryClient = useQueryClient();
-
   return useMutation(
     orpc.customers.create.mutationOptions({
-      onSuccess: async () => {
+      onSuccess: () => {
         toast.success("Cliente creado");
-        await queryClient.invalidateQueries({ queryKey: orpc.customers.key() });
       },
       onError: (error) => toast.error(error.message),
     })
@@ -41,18 +33,10 @@ export function useCreateCustomer() {
 }
 
 export function useUpdateCustomer() {
-  const queryClient = useQueryClient();
-
   return useMutation(
     orpc.customers.update.mutationOptions({
-      onSuccess: async () => {
+      onSuccess: () => {
         toast.success("Cliente actualizado");
-        // Branches and contacts embed `customer.name`.
-        await Promise.all([
-          queryClient.invalidateQueries({ queryKey: orpc.customers.key() }),
-          queryClient.invalidateQueries({ queryKey: orpc.branches.key() }),
-          queryClient.invalidateQueries({ queryKey: orpc.contacts.key() }),
-        ]);
       },
       onError: (error) => toast.error(error.message),
     })
@@ -60,8 +44,6 @@ export function useUpdateCustomer() {
 }
 
 export function useArchiveCustomer() {
-  const queryClient = useQueryClient();
-
   return useMutation({
     // `archived` is the state the user confirmed in the dialog, sent as-is so a
     // stale list cannot flip the customer the wrong way.
@@ -70,13 +52,7 @@ export function useArchiveCustomer() {
       archived,
     }: Pick<CustomerRow, "id" | "name"> & { archived: boolean }) =>
       client.customers.setArchived({ id, archived }),
-    onSuccess: async (_data, { archived, name }) => {
-      // Branches and contacts embed `customer.archived` to show the archived-customer label.
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: orpc.customers.key() }),
-        queryClient.invalidateQueries({ queryKey: orpc.branches.key() }),
-        queryClient.invalidateQueries({ queryKey: orpc.contacts.key() }),
-      ]);
+    onSuccess: (_data, { archived, name }) => {
       toast.success(archived ? "Cliente archivado" : "Cliente desarchivado", {
         description: `Se ${archived ? "archivó" : "desarchivó"} a ${name} con éxito.`,
       });

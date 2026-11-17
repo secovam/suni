@@ -2,12 +2,7 @@ import type {
   AppRouterInputs,
   AppRouterOutputs,
 } from "@suni/api/routers/index";
-import {
-  keepPreviousData,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { client, orpc } from "@/utils/orpc";
@@ -24,13 +19,10 @@ export function useListContacts(params: AppRouterInputs["contacts"]["list"]) {
 }
 
 export function useCreateContact() {
-  const queryClient = useQueryClient();
-
   return useMutation(
     orpc.contacts.create.mutationOptions({
-      onSuccess: async () => {
+      onSuccess: () => {
         toast.success("Contacto creado");
-        await queryClient.invalidateQueries({ queryKey: orpc.contacts.key() });
       },
       onError: (error) => toast.error(error.message),
     })
@@ -38,13 +30,10 @@ export function useCreateContact() {
 }
 
 export function useUpdateContact() {
-  const queryClient = useQueryClient();
-
   return useMutation(
     orpc.contacts.update.mutationOptions({
-      onSuccess: async () => {
+      onSuccess: () => {
         toast.success("Contacto actualizado");
-        await queryClient.invalidateQueries({ queryKey: orpc.contacts.key() });
       },
       onError: (error) => toast.error(error.message),
     })
@@ -52,16 +41,13 @@ export function useUpdateContact() {
 }
 
 export function useArchiveContact() {
-  const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: ({
       id,
       archived,
     }: Pick<ContactRow, "id" | "name"> & { archived: boolean }) =>
       client.contacts.setArchived({ id, archived }),
-    onSuccess: async (_data, { archived, name }) => {
-      await queryClient.invalidateQueries({ queryKey: orpc.contacts.key() });
+    onSuccess: (_data, { archived, name }) => {
       toast.success(archived ? "Contacto archivado" : "Contacto desarchivado", {
         description: `Se ${archived ? "archivó" : "desarchivó"} a ${name} con éxito.`,
       });

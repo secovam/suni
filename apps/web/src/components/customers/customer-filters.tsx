@@ -7,9 +7,9 @@ import { SegmentedControl } from "@/components/customers/shared/segmented-contro
 
 const routeApi = getRouteApi("/_auth/customers/");
 
-type Search = ReturnType<typeof routeApi.useSearch>;
+type TypeFilter = "all" | (typeof CUSTOMER_TYPES)[number];
 
-const TYPE_OPTIONS: { value: Search["type"]; label: string }[] = [
+const TYPE_OPTIONS: { value: TypeFilter; label: string }[] = [
   { value: "all", label: "Todos" },
   ...CUSTOMER_TYPES.map((value) => ({ value, label: value })),
 ];
@@ -23,10 +23,10 @@ export default function CustomerFilters({ customers }: CustomerFiltersProps) {
   const { name, type } = routeApi.useSearch();
   const navigate = routeApi.useNavigate();
 
-  const setFilters = (filters: Partial<Search>) =>
+  const setFilters = (filters: { name?: string; type?: TypeFilter }) =>
     navigate({ search: (prev) => ({ ...prev, ...filters }), replace: true });
 
-  const countOf = (value: Search["type"]) =>
+  const countOf = (value: TypeFilter) =>
     value === "all"
       ? customers.length
       : customers.filter((customer) => customer.type === value).length;

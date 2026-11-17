@@ -20,3 +20,5 @@ See [package.json](package.json) for available scripts. From the repo root, run 
 
 * Place reusable primitives in `src/components/` and import them as `@suni/ui/components/<name>`.
 * Adjust shared design tokens in `src/styles/globals.css`.
+* After `shadcn add`, restore `button.tsx`, `input.tsx` and `tooltip.tsx` from Git (they carry Suni variants), and translate any English labels the new component brings.
+* Variant names are kebab-case (`outline-destructive`).

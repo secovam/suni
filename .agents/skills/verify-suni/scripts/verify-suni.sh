@@ -10,8 +10,8 @@ MAILPIT="http://localhost:8025"
 
 die() { echo "verify-suni: $*" >&2; exit 1; }
 ab() { agent-browser --session "$SESSION" "$@"; }
-web_url() { pnpm --silent --dir "$ROOT" exec portless get suni; }
-api_url() { pnpm --silent --dir "$ROOT" exec portless get api.suni; }
+web_url() { app_url suni; }
+api_url() { app_url api.suni; }
 root_pid() { [[ -f "$STATE/pid" ]] && cat "$STATE/pid"; }
 alive() { local p; p="$(root_pid)" && kill -0 "$p" 2>/dev/null; }
 # Turbo and bun start their own process groups, so ownership is the process tree under our pnpm.
@@ -24,10 +24,30 @@ owns() { [[ -n "$1" ]] && alive && tree "$(root_pid)" | grep -qx "$1"; }
 run_id() { cat "$STATE/run_id" 2>/dev/null || die "no run started; run: $0 up"; }
 evidence_dir() { echo "$BASE/evidence/$(run_id)"; }
 
-route_pid() {
-  local host="${1#https://}"
+# "<url> <pid>" for every portless route whose process runs `portless <app>`.
+# Matched by command, not URL: from a worktree, `portless get` adds a prefix the dev servers may not use.
+app_routes() {
+  local url pid
   pnpm --silent --dir "$ROOT" exec portless list 2>/dev/null |
-    awk -v h="$host" '$1 == "https://" h { gsub(/[()]/, "", $NF); print $NF }'
+    awk '$2 == "->" { gsub(/[()]/, "", $NF); print $1, $NF }' |
+    while read -r url pid; do
+      ps -ww -o command= -p "$pid" 2>/dev/null | grep -q "portless[^ ]* $1 " && echo "$url $pid"
+    done
+}
+# The URL our run serves <app> on; before launch, the URL portless would assign.
+app_url() {
+  local url pid
+  while read -r url pid; do
+    owns "$pid" && { echo "$url"; return; }
+  done < <(app_routes "$1")
+  pnpm --silent --dir "$ROOT" exec portless get "$1"
+}
+# A pid serving <app> that this run did not start, on any URL.
+foreign_pid() {
+  local url pid
+  while read -r url pid; do
+    owns "$pid" || { echo "$pid"; return; }
+  done < <(app_routes "$1")
 }
 
 ready() {
@@ -41,8 +61,8 @@ cmd_up() {
     return
   fi
   local foreign
-  foreign="$(route_pid "$(web_url)")"
-  [[ -z "$foreign" ]] || die "$(web_url) is served by pid $foreign, which this run did not start. Stop it or verify against it by hand; never double-drive it."
+  foreign="$(foreign_pid suni)"
+  [[ -z "$foreign" ]] || die "the Suni web app is served by pid $foreign, which this run did not start. Stop it or verify against it by hand; never double-drive it."
 
   command -v agent-browser >/dev/null || die "agent-browser missing: npm i -g agent-browser && agent-browser install"
   mkdir -p "$STATE"
@@ -87,8 +107,8 @@ cmd_doctor() {
   local fail=0
   check() { if eval "$2"; then echo "ok    $1"; else echo "FAIL  $1"; fail=1; fi; }
   check "dev server started by this run is alive (pid $(root_pid || echo none))" alive
-  check "web route $(web_url) is served by our process tree" 'owns "$(route_pid "$(web_url)")"'
-  check "api route $(api_url) is served by our process tree" 'owns "$(route_pid "$(api_url)")"'
+  check "web route $(web_url) is served by our process tree" '[[ -z "$(foreign_pid suni)" ]] && [[ -n "$(app_routes suni)" ]]'
+  check "api route $(api_url) is served by our process tree" '[[ -z "$(foreign_pid api.suni)" ]] && [[ -n "$(app_routes api.suni)" ]]'
   check "web answers and api /api/auth/ok answers" ready
   check "postgres and mailpit containers are healthy" \
     '[[ "$(docker inspect -f "{{.State.Health.Status}}" suni-dev-postgres-1 suni-dev-mailpit-1 2>/dev/null | sort -u)" == "healthy" ]]'

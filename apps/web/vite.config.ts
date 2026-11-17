@@ -1,7 +1,8 @@
+import babel from "@rolldown/plugin-babel";
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import { varlockVitePlugin } from "@varlock/vite-integration";
-import react from "@vitejs/plugin-react";
+import react, { reactCompilerPreset } from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
 export default defineConfig({
@@ -19,5 +20,6 @@ export default defineConfig({
       autoCodeSplitting: true,
     }),
     react(),
+    babel({ presets: [reactCompilerPreset()] }),
   ],
 });

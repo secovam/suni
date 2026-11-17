@@ -5,3 +5,8 @@ pre-commit:
       run: pnpm exec oxfmt --no-error-on-unmatched-pattern {staged_files} && pnpm exec oxlint --fix --no-error-on-unmatched-pattern {staged_files}
       glob: "*.{js,jsx,ts,tsx,json,jsonc,css}"
       stage_fixed: true
+
+pre-push:
+  jobs:
+    - name: type-aware lint
+      run: pnpm run check:type-aware

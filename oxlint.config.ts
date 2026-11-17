@@ -11,6 +11,47 @@ const REACT_HOOK_FORM_BAN = {
   message: "Use TanStack Form with the Zod schemas from @suni/db/validation/*.",
 };
 
+const WEB_RESTRICTED_PATTERNS = [
+  {
+    group: ["@suni/auth", "@suni/auth/**"],
+    message:
+      "@suni/auth is the server package. Use the client in @/lib/auth-client.",
+  },
+  {
+    group: [
+      "@suni/db",
+      "@suni/db/**",
+      "!@suni/db/validation/*",
+      "!@suni/db/schema/*-enums",
+    ],
+    message:
+      "The web app must not pull table definitions or the DB client. Import shared rules from @suni/db/validation/* or enums from @suni/db/schema/*-enums.",
+  },
+];
+
+const MANUAL_MEMO_BAN = {
+  name: "react",
+  importNames: ["useMemo", "useCallback", "memo"],
+  message:
+    "The React Compiler memoizes components in apps/web. Write plain code; do not memoize by hand.",
+};
+
+const ZOD_MESSAGE =
+  "Components do not define schemas. Use the shared schema from @suni/db/validation/*; `import type { z }` is fine.";
+
+const ZOD_VALUE_BAN = {
+  name: "zod",
+  allowTypeImports: true,
+  message: ZOD_MESSAGE,
+};
+
+// Subpaths at any depth (`zod/v4`, `zod/v4/mini`, ...) build schemas just like the root import.
+const ZOD_SUBPATH_BAN = {
+  group: ["zod/**"],
+  allowTypeImports: true,
+  message: ZOD_MESSAGE,
+};
+
 const jsPlugins = selectJsPlugins(["github", "sonarjs", "react-doctor"]);
 
 export default defineConfig({
@@ -42,27 +83,28 @@ export default defineConfig({
         "no-restricted-imports": [
           "error",
           {
-            paths: [REACT_HOOK_FORM_BAN],
-            patterns: [
-              {
-                group: ["@suni/auth", "@suni/auth/**"],
-                message:
-                  "@suni/auth is the server package. Use the client in @/lib/auth-client.",
-              },
-              {
-                group: [
-                  "@suni/db",
-                  "@suni/db/**",
-                  "!@suni/db/validation/*",
-                  "!@suni/db/schema/*-enums",
-                ],
-                message:
-                  "The web app must not pull table definitions or the DB client. Import shared rules from @suni/db/validation/* or enums from @suni/db/schema/*-enums.",
-              },
-            ],
+            paths: [REACT_HOOK_FORM_BAN, MANUAL_MEMO_BAN],
+            patterns: WEB_RESTRICTED_PATTERNS,
           },
         ],
+        "suni/prefer-router-types": "error",
       },
+    },
+    {
+      files: ["packages/db/src/validation/**/*.ts"],
+      rules: { "suni/require-string-bound": "error" },
+    },
+    {
+      files: [
+        "packages/db/src/validation/**/*.ts",
+        "packages/db/src/schema/**/*.ts",
+      ],
+      rules: { "suni/no-nullable-text": "error" },
+    },
+    {
+      // auth:generate owns this file; its columns follow Better Auth, not our text rule.
+      files: ["packages/db/src/schema/auth.ts"],
+      rules: { "suni/no-nullable-text": "off" },
     },
     {
       files: ["packages/db/src/index.ts", "packages/db/src/schema/index.ts"],
@@ -103,11 +145,20 @@ export default defineConfig({
       files: ["apps/web/src/components/**/*.{ts,tsx}"],
       rules: {
         "func-style": "off",
+        "no-restricted-imports": [
+          "error",
+          {
+            paths: [REACT_HOOK_FORM_BAN, MANUAL_MEMO_BAN, ZOD_VALUE_BAN],
+            patterns: [...WEB_RESTRICTED_PATTERNS, ZOD_SUBPATH_BAN],
+          },
+        ],
       },
     },
   ],
   rules: {
     "oxc/no-accumulating-spread": "error",
+    // The QueryClient in apps/web/src/utils/orpc.ts invalidates every oRPC query after any mutation.
+    "react-doctor/query-mutation-missing-invalidation": "off",
     "suni/require-seller-scope": "error",
     "suni/require-suppression-reason": "error",
     "no-restricted-imports": ["error", { paths: [REACT_HOOK_FORM_BAN] }],

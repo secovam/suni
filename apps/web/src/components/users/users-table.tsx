@@ -17,9 +17,9 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import type { PaginationState } from "@tanstack/react-table";
+import type { PaginationState, RowData } from "@tanstack/react-table";
 import { LogIn, Pencil, Shield, User } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { ActionTooltip } from "@/components/users/action-tooltip";
 import { ChangeUserStatusDialog } from "@/components/users/change-user-status-dialog";
@@ -28,6 +28,13 @@ import { useImpersonateUser, useListUsers } from "@/hooks/use-users";
 type UserRow = AppRouterOutputs["users"]["list"]["items"][number];
 
 const PAGE_SIZE = 20;
+
+declare module "@tanstack/react-table" {
+  // The generic must match TanStack's declaration to merge with it.
+  interface TableMeta<TData extends RowData> {
+    currentUserId?: string;
+  }
+}
 
 const columnHelper = createColumnHelper<UserRow>();
 
@@ -72,7 +79,7 @@ function ImpersonateUserButton({
   currentUserId,
 }: {
   user: UserRow;
-  currentUserId: string;
+  currentUserId?: string;
 }) {
   const impersonate = useImpersonateUser();
   // Better Auth rejects impersonating admins by default.
@@ -101,68 +108,72 @@ function ImpersonateUserButton({
   );
 }
 
-function createColumns(currentUserId: string) {
-  return [
-    columnHelper.accessor("name", {
-      header: "Usuario",
-      cell: (info) => (
-        <span className="flex items-center">
-          {info.getValue()}
-          {info.row.original.id === currentUserId && (
-            <Badge className="ml-2" variant="outline">
-              Tú
-            </Badge>
-          )}
-        </span>
-      ),
-    }),
-    columnHelper.accessor("email", {
-      header: "Correo",
-      cell: (info) => (
-        <span className="text-muted-foreground">{info.getValue()}</span>
-      ),
-    }),
-    columnHelper.accessor("role", {
-      header: "Rol",
-      cell: (info) => <RoleBadge role={info.getValue()} />,
-    }),
-    columnHelper.accessor("banned", {
-      id: "status",
-      header: "Estado",
-      cell: (info) => <StatusBadge banned={!!info.getValue()} />,
-    }),
-    columnHelper.display({
-      id: "actions",
-      cell: ({ row }) => {
-        const user = row.original;
+// Module-level so cell renderers keep one identity: flexRender mounts them as
+// component types, and a new identity per render would remount the row actions
+// (and close an open ChangeUserStatusDialog). Per-render values go through `meta`.
+const columns = [
+  columnHelper.accessor("name", {
+    header: "Usuario",
+    cell: (info) => (
+      <span className="flex items-center">
+        {info.getValue()}
+        {info.row.original.id === info.table.options.meta?.currentUserId && (
+          <Badge className="ml-2" variant="outline">
+            Tú
+          </Badge>
+        )}
+      </span>
+    ),
+  }),
+  columnHelper.accessor("email", {
+    header: "Correo",
+    cell: (info) => (
+      <span className="text-muted-foreground">{info.getValue()}</span>
+    ),
+  }),
+  columnHelper.accessor("role", {
+    header: "Rol",
+    cell: (info) => <RoleBadge role={info.getValue()} />,
+  }),
+  columnHelper.accessor("banned", {
+    id: "status",
+    header: "Estado",
+    cell: (info) => <StatusBadge banned={!!info.getValue()} />,
+  }),
+  columnHelper.display({
+    id: "actions",
+    cell: ({ row, table }) => {
+      const user = row.original;
 
-        return (
-          <div className="flex items-center justify-end gap-1">
-            <ActionTooltip label="Editar usuario">
-              <Button
-                className="text-muted-foreground hover:text-foreground"
-                nativeButton={false}
-                render={
-                  <Link params={{ userId: user.id }} to="/users/$userId/edit" />
-                }
-                size="icon-sm"
-                variant="ghost"
-              >
-                <Pencil className="size-4" />
-                <span className="sr-only">Editar</span>
-              </Button>
-            </ActionTooltip>
-            <ImpersonateUserButton currentUserId={currentUserId} user={user} />
-            <ChangeUserStatusDialog
-              disabled={user.id === currentUserId}
-              user={user}
-            />
-          </div>
-        );
-      },
-    }),
-  ];
-}
+      return (
+        <div className="flex items-center justify-end gap-1">
+          <ActionTooltip label="Editar usuario">
+            <Button
+              className="text-muted-foreground hover:text-foreground"
+              nativeButton={false}
+              render={
+                <Link params={{ userId: user.id }} to="/users/$userId/edit" />
+              }
+              size="icon-sm"
+              variant="ghost"
+            >
+              <Pencil className="size-4" />
+              <span className="sr-only">Editar</span>
+            </Button>
+          </ActionTooltip>
+          <ImpersonateUserButton
+            currentUserId={table.options.meta?.currentUserId}
+            user={user}
+          />
+          <ChangeUserStatusDialog
+            disabled={user.id === table.options.meta?.currentUserId}
+            user={user}
+          />
+        </div>
+      );
+    },
+  }),
+];
 
 // Referencia estable para que TanStack Table no trate cada render como datos nuevos.
 const EMPTY: UserRow[] = [];
@@ -201,8 +212,6 @@ export function UsersDataTable({ currentUserId }: UsersDataTableProps) {
   const total = users.data?.total ?? 0;
   const pageCount = Math.max(1, Math.ceil(total / pagination.pageSize));
 
-  const columns = useMemo(() => createColumns(currentUserId), [currentUserId]);
-
   // TanStack Table devuelve funciones no memoizables; React Compiler ya omite
   // este componente y no pasamos `table` a hijos memoizados.
   // oxlint-disable-next-line react/incompatible-library
@@ -210,6 +219,7 @@ export function UsersDataTable({ currentUserId }: UsersDataTableProps) {
     data: users.data?.items ?? EMPTY,
     columns,
     manualPagination: true,
+    meta: { currentUserId },
     pageCount,
     onPaginationChange: setPagination,
     getCoreRowModel: getCoreRowModel(),
