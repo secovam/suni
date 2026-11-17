@@ -25,8 +25,12 @@ export default defineRule({
         )
           return;
 
-        if (chainedMethods(node).some((name) => BOUNDING_METHODS.has(name)))
-          return;
+        const methods = chainedMethods(node);
+        // After `.array()`, `.max()` and `.length()` bound the array, not the string.
+        const arrayAt = methods.indexOf("array");
+        const stringMethods =
+          arrayAt === -1 ? methods : methods.slice(0, arrayAt);
+        if (stringMethods.some((name) => BOUNDING_METHODS.has(name))) return;
 
         context.report({
           node,
