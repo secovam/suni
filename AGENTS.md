@@ -59,6 +59,11 @@ A change is not done until it reaches every surface it touches. Before calling w
 - Migration or `.env.schema` change needed? The user generates migrations, never you.
 - Docs, only if existing guidance became inaccurate.
 
+## Rules the linter cannot check
+
+- A mutation on a child entity checks, in the same `UPDATE ... WHERE`, that neither it nor its parents are archived.
+- UI copy and accessibility text (`aria-label`, `sr-only`, `title`) are in Spanish.
+
 ## Context files
 
 - [apps/web/AGENTS.md](apps/web/AGENTS.md) (web routes, client setup, and local commands)

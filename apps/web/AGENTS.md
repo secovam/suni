@@ -29,6 +29,9 @@ See [package.json](package.json) for available scripts. From the repo root, run 
 - Every page that fetches data renders loading, empty, and error states.
 - Hide navigation and actions the current user cannot use, matching the procedure each one calls (`useIsAdmin` for admin-only ones).
 - Keep a component's props type, constants, and labels in the same file as the component.
+- The React Compiler is on. Do not use `useMemo`, `useCallback` or `memo`; lint rejects them.
+- A flex container that holds a wide table needs `min-w-0`, or the table stretches the page.
+- When a dialog's trigger can disappear on close (it is archived, removed or filtered out), set `finalFocus` so focus lands somewhere sensible.
 
 ## Generated files
 
