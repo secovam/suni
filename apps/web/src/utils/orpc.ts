@@ -2,29 +2,10 @@ import { createORPCClient } from "@orpc/client";
 import { RPCLink } from "@orpc/client/fetch";
 import { createTanstackQueryUtils } from "@orpc/tanstack-query";
 import type { AppRouterClient } from "@suni/api/routers/index";
-import { QueryCache, QueryClient } from "@tanstack/react-query";
+import { MutationCache, QueryCache, QueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { ENV } from "../env";
-
-function createQueryClient() {
-  return new QueryClient({
-    queryCache: new QueryCache({
-      onError: (error, query) => {
-        toast.error(`Error: ${error.message}`, {
-          action: {
-            label: "Reintentar",
-            onClick: () => {
-              query.invalidate();
-            },
-          },
-        });
-      },
-    }),
-  });
-}
-
-export const queryClient = createQueryClient();
 
 function getServerUrl(url: string) {
   // SAFETY: server-side runtimes expose process.env on globalThis when SERVER_URL is available.
@@ -56,3 +37,28 @@ const link = new RPCLink({
 export const client: AppRouterClient = createORPCClient(link);
 
 export const orpc = createTanstackQueryUtils(client);
+
+function createQueryClient() {
+  const queryClient = new QueryClient({
+    // Every successful mutation refetches the mounted queries, so no hook lists which entities it touches.
+    mutationCache: new MutationCache({
+      onSuccess: () => queryClient.invalidateQueries({ queryKey: orpc.key() }),
+    }),
+    queryCache: new QueryCache({
+      onError: (error, query) => {
+        toast.error(`Error: ${error.message}`, {
+          action: {
+            label: "Reintentar",
+            onClick: () => {
+              query.invalidate();
+            },
+          },
+        });
+      },
+    }),
+  });
+
+  return queryClient;
+}
+
+export const queryClient = createQueryClient();

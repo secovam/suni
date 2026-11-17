@@ -108,6 +108,8 @@ export default defineConfig({
   ],
   rules: {
     "oxc/no-accumulating-spread": "error",
+    // The QueryClient in apps/web/src/utils/orpc.ts invalidates every oRPC query after any mutation.
+    "react-doctor/query-mutation-missing-invalidation": "off",
     "suni/require-seller-scope": "error",
     "suni/require-suppression-reason": "error",
     "no-restricted-imports": ["error", { paths: [REACT_HOOK_FORM_BAN] }],
