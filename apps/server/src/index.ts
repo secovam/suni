@@ -109,13 +109,13 @@ export const apiHandler = new OpenAPIHandler(appRouter, {
       schemaConverters: [new ZodToJsonSchemaConverter()],
     }),
   ],
-  interceptors: [onError(handleError)],
-  clientInterceptors: [schemaErrorMessage],
+  // Client interceptors wrap only the procedure, so malformed request bodies (a 400) never reach handleError.
+  clientInterceptors: [onError(handleError), schemaErrorMessage],
 });
 
 export const rpcHandler = new RPCHandler(appRouter, {
-  interceptors: [onError(handleError)],
-  clientInterceptors: [schemaErrorMessage],
+  // Client interceptors wrap only the procedure, so malformed request bodies (a 400) never reach handleError.
+  clientInterceptors: [onError(handleError), schemaErrorMessage],
 });
 
 app.use("/*", async (c, next) => {
