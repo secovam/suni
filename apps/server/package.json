@@ -15,6 +15,7 @@
     "@orpc/openapi": "catalog:",
     "@orpc/server": "catalog:",
     "@orpc/zod": "catalog:",
+    "@sentry/bun": "11.10.0",
     "@suni/api": "workspace:*",
     "@suni/auth": "workspace:*",
     "@suni/db": "workspace:*",
