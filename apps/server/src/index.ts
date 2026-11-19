@@ -3,6 +3,7 @@ import { OpenAPIReferencePlugin } from "@orpc/openapi/plugins";
 import { ORPCError, onError, ValidationError } from "@orpc/server";
 import { RPCHandler } from "@orpc/server/fetch";
 import { ZodToJsonSchemaConverter } from "@orpc/zod/zod4";
+import { captureException, init as initSentry } from "@sentry/bun";
 import { appRouter } from "@suni/api/routers/index";
 import { initLogger } from "evlog";
 import { createAuthMiddleware } from "evlog/better-auth";
@@ -10,12 +11,17 @@ import { createFsDrain } from "evlog/fs";
 import { evlog } from "evlog/hono";
 import type { EvlogVariables } from "evlog/hono";
 import { Hono } from "hono";
+import type { Context } from "hono";
 import { cors } from "hono/cors";
+import { HTTPException } from "hono/http-exception";
 import { z } from "zod";
 
 import { createContext } from "./context";
 import { ENV } from "./env.server";
 import { auth } from "./services";
+
+// Without a DSN (local development and tests) Sentry stays disabled.
+initSentry({ dsn: ENV.SENTRY_DSN, environment: ENV.NODE_ENV });
 
 initLogger({
   env: { service: "suni-server" },
@@ -29,8 +35,27 @@ const identifyUser = createAuthMiddleware(auth, {
 const app = new Hono<EvlogVariables>();
 
 function handleError<T>(error: T) {
+  // 4xx oRPC errors (validation, auth, not found) are expected answers, not bugs.
+  if (!(error instanceof ORPCError) || error.status >= 500) {
+    captureException(error);
+  }
+
   console.error(error);
 }
+
+// Errors outside oRPC, e.g. reading the session when the database is down.
+function handleUnexpectedError(error: Error, c: Context) {
+  if (error instanceof HTTPException) {
+    return error.getResponse();
+  }
+
+  captureException(error);
+  console.error(error);
+
+  return c.text("Internal Server Error", 500);
+}
+
+app.onError(handleUnexpectedError);
 
 // Default Zod messages (e.g. a missing field) in Spanish; schemas keep their own messages.
 z.config(z.locales.es());
@@ -84,13 +109,13 @@ export const apiHandler = new OpenAPIHandler(appRouter, {
       schemaConverters: [new ZodToJsonSchemaConverter()],
     }),
   ],
-  interceptors: [onError(handleError)],
-  clientInterceptors: [schemaErrorMessage],
+  // Client interceptors wrap only the procedure, so malformed request bodies (a 400) never reach handleError.
+  clientInterceptors: [onError(handleError), schemaErrorMessage],
 });
 
 export const rpcHandler = new RPCHandler(appRouter, {
-  interceptors: [onError(handleError)],
-  clientInterceptors: [schemaErrorMessage],
+  // Client interceptors wrap only the procedure, so malformed request bodies (a 400) never reach handleError.
+  clientInterceptors: [onError(handleError), schemaErrorMessage],
 });
 
 app.use("/*", async (c, next) => {

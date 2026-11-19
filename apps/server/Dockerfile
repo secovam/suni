@@ -1,5 +1,5 @@
 FROM node:24-slim AS builder
-RUN npm install -g pnpm@11
+RUN npm install -g pnpm@12.4.1
 WORKDIR /app
 
 COPY . .
@@ -16,4 +16,5 @@ COPY --from=builder /app /app
 EXPOSE 3000
 
 WORKDIR /app/apps/server
-CMD ["bun", "dist/index.mjs"]
+# Apply pending migrations and the idempotent admin seed before serving; a failure stops the container so the deploy fails.
+CMD ["sh", "-c", "cd /app/packages/db && bunx drizzle-kit migrate && bunx varlock run -- bun ./src/seeds/index.ts && cd /app/apps/server && exec bun dist/index.mjs"]
