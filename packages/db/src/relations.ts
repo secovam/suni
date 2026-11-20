@@ -10,6 +10,7 @@ import {
 import { branch } from "./schema/branches";
 import { contact } from "./schema/contacts";
 import { customer } from "./schema/customers";
+import { supplier } from "./schema/suppliers";
 
 const customerRelations = defineRelationsPart({ customer, user }, (r) => ({
   customer: {
@@ -69,6 +70,7 @@ export const relations = {
     customer,
     branch,
     contact,
+    supplier,
   }),
   ...authRelations,
   ...customerRelations,
