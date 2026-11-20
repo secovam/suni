@@ -1,8 +1,5 @@
 import type { AppRouterOutputs } from "@suni/api/routers/index";
-import {
-  ACQUISITION_CHANNELS,
-  CUSTOMER_TYPES,
-} from "@suni/db/schema/customer-enums";
+import { ACQUISITION_CHANNELS } from "@suni/db/schema/customer-enums";
 import { customerSchema } from "@suni/db/validation/customers";
 import { Button } from "@suni/ui/components/button";
 import { revalidateLogic, useSelector } from "@tanstack/react-form";
@@ -12,7 +9,6 @@ import type { z } from "zod";
 
 import { useAppForm } from "@/components/form/use-app-form";
 import { useCreateCustomer, useUpdateCustomer } from "@/hooks/use-customers";
-import { useIsAdmin } from "@/hooks/use-is-admin";
 import { POSTAL_CODE_LENGTH, useAddressLookup } from "@/hooks/use-postal-code";
 
 type FormValues = Omit<z.input<typeof customerSchema>, "acquisition"> & {
@@ -35,7 +31,6 @@ const EMPTY_VALUES: FormValues = {
   phone: "",
   phoneExtension: "",
   acquisition: "",
-  type: "Cliente",
   postalCode: "",
   suburb: "",
   city: "",
@@ -56,7 +51,6 @@ function toFormValues(customer?: CustomerFormProps["customer"]): FormValues {
     phone: customer.phone,
     phoneExtension: customer.phoneExtension,
     acquisition: customer.acquisition,
-    type: customer.type,
     postalCode: customer.postalCode,
     suburb: customer.suburb,
     city: customer.city,
@@ -72,11 +66,8 @@ const ACQUISITION_OPTIONS = ACQUISITION_CHANNELS.map((value) => ({
   label: value,
 }));
 
-const TYPE_OPTIONS = CUSTOMER_TYPES.map((value) => ({ value, label: value }));
-
 export function CustomerForm({ customer }: CustomerFormProps) {
   const navigate = useNavigate();
-  const isAdmin = useIsAdmin();
   const createCustomer = useCreateCustomer();
   const updateCustomer = useUpdateCustomer();
 
@@ -166,17 +157,6 @@ export function CustomerForm({ customer }: CustomerFormProps) {
               />
             )}
           </form.AppField>
-          {isAdmin ? (
-            <form.AppField name="type">
-              {(field) => (
-                <field.SelectField
-                  label="Tipo"
-                  options={TYPE_OPTIONS}
-                  required
-                />
-              )}
-            </form.AppField>
-          ) : null}
         </div>
       </fieldset>
 
