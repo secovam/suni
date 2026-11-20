@@ -10,15 +10,13 @@ export const update = scopedProcedure
   .route({ method: "PATCH", path: "/{id}" })
   .input(customerSchema.extend({ id: z.string() }))
   .handler(async ({ input, context, errors }) => {
-    const { id, type, ...fields } = input;
+    const { id, ...fields } = input;
 
     const { userId } = context;
 
-    const data = context.admin ? { ...fields, type } : fields;
-
     const [updated] = await context.db
       .update(customer)
-      .set({ ...data, modifiedBy: userId })
+      .set({ ...fields, modifiedBy: userId })
       // Archived customers are read-only until restored.
       .where(
         and(

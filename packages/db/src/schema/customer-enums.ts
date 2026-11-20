@@ -9,7 +9,5 @@ export const ACQUISITION_CHANNELS = [
   "Díptico",
 ] as const;
 
-export const CUSTOMER_TYPES = ["Cliente", "Asesor"] as const;
-
 // Derived from customer.archived, not a database column.
 export const CUSTOMER_STATUSES = ["active", "archived", "all"] as const;

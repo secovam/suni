@@ -9,11 +9,9 @@ export const create = scopedProcedure
   .handler(async ({ input, context }) => {
     const { userId } = context;
 
-    const type = context.admin ? input.type : "Cliente";
-
     const [created] = await context.db
       .insert(customer)
-      .values({ ...input, type, sellerId: userId, modifiedBy: userId })
+      .values({ ...input, sellerId: userId, modifiedBy: userId })
       .returning({ id: customer.id });
 
     return created;

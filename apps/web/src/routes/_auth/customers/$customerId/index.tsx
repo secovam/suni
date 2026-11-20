@@ -104,14 +104,7 @@ function RouteComponent() {
             </Button>
           </>
         }
-        description={
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="tabular-nums">{customer.rfc}</span>
-            <Badge variant={customer.type === "Asesor" ? "outline" : "default"}>
-              {customer.type}
-            </Badge>
-          </div>
-        }
+        description={<span className="tabular-nums">{customer.rfc}</span>}
         icon={ContactRound}
         title={customer.name}
       />
