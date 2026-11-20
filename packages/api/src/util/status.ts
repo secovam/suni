@@ -11,6 +11,7 @@ const isNotNull = { isNotNull: true } as const;
 
 const visible = {
   customer: { archived: isNull },
+  supplier: { archived: isNull },
   branch: { archived: isNull, customer: { archived: isNull } },
   contact: {
     archived: isNull,
@@ -21,6 +22,7 @@ const visible = {
 
 const archived = {
   customer: { archived: isNotNull },
+  supplier: { archived: isNotNull },
   branch: {
     OR: [{ archived: isNotNull }, { customer: { archived: isNotNull } }],
   },

@@ -1,11 +1,13 @@
 import type { LinkProps } from "@tanstack/react-router";
 import type { LucideIcon } from "lucide-react";
 import {
+  BriefcaseBusiness,
   Building2,
   Contact,
   ContactRound,
   DollarSign,
   Home,
+  Truck,
   Users,
 } from "lucide-react";
 
@@ -41,6 +43,11 @@ export const NAV_ENTRIES: NavEntry[] = [
       { to: "/branches", label: "Sucursales", icon: Building2 },
       { to: "/contacts", label: "Contactos", icon: Contact },
     ],
+  },
+  {
+    label: "Administración",
+    icon: BriefcaseBusiness,
+    items: [{ to: "/suppliers", label: "Proveedores", icon: Truck }],
   },
 ];
 
