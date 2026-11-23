@@ -57,7 +57,17 @@ A change is not done until it reaches every surface it touches. Before calling w
 - Reverse actions: archive needs unarchive, and a way in needs a way out and a way to see it.
 - Nav items and actions hidden from users who cannot use them.
 - Migration or `.env.schema` change needed? The user generates migrations, never you.
-- Docs, only if existing guidance became inaccurate.
+- Docs, only if existing guidance became inaccurate. Follow [Documentation](#documentation).
+
+## Documentation
+
+Most code changes need no doc change. Agents can read the code.
+
+- `AGENTS.md` files and `docs/agents/` hold conventions, access rules, and traps that are hard to find in the source. Before adding a line, ask what an agent would get wrong without it. If the code answers it, leave it out.
+- Do not list fields, procedures, constants, or files, narrate control flow, or append PR summaries. Anything that can drift will drift.
+- A reason local to one spot goes in a short comment next to the code (4 lines at most). Link to source instead of copying it.
+- When a documented rule changes, rewrite or remove the old text. Do not append a second account.
+- Do not commit plans, research notes, or agent scratch files.
 
 ## Rules and what enforces them
 
@@ -69,6 +79,9 @@ When the operator corrects a repeated mistake, fix it and add a row here. If the
 | Customer and branch reads hide seller identity from non-admins. | `suni/require-seller-scope` |
 | No unnecessary conditions or type assertions. | `pnpm run check:type-aware` (pre-push and CI) |
 | No manual memoization. | React Compiler plus a `no-restricted-imports` ban |
+| Effects only sync with systems outside React; each one says why in its suppression. | `suni/no-unreasoned-state-sync` |
+| Comments say why, never what: no dividers, commented-out code, or name echoes, 4 lines at most. | `suni/no-low-value-comments` |
+| Docs follow [Documentation](#documentation). | CodeRabbit on `AGENTS.md` and `docs/agents/**` |
 | Web types come from `AppRouterInputs`/`AppRouterOutputs`, not hand-derived. | `suni/prefer-router-types` |
 | Validation strings are bounded; text is never nullable. | `suni/require-string-bound`, `suni/no-nullable-text` |
 | Zod schemas live in `@suni/db/validation/*`, not in components. | `no-restricted-imports` of `zod/**` in components |

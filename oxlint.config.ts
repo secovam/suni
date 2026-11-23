@@ -87,6 +87,7 @@ export default defineConfig({
             patterns: WEB_RESTRICTED_PATTERNS,
           },
         ],
+        "suni/no-unreasoned-state-sync": "error",
         "suni/prefer-router-types": "error",
       },
     },
@@ -159,6 +160,7 @@ export default defineConfig({
     "oxc/no-accumulating-spread": "error",
     // The QueryClient in apps/web/src/utils/orpc.ts invalidates every oRPC query after any mutation.
     "react-doctor/query-mutation-missing-invalidation": "off",
+    "suni/no-low-value-comments": "error",
     "suni/require-seller-scope": "error",
     "suni/require-suppression-reason": "error",
     "no-restricted-imports": ["error", { paths: [REACT_HOOK_FORM_BAN] }],
