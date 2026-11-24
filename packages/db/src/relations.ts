@@ -10,6 +10,7 @@ import {
 import { branch } from "./schema/branches";
 import { contact } from "./schema/contacts";
 import { customer } from "./schema/customers";
+import { ingredient } from "./schema/ingredients";
 import { supplier } from "./schema/suppliers";
 
 const customerRelations = defineRelationsPart({ customer, user }, (r) => ({
@@ -61,6 +62,19 @@ const contactRelations = defineRelationsPart(
   })
 );
 
+const ingredientRelations = defineRelationsPart(
+  { ingredient, supplier },
+  (r) => ({
+    ingredient: {
+      supplier: r.one.supplier({
+        from: r.ingredient.supplierId,
+        to: r.supplier.id,
+        optional: false,
+      }),
+    },
+  })
+);
+
 export const relations = {
   ...defineRelations({
     account,
@@ -70,10 +84,12 @@ export const relations = {
     customer,
     branch,
     contact,
+    ingredient,
     supplier,
   }),
   ...authRelations,
   ...customerRelations,
   ...branchRelations,
   ...contactRelations,
+  ...ingredientRelations,
 };

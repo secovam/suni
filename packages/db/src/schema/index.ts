@@ -6,4 +6,6 @@ export * from "./contacts";
 
 export * from "./customers";
 
+export * from "./ingredients";
+
 export * from "./suppliers";
