@@ -13,6 +13,7 @@ import { useRef, useState } from "react";
 import { ChangeStatusDialog } from "@/components/customers/shared/change-status-dialog";
 import { PageHeader } from "@/components/page-header";
 import { SupplierData } from "@/components/suppliers/supplier-data";
+import { SupplierIngredients } from "@/components/suppliers/supplier-ingredients";
 import { useIsAdmin } from "@/hooks/use-is-admin";
 import {
   supplierQueryOptions,
@@ -32,7 +33,6 @@ export const Route = createFileRoute("/_auth/suppliers/$supplierId/")({
 });
 
 const UPCOMING_TABS = [
-  { value: "catalog", label: "Catálogo de productos" },
   { value: "quotes", label: "Cotizaciones" },
   { value: "files", label: "Documentos Fiscales" },
   { value: "orders", label: "Órdenes de Compra" },
@@ -99,6 +99,7 @@ function RouteComponent() {
             className="w-max min-w-full"
           >
             <TabsTrigger value="general">Datos generales</TabsTrigger>
+            <TabsTrigger value="catalog">Catálogo de productos</TabsTrigger>
             {UPCOMING_TABS.map(({ value, label }) => (
               <TabsTrigger disabled key={value} value={value}>
                 {label}
@@ -109,6 +110,9 @@ function RouteComponent() {
         </div>
         <TabsContent value="general">
           <SupplierData supplier={supplier} />
+        </TabsContent>
+        <TabsContent value="catalog">
+          <SupplierIngredients supplierId={supplierId} />
         </TabsContent>
       </Tabs>
       {isAdmin ? (
