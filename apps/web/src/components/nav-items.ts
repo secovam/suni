@@ -6,6 +6,7 @@ import {
   Contact,
   ContactRound,
   DollarSign,
+  FlaskConical,
   Home,
   Truck,
   Users,
@@ -47,7 +48,14 @@ export const NAV_ENTRIES: NavEntry[] = [
   {
     label: "Administración",
     icon: BriefcaseBusiness,
-    items: [{ to: "/suppliers", label: "Proveedores", icon: Truck }],
+    items: [
+      { to: "/suppliers", label: "Proveedores", icon: Truck },
+      {
+        to: "/ingredients",
+        label: "Ingredientes",
+        icon: FlaskConical,
+      },
+    ],
   },
 ];
 
