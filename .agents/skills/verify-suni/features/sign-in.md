@@ -1,11 +1,11 @@
 # Sign in
 
-There are no passwords. A user enters their email, gets a magic link by email, and opening it signs them in and lands on `/dashboard`. Sign-up is disabled, so only existing users receive an email, suspended ones included. The page shows the same confirmation either way.
+There are no passwords. A user enters their email, gets a magic link by email, and opening it signs them in and lands on `/dashboard` (`Hola, <name>` and module cards under `Elige un módulo para empezar`). Sign-up is disabled, so only existing users receive an email, suspended ones included. The page shows the same confirmation either way.
 
 ## Sub-features
 
 - `signin-request` sends the magic link and shows the confirmation without reloading the page.
-- `signin-invalid` rejects a malformed email inline.
+- `signin-invalid` rejects a malformed email: the browser blocks a value without `@`, and the form's Zod check shows an inline alert for the rest.
 - `signin-link` opens the link and lands on `/dashboard` with a session.
 - `signin-redirect` sends a signed-in user from `/` to `/dashboard`, and a signed-out user from any `_auth` page to `/`.
 - `signin-expired` shows the error page for an invalid, expired or already used link.
@@ -28,8 +28,8 @@ Preconditions:
 - **Request step by hand.** Run `$V ab open https://suni.localhost/`, `$V ab find label "Inicia sesión con tu correo" fill "<email>"` and `$V ab find role button click --name "Enviar enlace mágico"`. `$V ab wait --text "Si existe una cuenta con este correo"` succeeds, the URL stays `https://suni.localhost/`, and `Enviar otro enlace` appears.
 - **Email side effect.** `curl -s http://localhost:8025/api/v1/search --get --data-urlencode "query=to:<email>" | jq '.messages[0].Subject'` prints `"Enlace de acceso - Suni"`.
 - **Unknown email.** Submit an address that has no user. The same confirmation appears, and the search above returns no message for it.
-- **Malformed email.** Fill `not-an-email` and submit. The `alert` `Correo inválido` appears.
-- **Redirect.** While signed in, run `$V ab open https://suni.localhost/` and `$V ab wait --url "**/dashboard"`.
+- **Malformed email.** The input is `type="email"`, so `not-an-email` never submits: no `alert` renders, and `$V ab eval 'document.querySelector("input[type=email]").validity.valid'` is `false`. Fill `a@b` instead, which the browser accepts, and submit. The `alert` `El correo no es válido` appears.
+- **Redirect.** While signed in, run `$V ab open https://suni.localhost/` and `$V ab wait --url "**/dashboard"`. In a session with no cookies, opening `https://suni.localhost/dashboard` ends on `https://suni.localhost/`.
 - **Used link.** Sign in with a link, keep it, and open it again with `$V ab open "<link>"`. The browser lands on `/auth-error?error=INVALID_TOKEN` with the heading `No pudimos iniciar tu sesión`, the text `Este enlace de acceso venció o ya no es válido`, and the button `Volver a iniciar sesión`. With a session still active, that button leads to `/dashboard`.
 - **Suspended user.** Suspend a test user from [Users](./users.md) and request their link. The confirmation is the same as for any other email, and the email still arrives. Opening it lands on `/auth-error?error=BANNED_USER` with the heading `No pudimos iniciar tu sesión` and the text `Tu acceso a Suni está suspendido`, and no session cookie is set.
 
