@@ -8,6 +8,7 @@ import { protectedProcedure, publicProcedure } from "../index";
 import { branchesRouter } from "./branches";
 import { contactsRouter } from "./contacts";
 import { customersRouter } from "./customers";
+import { ingredientsRouter } from "./ingredients";
 import { suppliersRouter } from "./suppliers";
 import { usersRouter } from "./users";
 
@@ -20,6 +21,7 @@ export const appRouter = {
   users: usersRouter,
   customers: customersRouter,
   suppliers: suppliersRouter,
+  ingredients: ingredientsRouter,
   branches: branchesRouter,
   contacts: contactsRouter,
 };
