@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { ACQUISITION_CHANNELS, CUSTOMER_TYPES } from "../schema/customer-enums";
+import { ACQUISITION_CHANNELS } from "../schema/customer-enums";
 
 // Shared by the web form and the API, so it must stay free of drizzle imports.
 export const customerSchema = z.object({
@@ -42,5 +42,4 @@ export const customerSchema = z.object({
   acquisition: z.enum(ACQUISITION_CHANNELS, {
     message: "Selecciona un medio de adquisición",
   }),
-  type: z.enum(CUSTOMER_TYPES),
 });

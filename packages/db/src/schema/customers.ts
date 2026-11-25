@@ -2,11 +2,9 @@ import { createId } from "@paralleldrive/cuid2";
 import { pgEnum, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 
 import { user } from "./auth";
-import { ACQUISITION_CHANNELS, CUSTOMER_TYPES } from "./customer-enums";
+import { ACQUISITION_CHANNELS } from "./customer-enums";
 
 export const acquisitionEnum = pgEnum("acquisition", ACQUISITION_CHANNELS);
-
-export const customerTypeEnum = pgEnum("customer_type", CUSTOMER_TYPES);
 
 export const customer = pgTable("customer", {
   id: text("id")
@@ -24,7 +22,6 @@ export const customer = pgTable("customer", {
   phone: text("phone").notNull(),
   phoneExtension: text("phone_extension").notNull().default(""),
   acquisition: acquisitionEnum("acquisition").notNull(),
-  type: customerTypeEnum("type").notNull().default("Cliente"),
   sellerId: text("seller_id")
     .notNull()
     .references(() => user.id),
