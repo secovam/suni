@@ -11,9 +11,11 @@ This directory is the maintained source for verifying what Suni users see. Read 
 ## Driving conventions
 
 - Run every browser action through `$V ab`, which pins the `verify-suni` session.
-- Use roles, labels and visible text. Buttons rendered as links (`Nuevo Cliente`, `Nuevo Usuario`, `Editar`, `Cancelar`) expose `role=button`, not `link`.
+- Use roles, labels and visible text. Buttons rendered as links (`Nuevo Cliente`, `Nuevo proveedor`, `Editar`, `Cancelar`) expose `role=button`, not `link`.
 - `find label` matches the label text without the required-field `*`. Snapshots show the accessible name with it (`textbox "RFC *"`).
+- The sidebar sections `Ventas` and `Administración` are collapsed unless the current page is inside them. Click the section button before its links, or start from `/dashboard`, whose module cards are links with the same names.
 - After a page-changing action, wait for text or a URL. Never sleep.
+- After confirming a dialog, wait until `!document.querySelector("[role=dialog],[role=alertdialog]")` before the next click. The fade-out overlay otherwise catches it.
 - Undo every mutation through the UI's reverse action. Never delete evidence.
 
 ## Proof and skip reporting
@@ -30,5 +32,7 @@ Each feature file has an H1, one paragraph about user-visible behavior, then exa
 ## Features
 
 - [Sign in](./sign-in.md) covers the magic link request, the email in Mailpit, the session redirect, and the expired link page.
-- [Customers](./customers.md) covers the list with filters, creating with the postal code lookup, the detail page, editing, and archiving and unarchiving.
-- [Users](./users.md) covers the admin user list, creating, editing the role, and suspending and reactivating.
+- [Customers](./customers.md) covers the list with search and status tabs, creating with the postal code lookup, the detail page, editing, archiving and unarchiving, and seller scoping.
+- [Branches and contacts](./branches-contacts.md) covers creating branches and contacts under a customer, their list pages, the contact picker, and the archive cascade from the customer.
+- [Suppliers](./suppliers.md) covers the supplier directory, its admin-only create, edit and archive, and the read-only view for non-admins.
+- [Users](./users.md) covers the admin user list, the create dialog, editing, suspending and reactivating, impersonation, and the non-admin session.

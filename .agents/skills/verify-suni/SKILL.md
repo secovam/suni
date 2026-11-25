@@ -52,7 +52,7 @@ Then drive with agent-browser through the helper, so every command hits the same
 
 ```bash
 $V ab snapshot -i                                   # interactive elements with @eN refs
-$V ab find role link click --name "Clientes"        # sidebar
+$V ab find role link click --name "Clientes"        # dashboard card, or the sidebar once "Ventas" is open
 $V ab find role button click --name "Nuevo Cliente" # navigating buttons are role=button
 $V ab find label "Razón social" fill "Acme"         # label text, without the * of required fields
 $V ab wait --text "Gestiona los clientes del sistema"

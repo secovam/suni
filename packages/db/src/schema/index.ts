@@ -5,3 +5,5 @@ export * from "./branches";
 export * from "./contacts";
 
 export * from "./customers";
+
+export * from "./suppliers";
