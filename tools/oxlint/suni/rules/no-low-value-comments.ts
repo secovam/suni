@@ -68,7 +68,13 @@ export default defineRule({
     }> = [];
     for (const comment of sourceCode.getAllComments()) {
       const previous = groups.at(-1)?.comments.at(-1);
+      const ownLine =
+        (sourceCode.lines[comment.loc.start.line - 1] ?? "")
+          .slice(0, comment.loc.start.column)
+          .trim() === "";
+      // Trailing comments on consecutive statements are separate notes, not one block.
       const continues =
+        ownLine &&
         comment.type === "Line" &&
         previous?.type === "Line" &&
         previous.loc.end.line === comment.loc.start.line - 1 &&
