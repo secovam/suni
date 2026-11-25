@@ -61,6 +61,11 @@ export default defineRule({
     const { sourceCode } = context;
     const isTypeScript = TS_FILE_PATTERN.test(context.filename);
 
+    const isOwnLine = (comment: ESTree.Comment) =>
+      (sourceCode.lines[comment.loc.start.line - 1] ?? "")
+        .slice(0, comment.loc.start.column)
+        .trim() === "";
+
     // Consecutive `//` lines at one indent read as one comment.
     const groups: Array<{
       comments: Array<ESTree.Comment>;
@@ -68,13 +73,9 @@ export default defineRule({
     }> = [];
     for (const comment of sourceCode.getAllComments()) {
       const previous = groups.at(-1)?.comments.at(-1);
-      const ownLine =
-        (sourceCode.lines[comment.loc.start.line - 1] ?? "")
-          .slice(0, comment.loc.start.column)
-          .trim() === "";
       // Trailing comments on consecutive statements are separate notes, not one block.
       const continues =
-        ownLine &&
+        isOwnLine(comment) &&
         comment.type === "Line" &&
         previous?.type === "Line" &&
         previous.loc.end.line === comment.loc.start.line - 1 &&
@@ -139,7 +140,10 @@ export default defineRule({
       if (isLine && lines.every((line) => COMMENTED_CODE_PATTERN.test(line))) {
         return "Delete commented-out code; git keeps the history.";
       }
-      if (restatesNextName(comments.at(-1)!.loc.end.line, lines)) {
+      if (
+        isOwnLine(comments[0]!) &&
+        restatesNextName(comments.at(-1)!.loc.end.line, lines)
+      ) {
         return "Drop the comment; it only repeats the name below it. Say why, or say nothing.";
       }
       if (lines.length > MAX_COMMENT_LINES && !LICENSE_PATTERN.test(text)) {
