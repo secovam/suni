@@ -20,7 +20,7 @@ export function AppSidebar(props: ComponentProps<typeof Sidebar>) {
   const router = useRouter();
   const { setOpenMobile } = useSidebar();
 
-  // On mobile the menu is a sheet over the page; close it once a link navigates.
+  // oxlint-disable-next-line suni/no-unreasoned-state-sync -- subscribes to the router so the mobile sheet closes once a link navigates
   useEffect(
     () => router.subscribe("onBeforeNavigate", () => setOpenMobile(false)),
     [router, setOpenMobile]

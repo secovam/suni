@@ -8,6 +8,34 @@ const API_ROUTERS = "packages/api/src/routers/**/*.ts";
 
 const WEB_COMPONENTS = "apps/web/src/**/*.tsx";
 
+// One entry per guide: CodeRabbit both learns the file and holds matching paths to it.
+const DOC_RULES = [
+  {
+    files: "docs/agents/typescript.md",
+    applyTo: SOURCE_FILES,
+    instructions:
+      "Hold changed code to the rules in docs/agents/typescript.md.",
+  },
+  {
+    files: "docs/agents/security-performance.md",
+    applyTo: SOURCE_FILES,
+    instructions:
+      "Hold changed code to the rules in docs/agents/security-performance.md.",
+  },
+  {
+    files: "docs/agents/react-accessibility.md",
+    applyTo: REACT_FILES,
+    instructions:
+      "Hold changed code to the rules in docs/agents/react-accessibility.md.",
+  },
+  {
+    files: "AGENTS.md",
+    applyTo: "{**/AGENTS.md,docs/agents/**/*.md}",
+    instructions:
+      "Hold doc edits to the Documentation rules in AGENTS.md: keep only conventions, access rules, and traps hard to find in the source. Flag field or file catalogs, exact constants, narrated control flow, PR summaries, and text appended beside an outdated rule instead of replacing it.",
+  },
+] as const;
+
 export default defineConfig({
   reviews: {
     high_level_summary: false,
@@ -27,16 +55,10 @@ export default defineConfig({
       "!packages/ui/**",
     ],
     path_instructions: [
-      {
-        path: SOURCE_FILES,
-        instructions:
-          "Hold changed code to the rules in docs/agents/typescript.md and docs/agents/security-performance.md.",
-      },
-      {
-        path: REACT_FILES,
-        instructions:
-          "Hold changed code to the rules in docs/agents/react-accessibility.md.",
-      },
+      ...DOC_RULES.map(({ applyTo, instructions }) => ({
+        path: applyTo,
+        instructions,
+      })),
       {
         path: API_ROUTERS,
         instructions:
@@ -51,11 +73,7 @@ export default defineConfig({
   },
   knowledge_base: {
     code_guidelines: {
-      filePatterns: [
-        { files: "docs/agents/typescript.md", applyTo: SOURCE_FILES },
-        { files: "docs/agents/security-performance.md", applyTo: SOURCE_FILES },
-        { files: "docs/agents/react-accessibility.md", applyTo: REACT_FILES },
-      ],
+      filePatterns: DOC_RULES.map(({ files, applyTo }) => ({ files, applyTo })),
     },
   },
 });

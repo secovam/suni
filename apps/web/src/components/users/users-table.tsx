@@ -181,6 +181,7 @@ const EMPTY: UserRow[] = [];
 function useDebouncedValue<T>(value: T, delayMs: number): T {
   const [debounced, setDebounced] = useState(value);
 
+  // oxlint-disable-next-line suni/no-unreasoned-state-sync -- owns the debounce timer and clears it on change or unmount
   useEffect(() => {
     const id = setTimeout(() => setDebounced(value), delayMs);
 
