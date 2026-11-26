@@ -13,6 +13,11 @@ export const purchaseOrderIdSchema = z.object({
   id: z.string().length(ID_LENGTH, "Identificador de orden de compra inválido"),
 });
 
+export const purchaseTargetSchema = z.discriminatedUnion("scope", [
+  purchaseIdSchema.extend({ scope: z.literal("purchase") }),
+  purchaseOrderIdSchema.extend({ scope: z.literal("supplierOrder") }),
+]);
+
 export const purchaseOrderItemSchema = z.object({
   ingredientId: ingredientIdSchema.shape.id,
   quantity: z
@@ -27,22 +32,27 @@ export const purchaseOrderItemSchema = z.object({
       (value) => Number(value) > 0,
       "La cantidad debe ser mayor que cero"
     ),
-  unitPrice: ingredientSchema.shape.price,
+  unitPrice: ingredientSchema.shape.price
+    .removeDefault()
+    .pipe(z.string({ error: "Indica el precio unitario" }).max(13)),
 });
 
-export const purchaseDraftSchema = z.object({
+export const purchaseCreateSchema = z.object({
   notes: z.string().trim().max(2000, "Máximo 2000 caracteres").default(""),
-  items: z.array(purchaseOrderItemSchema).min(1, "Agrega al menos una partida"),
+  items: z
+    .array(purchaseOrderItemSchema)
+    .min(1, "Agrega al menos una partida")
+    .max(500, "Máximo 500 partidas por compra"),
 });
 
-export const purchaseUpdateSchema = purchaseDraftSchema.extend(
-  purchaseIdSchema.shape
-);
-
-export const purchaseListSchema = z.object({
+const purchaseListFilters = z.object({
   status: z.enum(PURCHASE_ORDER_STATUSES).optional(),
 });
 
-export const supplierPurchaseOrderListSchema = purchaseListSchema.extend({
-  supplierId: supplierIdSchema.shape.id,
-});
+export const purchaseListSchema = z.discriminatedUnion("scope", [
+  purchaseListFilters.extend({ scope: z.literal("purchase") }),
+  purchaseListFilters.extend({
+    scope: z.literal("supplierOrder"),
+    supplierId: supplierIdSchema.shape.id,
+  }),
+]);

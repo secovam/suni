@@ -26,7 +26,7 @@ export const purchase = pgTable("purchase", {
     .primaryKey()
     .$defaultFn(() => createId()),
   folio: text("folio").notNull().unique(),
-  status: purchaseOrderStatus("status").notNull().default("draft"),
+  status: purchaseOrderStatus("status").notNull().default("confirmed"),
   notes: text("notes").notNull().default(""),
   createdBy: text("created_by")
     .notNull()
@@ -39,7 +39,6 @@ export const purchase = pgTable("purchase", {
     .defaultNow()
     .$onUpdate(() => new Date())
     .notNull(),
-  confirmedAt: timestamp("confirmed_at"),
   cancelledAt: timestamp("cancelled_at"),
 });
 
@@ -58,6 +57,8 @@ export const purchaseOrder = pgTable(
       .references(() => supplier.id),
     supplierName: text("supplier_name").notNull(),
     supplierRfc: text("supplier_rfc").notNull(),
+    status: purchaseOrderStatus("status").notNull().default("confirmed"),
+    cancelledAt: timestamp("cancelled_at"),
   },
   (table) => [
     unique("purchase_order_purchase_supplier_unique").on(
