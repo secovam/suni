@@ -17,7 +17,7 @@ export function IngredientFilters() {
         })
       }
       search={name}
-      searchLabel="Buscar por razón social"
+      searchLabel="Buscar por nombre de la sustancia"
     />
   );
 }
