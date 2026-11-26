@@ -9,6 +9,7 @@ import { branchesRouter } from "./branches";
 import { contactsRouter } from "./contacts";
 import { customersRouter } from "./customers";
 import { ingredientsRouter } from "./ingredients";
+import { purchasesRouter } from "./purchases";
 import { suppliersRouter } from "./suppliers";
 import { usersRouter } from "./users";
 
@@ -22,6 +23,7 @@ export const appRouter = {
   customers: customersRouter,
   suppliers: suppliersRouter,
   ingredients: ingredientsRouter,
+  purchases: purchasesRouter,
   branches: branchesRouter,
   contacts: contactsRouter,
 };
