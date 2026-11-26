@@ -13,6 +13,19 @@ export const ingredientSchema = z.object({
     .string()
     .length(ID_LENGTH, "Identificador de proveedor inválido"),
   unit: z.enum(INGREDIENT_UNITS, "Unidad de medida inválida"),
+  price: z
+    .union([
+      z
+        .string()
+        .trim()
+        .regex(
+          /^(?:\d{1,10}(?:[.,]\d{1,2})?)?$/u,
+          "Ingresa un precio sin signo, con hasta 10 enteros y 2 decimales"
+        ),
+      z.null(),
+    ])
+    .transform((value) => (value ? value.replace(",", ".") : null))
+    .default(null),
   imageUrl: z
     .string()
     .trim()
@@ -40,6 +53,7 @@ export const ingredientListSchema = z.object({
 export const ingredientUpdateSchema = ingredientSchema.extend({
   ...ingredientIdSchema.shape,
   imageUrl: ingredientSchema.shape.imageUrl.removeDefault().optional(),
+  price: ingredientSchema.shape.price.removeDefault().optional(),
 });
 
 export const ingredientArchiveSchema = ingredientIdSchema.extend({

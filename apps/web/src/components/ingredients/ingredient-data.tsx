@@ -1,6 +1,8 @@
 import type { AppRouterOutputs } from "@suni/api/routers/index";
 import { Link } from "@tanstack/react-router";
 
+import { formatIngredientPrice } from "./format-ingredient-price";
+
 interface IngredientDataProps {
   ingredient: AppRouterOutputs["ingredients"]["get"];
 }
@@ -31,6 +33,14 @@ export function IngredientData({ ingredient }: IngredientDataProps) {
             Unidad de medida
           </dt>
           <dd className="text-sm">{ingredient.unit}</dd>
+        </div>
+        <div className="space-y-1">
+          <dt className="text-muted-foreground text-xs font-medium">
+            Precio por unidad
+          </dt>
+          <dd className="text-sm tabular-nums">
+            {formatIngredientPrice(ingredient)}
+          </dd>
         </div>
       </dl>
       {ingredient.imageUrl ? (

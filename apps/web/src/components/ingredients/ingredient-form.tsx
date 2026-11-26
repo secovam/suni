@@ -25,6 +25,7 @@ const EMPTY_VALUES: AppRouterInputs["ingredients"]["create"] = {
   name: "",
   supplierId: "",
   unit: "kg",
+  price: "",
   imageUrl: "",
 };
 
@@ -51,6 +52,7 @@ export function IngredientForm({ ingredient }: IngredientFormProps) {
           name: ingredient.name,
           supplierId: ingredient.supplierId,
           unit: ingredient.unit,
+          price: ingredient.price ?? "",
           imageUrl: ingredient.imageUrl,
         }
       : EMPTY_VALUES,
@@ -113,6 +115,14 @@ export function IngredientForm({ ingredient }: IngredientFormProps) {
               label="Unidad de medida"
               options={UNIT_OPTIONS}
               required
+            />
+          )}
+        </form.AppField>
+        <form.AppField name="price">
+          {(field) => (
+            <field.TextField
+              inputMode="decimal"
+              label="Precio por unidad (MXN)"
             />
           )}
         </form.AppField>

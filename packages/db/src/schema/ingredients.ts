@@ -1,5 +1,14 @@
 import { createId } from "@paralleldrive/cuid2";
-import { index, pgEnum, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import {
+  check,
+  index,
+  numeric,
+  pgEnum,
+  pgTable,
+  text,
+  timestamp,
+} from "drizzle-orm/pg-core";
 
 import { user } from "./auth";
 import { INGREDIENT_UNITS } from "./ingredient-enums";
@@ -18,6 +27,7 @@ export const ingredient = pgTable(
       .notNull()
       .references(() => supplier.id),
     unit: ingredientUnit("unit").notNull(),
+    price: numeric("price", { precision: 12, scale: 2 }),
     imageUrl: text("image_url").notNull().default(""),
     modifiedBy: text("modified_by")
       .notNull()
@@ -29,5 +39,8 @@ export const ingredient = pgTable(
       .notNull(),
     archived: timestamp("archived"),
   },
-  (table) => [index("ingredient_supplier_id_idx").on(table.supplierId)]
+  (table) => [
+    index("ingredient_supplier_id_idx").on(table.supplierId),
+    check("ingredient_price_nonnegative", sql`${table.price} >= 0`),
+  ]
 );

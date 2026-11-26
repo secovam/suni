@@ -2,6 +2,8 @@ import type { AppRouterOutputs } from "@suni/api/routers/index";
 import { Badge } from "@suni/ui/components/badge";
 import { Link } from "@tanstack/react-router";
 
+import { formatIngredientPrice } from "./format-ingredient-price";
+
 interface IngredientCardProps {
   ingredient: AppRouterOutputs["ingredients"]["list"][number];
 }
@@ -30,6 +32,9 @@ export function IngredientCard({ ingredient }: IngredientCardProps) {
         </h2>
         <p className="text-muted-foreground text-sm">
           {ingredient.supplier.name}
+        </p>
+        <p className="text-sm tabular-nums">
+          {formatIngredientPrice(ingredient)}
         </p>
         <div className="flex items-center gap-2">
           <Badge variant="secondary">{ingredient.unit}</Badge>
