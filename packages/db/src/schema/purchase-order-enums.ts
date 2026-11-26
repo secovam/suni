@@ -1,1 +1,7 @@
-export const PURCHASE_ORDER_STATUSES = ["confirmed", "cancelled"] as const;
+export const PURCHASE_ORDER_STATUSES = [
+  "draft",
+  "generated",
+  "sent",
+  "confirmed",
+  "cancelled",
+] as const;
