@@ -21,6 +21,8 @@ const UNIT_OPTIONS = INGREDIENT_UNITS.map((unit) => ({
   value: unit,
 }));
 
+const PRICE_INPUT_PATTERN = /^\d{0,10}(?:[.,]\d{0,2})?$/u;
+
 const EMPTY_VALUES: AppRouterInputs["ingredients"]["create"] = {
   name: "",
   supplierId: "",
@@ -123,6 +125,11 @@ export function IngredientForm({ ingredient }: IngredientFormProps) {
             <field.TextField
               inputMode="decimal"
               label="Precio por unidad (MXN)"
+              transform={(value) =>
+                PRICE_INPUT_PATTERN.test(value)
+                  ? value
+                  : (field.state.value ?? "")
+              }
             />
           )}
         </form.AppField>
