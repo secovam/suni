@@ -33,9 +33,15 @@ const EMPTY_VALUES: AppRouterInputs["ingredients"]["create"] = {
 
 interface IngredientFormProps {
   ingredient?: AppRouterOutputs["ingredients"]["get"];
+  onCancel?: () => void;
+  onSuccess?: () => void;
 }
 
-export function IngredientForm({ ingredient }: IngredientFormProps) {
+export function IngredientForm({
+  ingredient,
+  onCancel,
+  onSuccess,
+}: IngredientFormProps) {
   const navigate = useNavigate();
   const create = useCreateIngredient();
   const update = useUpdateIngredient();
@@ -67,11 +73,13 @@ export function IngredientForm({ ingredient }: IngredientFormProps) {
         update.mutate(
           { ...fields, id: ingredient.id },
           {
-            onSuccess: () =>
-              navigate({
-                to: "/ingredients/$ingredientId",
-                params: { ingredientId: ingredient.id },
-              }),
+            onSuccess:
+              onSuccess ??
+              (() =>
+                navigate({
+                  to: "/ingredients/$ingredientId",
+                  params: { ingredientId: ingredient.id },
+                })),
           }
         );
 
@@ -160,22 +168,28 @@ export function IngredientForm({ ingredient }: IngredientFormProps) {
         </p>
       ) : null}
       <div className="flex justify-end gap-3">
-        <Button
-          nativeButton={false}
-          render={
-            ingredient ? (
-              <Link
-                params={{ ingredientId: ingredient.id }}
-                to="/ingredients/$ingredientId"
-              />
-            ) : (
-              <Link to="/ingredients" />
-            )
-          }
-          variant="outline"
-        >
-          Cancelar
-        </Button>
+        {onCancel ? (
+          <Button onClick={onCancel} type="button" variant="outline">
+            Cancelar
+          </Button>
+        ) : (
+          <Button
+            nativeButton={false}
+            render={
+              ingredient ? (
+                <Link
+                  params={{ ingredientId: ingredient.id }}
+                  to="/ingredients/$ingredientId"
+                />
+              ) : (
+                <Link to="/ingredients" />
+              )
+            }
+            variant="outline"
+          >
+            Cancelar
+          </Button>
+        )}
         <Button
           disabled={submitting || supplierOptions.length === 0}
           type="submit"

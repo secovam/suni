@@ -1,7 +1,4 @@
-import { FlaskConical } from "lucide-react";
-
-import { EntityGrid } from "@/components/customers/shared/entity-grid";
-import { IngredientCard } from "@/components/ingredients/ingredient-card";
+import { IngredientGrid } from "@/components/ingredients/ingredient-grid";
 import { useListIngredients } from "@/hooks/use-ingredients";
 
 const LIST_COPY = {
@@ -20,16 +17,11 @@ export function SupplierIngredients({ supplierId }: { supplierId: string }) {
     [];
 
   return (
-    <EntityGrid
+    <IngredientGrid
       copy={LIST_COPY}
       hasFilters={false}
-      icon={FlaskConical}
-      isEmpty={ingredients.length === 0}
+      ingredients={ingredients}
       query={query}
-    >
-      {ingredients.map((ingredient) => (
-        <IngredientCard ingredient={ingredient} key={ingredient.id} />
-      ))}
-    </EntityGrid>
+    />
   );
 }
