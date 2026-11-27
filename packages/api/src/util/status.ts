@@ -1,5 +1,7 @@
 import { branch } from "@suni/db/schema/branches";
 import { customer } from "@suni/db/schema/customers";
+import { supplier } from "@suni/db/schema/suppliers";
+import type { SQL } from "drizzle-orm";
 import { and, eq, isNull as isNullSql, sql } from "drizzle-orm";
 import type { AnyPgColumn } from "drizzle-orm/pg-core";
 
@@ -12,6 +14,7 @@ const isNotNull = { isNotNull: true } as const;
 const visible = {
   customer: { archived: isNull },
   supplier: { archived: isNull },
+  ingredient: { archived: isNull, supplier: { archived: isNull } },
   branch: { archived: isNull, customer: { archived: isNull } },
   contact: {
     archived: isNull,
@@ -23,6 +26,9 @@ const visible = {
 const archived = {
   customer: { archived: isNotNull },
   supplier: { archived: isNotNull },
+  ingredient: {
+    OR: [{ archived: isNotNull }, { supplier: { archived: isNotNull } }],
+  },
   branch: {
     OR: [{ archived: isNotNull }, { customer: { archived: isNotNull } }],
   },
@@ -66,6 +72,13 @@ export function activeBranchIdsSql(db: Context["db"]) {
     .from(branch)
     .innerJoin(customer, eq(branch.customerId, customer.id))
     .where(and(isNullSql(branch.archived), isNullSql(customer.archived)));
+}
+
+export function activeSupplierIdsSql(db: Context["db"], condition?: SQL) {
+  return db
+    .select({ id: supplier.id })
+    .from(supplier)
+    .where(and(isNullSql(supplier.archived), condition));
 }
 
 // Set the target state instead of toggling, so a repeated request is a no-op.

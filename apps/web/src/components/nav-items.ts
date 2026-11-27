@@ -3,9 +3,11 @@ import type { LucideIcon } from "lucide-react";
 import {
   BriefcaseBusiness,
   Building2,
+  ClipboardList,
   Contact,
   ContactRound,
   DollarSign,
+  FlaskConical,
   Home,
   Truck,
   Users,
@@ -36,6 +38,12 @@ export const HOME_LINK: NavLink = {
 export const NAV_ENTRIES: NavEntry[] = [
   { to: "/users", label: "Usuarios", icon: Users, adminOnly: true },
   {
+    to: "/purchases",
+    label: "Órdenes de compra",
+    icon: ClipboardList,
+    adminOnly: true,
+  },
+  {
     label: "Ventas",
     icon: DollarSign,
     items: [
@@ -47,7 +55,14 @@ export const NAV_ENTRIES: NavEntry[] = [
   {
     label: "Administración",
     icon: BriefcaseBusiness,
-    items: [{ to: "/suppliers", label: "Proveedores", icon: Truck }],
+    items: [
+      { to: "/suppliers", label: "Proveedores", icon: Truck },
+      {
+        to: "/ingredients",
+        label: "Ingredientes",
+        icon: FlaskConical,
+      },
+    ],
   },
 ];
 
