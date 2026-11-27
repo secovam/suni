@@ -34,7 +34,7 @@ export const Route = createFileRoute("/_auth/purchases/$purchaseId/")({
 
     return {
       input,
-      parentPurchaseId:
+      breadcrumbParentId:
         entry.scope === "supplierOrder" ? entry.purchaseId : undefined,
     };
   },

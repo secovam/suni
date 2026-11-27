@@ -7,7 +7,7 @@ import {
   BreadcrumbSeparator,
 } from "@suni/ui/components/breadcrumb";
 import type { LinkProps } from "@tanstack/react-router";
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useRouter, useRouterState } from "@tanstack/react-router";
 import { Fragment } from "react";
 
 import { NAV_ENTRIES, isSection } from "@/components/nav-items";
@@ -22,12 +22,8 @@ const SEGMENT_LABELS = {
   contacts: "Contactos",
   suppliers: "Proveedores",
   ingredients: "Catálogo de ingredientes",
+  purchases: "Órdenes de compra",
 } satisfies Record<string, string>;
-
-type KnownSegment = keyof typeof SEGMENT_LABELS;
-
-// Only these segments name a page when nested; others (like a customer's branches) have no route of their own.
-const NESTED_SEGMENTS = new Set<string>(["new", "edit"]);
 
 const SECTION_BY_PATH = new Map<string, string>();
 
@@ -39,18 +35,25 @@ for (const entry of NAV_ENTRIES) {
   }
 }
 
-function isKnownSegment(segment: string): segment is KnownSegment {
+function isKnownSegment(
+  segment: string
+): segment is keyof typeof SEGMENT_LABELS {
   return Object.hasOwn(SEGMENT_LABELS, segment);
 }
 
 interface Crumb {
-  // A section like "Ventas" groups pages in the sidebar but has no page itself.
   path?: LinkProps["to"];
   label: string;
+  params?: Record<string, string>;
 }
 
-function getCrumbs(pathname: string): Crumb[] {
-  const segments = pathname.split("/").filter(Boolean);
+function getCrumbs(
+  template: string,
+  routes: { fullPath: NonNullable<LinkProps["to"]> }[],
+  params: Record<string, string>,
+  parentId?: string
+): Crumb[] {
+  const segments = template.split("/").filter(Boolean);
 
   const crumbs: Crumb[] = [
     { path: "/dashboard", label: SEGMENT_LABELS.dashboard },
@@ -63,16 +66,33 @@ function getCrumbs(pathname: string): Crumb[] {
   }
 
   for (const [index, segment] of segments.entries()) {
-    const named =
-      index === 0 ? segment !== "dashboard" : NESTED_SEGMENTS.has(segment);
+    const param = segment.slice(1);
 
-    if (named && isKnownSegment(segment)) {
+    const staticLabel = isKnownSegment(segment)
+      ? SEGMENT_LABELS[segment]
+      : undefined;
+
+    const label = segment.startsWith("$") ? params[param] : staticLabel;
+
+    if (!label || segment === "dashboard") {
+      continue;
+    }
+
+    const prefix = `/${segments.slice(0, index + 1).join("/")}`;
+
+    const path = routes.find(
+      ({ fullPath }) => fullPath.replace(/\/$/u, "") === prefix
+    )?.fullPath;
+
+    if (parentId && segment.startsWith("$") && index === segments.length - 1) {
       crumbs.push({
-        // SAFETY: solo los segmentos listados en SEGMENT_LABELS llegan aquí
-        path: `/${segments.slice(0, index + 1).join("/")}` as LinkProps["to"],
-        label: SEGMENT_LABELS[segment],
+        path,
+        label: parentId,
+        params: { ...params, [param]: parentId },
       });
     }
+
+    crumbs.push({ path, label, params });
   }
 
   return crumbs;
@@ -94,24 +114,38 @@ function CrumbLabel({
   }
 
   return (
-    <BreadcrumbLink render={<Link to={crumb.path} />}>
+    <BreadcrumbLink render={<Link params={crumb.params} to={crumb.path} />}>
       {crumb.label}
     </BreadcrumbLink>
   );
 }
 
 export function DynamicBreadcrumb() {
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const crumbs = getCrumbs(pathname);
+  const router = useRouter();
+  const match = useRouterState({ select: (state) => state.matches.at(-1) });
+  const data = match?.loaderData;
+
+  const parentId =
+    data && "breadcrumbParentId" in data ? data.breadcrumbParentId : undefined;
+
+  const crumbs = getCrumbs(
+    match?.fullPath ?? "",
+    Object.values(router.routesByPath),
+    match?.params ?? {},
+    parentId
+  );
 
   return (
     <Breadcrumb>
       <BreadcrumbList>
         {crumbs.map((crumb, index) => (
-          <Fragment key={crumb.path ?? crumb.label}>
+          <Fragment key={`${crumb.path ?? ""}:${crumb.label}`}>
             {index > 0 && <BreadcrumbSeparator />}
             <BreadcrumbItem>
-              <CrumbLabel crumb={crumb} isCurrent={crumb.path === pathname} />
+              <CrumbLabel
+                crumb={crumb}
+                isCurrent={index === crumbs.length - 1}
+              />
             </BreadcrumbItem>
           </Fragment>
         ))}

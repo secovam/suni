@@ -3,6 +3,7 @@ import type { LucideIcon } from "lucide-react";
 import {
   BriefcaseBusiness,
   Building2,
+  ClipboardList,
   Contact,
   ContactRound,
   DollarSign,
@@ -36,6 +37,12 @@ export const HOME_LINK: NavLink = {
 /** The modules, listed below Inicio in the sidebar. */
 export const NAV_ENTRIES: NavEntry[] = [
   { to: "/users", label: "Usuarios", icon: Users, adminOnly: true },
+  {
+    to: "/purchases",
+    label: "Órdenes de compra",
+    icon: ClipboardList,
+    adminOnly: true,
+  },
   {
     label: "Ventas",
     icon: DollarSign,
